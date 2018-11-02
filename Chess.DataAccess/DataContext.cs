@@ -17,7 +17,17 @@ namespace Chess.DataAccess
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
+            modelBuilder.Entity<Game>()
+                .HasMany(g => g.Moves)
+                .WithOne(m => m.Game)
+                .HasForeignKey(m => m.GameId)
+                .OnDelete(DeleteBehavior.Cascade);
 
+            modelBuilder.Entity<Game>()
+                .HasMany(g => g.Sides)
+                .WithOne(s => s.Game)
+                .HasForeignKey(s => s.GameId)
+                .OnDelete(DeleteBehavior.Cascade);
         }
 
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
