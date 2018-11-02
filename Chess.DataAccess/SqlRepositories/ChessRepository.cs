@@ -3,9 +3,9 @@ using Chess.DataAccess.Interfaces;
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
-using System.Text;
 using System.Linq.Expressions;
 using Microsoft.EntityFrameworkCore;
+using System.Linq;
 
 namespace Chess.DataAccess.SqlRepositories
 {
@@ -20,29 +20,40 @@ namespace Chess.DataAccess.SqlRepositories
             dbSet = context.Set<TEntity>();
         }
 
-        public Task<TEntity> AddAsync(TEntity entity)
+        public async Task<TEntity> AddAsync(TEntity entity)
         {
-            throw new NotImplementedException();
+            return (await context.AddAsync(entity)).Entity;
         }
 
-        public Task<IEnumerable<TEntity>> GetAllAsync()
+        public async Task<IEnumerable<TEntity>> GetAllAsync()
         {
-            throw new NotImplementedException();
+            return await dbSet.ToListAsync();
         }
 
-        public Task<IEnumerable<TEntity>> GetAllAsync(Expression<Func<TEntity, bool>> predicate)
+        public async Task<IEnumerable<TEntity>> GetAllAsync(Expression<Func<TEntity, bool>> predicate)
         {
-            throw new NotImplementedException();
+            return await dbSet.Where(predicate).ToListAsync();
         }
 
-        public Task<TEntity> GetByIdAsync(int id)
+        public async Task<TEntity> GetByIdAsync(int id)
         {
-            throw new NotImplementedException();
+            return await dbSet.FindAsync(id);
         }
 
-        public Task<TEntity> RemoveAsync(TEntity entity)
+        public TEntity Remove(TEntity entity)
         {
-            throw new NotImplementedException();
+            return dbSet.Remove(entity).Entity;
+        }
+
+        public async Task<TEntity> RemoveByIdAsync(int id)
+        {
+            var target = await dbSet.FindAsync(id);
+            if(target != null)
+            {
+                target = dbSet.Remove(target).Entity;
+            }
+
+            return target;
         }
     }
 }
