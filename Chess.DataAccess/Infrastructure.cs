@@ -1,5 +1,6 @@
 ﻿using Chess.DataAccess.Interfaces;
 using Chess.DataAccess.SqlRepositories;
+using Microsoft.AspNetCore.Builder;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -22,8 +23,17 @@ namespace Chess.DataAccess
                 options.UseLazyLoadingProxies();
             });
 
-            services.AddScoped<DbContext, DataContext>();
+            services.AddScoped(typeof(DbContext), typeof(DataContext));
             services.AddScoped<IUnitOfWork, UnitOfWork>();
+        }
+
+        public static void ConfigureMiddleware(this IApplicationBuilder app)
+        {
+            using (var serviceScope = app.ApplicationServices.GetService<IServiceScopeFactory>().CreateScope())
+            {
+                var context = serviceScope.ServiceProvider.GetRequiredService<DataContext>();
+                context.Database.Migrate();
+            }
         }
     }
 }
