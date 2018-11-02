@@ -6,7 +6,8 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\Chess.BL\Chess.BL.csproj" />
+    <ProjectReference Include="..\ChessGame.Core\ChessGame.Core.csproj" />
   </ItemGroup>
+
 
 </Project>
