@@ -15,6 +15,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\Chess.BusinessLogic\Chess.BusinessLogic.csproj" />
     <ProjectReference Include="..\Chess.Common\Chess.Common.csproj" />
     <ProjectReference Include="..\Chess.DataAccess\Chess.DataAccess.csproj" />
   </ItemGroup>

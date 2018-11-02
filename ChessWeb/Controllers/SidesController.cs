@@ -1,46 +1,58 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using Microsoft.AspNetCore.Http;
+﻿using System.Threading.Tasks;
+using Chess.BusinessLogic.Interfaces;
+using Chess.Common.DTOs;
+using Chess.DataAccess.Entities;
 using Microsoft.AspNetCore.Mvc;
 
 namespace ChessWeb.Controllers
 {
-    [Route("api/[controller]")]
+    [Route("[controller]")]
+    [Produces("application/json")]
     [ApiController]
     public class SidesController : ControllerBase
     {
-        // GET: api/Sides
+        private readonly ICRUDService<Side, SideDTO> service;
+
+        public SidesController(ICRUDService<Side, SideDTO> service)
+        {
+            this.service = service;
+        }
+
+        // GET: Sides
         [HttpGet]
-        public IEnumerable<string> Get()
+        public async Task<IActionResult> GetAllSides()
         {
-            return new string[] { "value1", "value2" };
+            var sides = await service.GetListAsync();
+            return sides == null ? NotFound("No sides found!") as IActionResult
+                : Ok(sides);
         }
 
-        // GET: api/Sides/5
-        [HttpGet("{id}", Name = "Get")]
-        public string Get(int id)
+        // GET: Sides/5
+        [HttpGet("{id}", Name = "GetSide")]
+        public async Task<IActionResult> GetSide(int id)
         {
-            return "value";
+            var side = await service.GetByIdAsync(id);
+            return side == null ? NotFound($"Side with id = {id} not found!") as IActionResult
+                : Ok(side);
         }
 
-        // POST: api/Sides
-        [HttpPost]
-        public void Post([FromBody] string value)
+        // POST: Sides
+        public async Task<IActionResult> AddSide([FromBody]SideDTO side)
         {
+            if (!ModelState.IsValid)
+                return BadRequest() as IActionResult;
+
+            var entity = await service.AddAsync(side);
+            return entity == null ? StatusCode(409) as IActionResult
+                : StatusCode(201) as IActionResult;
         }
 
-        // PUT: api/Sides/5
-        [HttpPut("{id}")]
-        public void Put(int id, [FromBody] string value)
-        {
-        }
-
-        // DELETE: api/ApiWithActions/5
+        // DELETE: Sides/5
         [HttpDelete("{id}")]
-        public void Delete(int id)
+        public async Task<IActionResult> DeleteSide(int id)
         {
+            var success = await service.TryRemoveAsync(id);
+            return success ? Ok() : StatusCode(304) as IActionResult;
         }
     }
 }

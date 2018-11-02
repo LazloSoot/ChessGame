@@ -1,46 +1,58 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using Microsoft.AspNetCore.Http;
+﻿using System.Threading.Tasks;
+using Chess.BusinessLogic.Interfaces;
+using Chess.Common.DTOs;
+using Chess.DataAccess.Entities;
 using Microsoft.AspNetCore.Mvc;
 
 namespace ChessWeb.Controllers
 {
-    [Route("api/[controller]")]
+    [Route("[controller]")]
+    [Produces("application/json")]
     [ApiController]
     public class MovesController : ControllerBase
     {
-        // GET: api/Moves
+        private readonly ICRUDService<Move, MoveDTO> service;
+
+        public MovesController(ICRUDService<Move, MoveDTO> service)
+        {
+            this.service = service;
+        }
+
+        // GET: Moves
         [HttpGet]
-        public IEnumerable<string> Get()
+        public async Task<IActionResult> GetAllMoves()
         {
-            return new string[] { "value1", "value2" };
+            var moves = await service.GetListAsync();
+            return moves == null ? NotFound("No moves found!") as IActionResult
+                : Ok(moves);
         }
 
-        // GET: api/Moves/5
-        [HttpGet("{id}", Name = "Get")]
-        public string Get(int id)
+        // GET: Moves/5
+        [HttpGet("{id}", Name = "GetMove")]
+        public async Task<IActionResult> GetMove(int id)
         {
-            return "value";
+            var move = await service.GetByIdAsync(id);
+            return move == null ? NotFound($"Move with id = {id} not found!") as IActionResult
+                : Ok(move);
         }
 
-        // POST: api/Moves
-        [HttpPost]
-        public void Post([FromBody] string value)
+        // POST: Moves
+        public async Task<IActionResult> AddMove([FromBody]MoveDTO move)
         {
+            if (!ModelState.IsValid)
+                return BadRequest() as IActionResult;
+
+            var entity = await service.AddAsync(move);
+            return entity == null ? StatusCode(409) as IActionResult
+                : StatusCode(201) as IActionResult;
         }
 
-        // PUT: api/Moves/5
-        [HttpPut("{id}")]
-        public void Put(int id, [FromBody] string value)
-        {
-        }
-
-        // DELETE: api/ApiWithActions/5
+        // DELETE: Moves/5
         [HttpDelete("{id}")]
-        public void Delete(int id)
+        public async Task<IActionResult> DeleteMove(int id)
         {
+            var success = await service.TryRemoveAsync(id);
+            return success ? Ok() : StatusCode(304) as IActionResult;
         }
     }
 }

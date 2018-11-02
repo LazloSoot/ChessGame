@@ -1,46 +1,58 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using Microsoft.AspNetCore.Http;
+﻿using System.Threading.Tasks;
+using Chess.BusinessLogic.Interfaces;
+using Chess.Common.DTOs;
+using Chess.DataAccess.Entities;
 using Microsoft.AspNetCore.Mvc;
 
 namespace ChessWeb.Controllers
 {
-    [Route("api/[controller]")]
+    [Route("[controller]")]
+    [Produces("application/json")]
     [ApiController]
     public class PlayersController : ControllerBase
     {
-        // GET: api/Players
+        private readonly ICRUDService<Player, PlayerDTO> service;
+
+        public PlayersController(ICRUDService<Player, PlayerDTO> service)
+        {
+            this.service = service;
+        }
+
+        // GET: Players
         [HttpGet]
-        public IEnumerable<string> Get()
+        public async Task<IActionResult> GetAllPlayers()
         {
-            return new string[] { "value1", "value2" };
+            var players = await service.GetListAsync();
+            return players == null ? NotFound("No players found!") as IActionResult
+                : Ok(players);
         }
 
-        // GET: api/Players/5
-        [HttpGet("{id}", Name = "Get")]
-        public string Get(int id)
+        // GET: Players/5
+        [HttpGet("{id}", Name = "GetPlayer")]
+        public async Task<IActionResult> GetPlayer(int id)
         {
-            return "value";
+            var player = await service.GetByIdAsync(id);
+            return player == null ? NotFound($"Player with id = {id} not found!") as IActionResult
+                : Ok(player);
         }
 
-        // POST: api/Players
-        [HttpPost]
-        public void Post([FromBody] string value)
+        // POST: Players
+        public async Task<IActionResult> AddPlayer([FromBody]PlayerDTO player)
         {
+            if (!ModelState.IsValid)
+                return BadRequest() as IActionResult;
+
+            var entity = await service.AddAsync(player);
+            return entity == null ? StatusCode(409) as IActionResult
+                : StatusCode(201) as IActionResult;
         }
 
-        // PUT: api/Players/5
-        [HttpPut("{id}")]
-        public void Put(int id, [FromBody] string value)
-        {
-        }
-
-        // DELETE: api/ApiWithActions/5
+        // DELETE: Players/5
         [HttpDelete("{id}")]
-        public void Delete(int id)
+        public async Task<IActionResult> DeletePlayer(int id)
         {
+            var success = await service.TryRemoveAsync(id);
+            return success ? Ok() : StatusCode(304) as IActionResult;
         }
     }
 }
