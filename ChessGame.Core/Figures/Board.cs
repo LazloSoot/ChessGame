@@ -111,12 +111,6 @@ namespace Chess.BL.Figures
 
         private void InitFiguresPosition()
         {
-            //"rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1"
-            // 0-позиция фигур                             1 2    3 4 5
-            // 0 - позиция фигур,  1 - чей ход, 2 - флаги рокировки
-            // 3 - правило битого поля, 4 - колич. ходов для правила 50 ходов
-            // 5 - номер хода
-
             string[] parts = Fen.Split();
             if (parts.Length < 6)
                 return;

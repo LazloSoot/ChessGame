@@ -9,7 +9,9 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\Chess.Common\Chess.Common.csproj" />
     <ProjectReference Include="..\Chess.DataAccess\Chess.DataAccess.csproj" />
+    <ProjectReference Include="..\ChessGame.Core\ChessGame.Core.csproj" />
   </ItemGroup>
 
 </Project>

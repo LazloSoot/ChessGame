@@ -35,6 +35,18 @@ namespace Chess.BusinessLogic.Services
             return mapper.Map<TEntity, TEntityDTO>(target);
         }
 
+        public virtual async Task<TEntityDTO> UpdateAsync(TEntityDTO entity)
+        {
+            if (uow == null)
+                return null;
+
+            var target = uow.GetRepository<TEntity>()
+                .Update(mapper.Map<TEntity>(entity));
+
+            await uow.SaveAsync();
+            return mapper.Map<TEntityDTO>(target);
+        }
+
         public virtual async Task<TEntityDTO> GetByIdAsync(int id)
         {
             if (uow == null)

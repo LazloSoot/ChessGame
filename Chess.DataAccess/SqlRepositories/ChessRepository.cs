@@ -22,7 +22,12 @@ namespace Chess.DataAccess.SqlRepositories
 
         public async Task<TEntity> AddAsync(TEntity entity)
         {
-            return (await context.AddAsync(entity)).Entity;
+            return (await dbSet.AddAsync(entity)).Entity;
+        }
+
+        public TEntity Update(TEntity entity)
+        {
+            return dbSet.Update(entity).Entity;
         }
 
         public async Task<IEnumerable<TEntity>> GetAllAsync()
@@ -38,6 +43,11 @@ namespace Chess.DataAccess.SqlRepositories
         public async Task<TEntity> GetByIdAsync(int id)
         {
             return await dbSet.FindAsync(id);
+        }
+
+        public async Task<TEntity> GetOneAsync(Expression<Func<TEntity, bool>> predicate)
+        {
+            return await dbSet.Where(predicate).FirstOrDefaultAsync();
         }
 
         public TEntity Remove(TEntity entity)

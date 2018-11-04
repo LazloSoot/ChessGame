@@ -23,6 +23,11 @@ namespace Chess.BL
         /// <remarks>https://en.wikipedia.org/wiki/Forsyth–Edwards_Notation</remarks>
         public ChessGame(string fen = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1")
         {
+            //"rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1"
+            // 0-позиция фигур                             1 2    3 4 5
+            // 0 - позиция фигур,  1 - чей ход, 2 - флаги рокировки
+            // 3 - правило битого поля, 4 - колич. ходов для правила 50 ходов
+            // 5 - номер хода
             Fen = fen;
             board = new Board(fen);
             currentMove = new Move(board);

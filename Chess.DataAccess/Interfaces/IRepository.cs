@@ -10,11 +10,15 @@ namespace Chess.DataAccess.Interfaces
     {
         Task<TEntity> AddAsync(TEntity entity);
 
+        TEntity Update(TEntity entity);
+
         TEntity Remove(TEntity entity);
 
         Task<TEntity> RemoveByIdAsync(int id);
 
         Task<TEntity> GetByIdAsync(int id);
+
+        Task<TEntity> GetOneAsync(Expression<Func<TEntity, bool>> predicate);
 
         Task<IEnumerable<TEntity>> GetAllAsync();
 
