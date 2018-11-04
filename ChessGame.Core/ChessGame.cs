@@ -11,6 +11,7 @@ namespace Chess.BL
     {
         private Board board;
         private Move currentMove;
+        public const string DefaultFen = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
         public string Fen { get; private set; }
 
 #warning добавить инфу кто кому что сделал
@@ -21,7 +22,7 @@ namespace Chess.BL
         /// </summary>
         /// <param name="fen">Forsyth–Edwards Notation</param>
         /// <remarks>https://en.wikipedia.org/wiki/Forsyth–Edwards_Notation</remarks>
-        public ChessGame(string fen = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1")
+        public ChessGame(string fen = DefaultFen)
         {
             //"rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1"
             // 0-позиция фигур                             1 2    3 4 5

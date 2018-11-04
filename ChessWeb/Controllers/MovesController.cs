@@ -37,12 +37,12 @@ namespace ChessWeb.Controllers
         }
 
         // POST: Moves
-        public async Task<IActionResult> AddMove([FromBody]MoveDTO move)
+        public async Task<IActionResult> Move([FromBody]MoveDTO move)
         {
             if (!ModelState.IsValid)
                 return BadRequest() as IActionResult;
 
-            var entity = await service.AddAsync(move);
+            var entity = await service.Move(move);
             return entity == null ? StatusCode(409) as IActionResult
                 : StatusCode(201) as IActionResult;
         }

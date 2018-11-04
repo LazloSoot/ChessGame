@@ -10,7 +10,7 @@ using System.Linq;
 
 namespace Chess.BusinessLogic.Services
 {
-    public class ChessMovesService : CRUDService<Move, MoveDTO> , IChessMovesService
+    public class ChessMovesService : CRUDService<Move, CommitedMoveDTO> , IChessMovesService
     {
         //"rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1"
         // 0-позиция фигур                             1 2    3 4 5
@@ -24,24 +24,34 @@ namespace Chess.BusinessLogic.Services
 
         }
 
-        public override async Task<MoveDTO> AddAsync(MoveDTO move)
+        public async Task<CommitedMoveDTO> Move(MoveDTO moveRequest)
         {
 #warning кинуть разные исключения вместо null
-            if (uow == null 
-                || string.IsNullOrWhiteSpace(move.MoveNext)
-                || move.GameId < 1)
+            if (uow == null || string.IsNullOrWhiteSpace(moveRequest.Move) || moveRequest.GameId < 1)
                 return null;
 
+            return await AddAsync(new CommitedMoveDTO()
+            {
+                GameId = moveRequest.GameId,
+                MoveNext = moveRequest.Move
+            });
+        }
+
+        public async Task<CommitedMoveDTO> CommitMove(CommitedMoveDTO move)
+        {
             var game = await FindGame(move);
 
             if (game == null || game.Status != DataAccess.Helpers.GameStatus.Going)
                 return null;
 
             await FormMoveEntry();
-            var fenAfterMove = CommitMove(move.Fen, move.MoveNext);
+#warning оповестить signalr
+            var fenAfterMove = CommitMove(move.FenBeforeMove, move.MoveNext);
             if (!string.IsNullOrEmpty(fenAfterMove))
             {
-                return await base.AddAsync(move);
+                var committedMove = await base.AddAsync(move);
+                committedMove.FenAfterMove = fenAfterMove;
+                return committedMove;
             }
             else
                 return null;
@@ -55,7 +65,7 @@ namespace Chess.BusinessLogic.Services
 
                 if(gameMoves?.Count() < 1)
                 {
-                    move.Fen = game.Fen;
+                    move.FenBeforeMove = game.Fen;
                     move.Ply = 1;
                 }
                 else
@@ -65,13 +75,18 @@ namespace Chess.BusinessLogic.Services
                     if (string.IsNullOrWhiteSpace(currentFen))
                         throw new ArgumentNullException($"Fen of move with id ={prevMove.Id} is corrupted!");
 
-                    move.Fen = currentFen;
+                    move.FenBeforeMove = currentFen;
                     move.Ply = prevMove.Ply + 1;
                 }
             }
         }
 
-        private async Task<Game> FindGame(MoveDTO move)
+        public async Task Resign()
+        {
+            throw new NotImplementedException();
+        }
+
+        private async Task<Game> FindGame(CommitedMoveDTO move)
         {
             int gameId;
 
@@ -104,5 +119,6 @@ namespace Chess.BusinessLogic.Services
             else
                 return nextFen;
         }
+
     }
 }

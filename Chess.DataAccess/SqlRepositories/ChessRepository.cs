@@ -25,6 +25,11 @@ namespace Chess.DataAccess.SqlRepositories
             return (await dbSet.AddAsync(entity)).Entity;
         }
 
+        public async Task AddRangeAsync(IEnumerable<TEntity> entities)
+        {
+            await dbSet.AddRangeAsync(entities);
+        }
+
         public TEntity Update(TEntity entity)
         {
             return dbSet.Update(entity).Entity;
