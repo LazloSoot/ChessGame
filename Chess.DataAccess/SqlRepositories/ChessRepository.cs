@@ -30,13 +30,14 @@ namespace Chess.DataAccess.SqlRepositories
             return dbSet.Update(entity).Entity;
         }
 
-        public async Task<IEnumerable<TEntity>> GetAllAsync()
+        public async Task<IEnumerable<TEntity>> GetAllAsync(Expression<Func<TEntity, bool>> predicate = null)
         {
-            return await dbSet.ToListAsync();
-        }
+            if (predicate == null)
+                return await dbSet.ToListAsync();
 
-        public async Task<IEnumerable<TEntity>> GetAllAsync(Expression<Func<TEntity, bool>> predicate)
-        {
+            //  Func<IQueryable<TEntity>, Expression<Func<TEntity, bool>>, IQueryable<TEntity>> whereFunc 
+            // = (query, predicate) => query.Where(predicate);
+
             return await dbSet.Where(predicate).ToListAsync();
         }
 

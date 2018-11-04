@@ -11,9 +11,9 @@ namespace ChessWeb.Controllers
     [ApiController]
     public class MovesController : ControllerBase
     {
-        private readonly ICRUDService<Move, MoveDTO> service;
+        private readonly IChessMovesService service;
 
-        public MovesController(ICRUDService<Move, MoveDTO> service)
+        public MovesController(IChessMovesService service)
         {
             this.service = service;
         }

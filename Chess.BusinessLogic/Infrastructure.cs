@@ -10,6 +10,7 @@ namespace Chess.BusinessLogic
         public static void ConfigureServices(IServiceCollection services, IConfiguration configuration)
         {
             services.AddScoped(typeof(ICRUDService<,>), typeof(CRUDService<,>));
+            services.AddScoped<IChessMovesService, ChessMovesService>();
         }
     }
 }
