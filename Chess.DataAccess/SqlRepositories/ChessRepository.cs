@@ -22,22 +22,38 @@ namespace Chess.DataAccess.SqlRepositories
 
         public async Task<TEntity> AddAsync(TEntity entity)
         {
-            return (await context.AddAsync(entity)).Entity;
+            return (await dbSet.AddAsync(entity)).Entity;
         }
 
-        public async Task<IEnumerable<TEntity>> GetAllAsync()
+        public async Task AddRangeAsync(IEnumerable<TEntity> entities)
         {
-            return await dbSet.ToListAsync();
+            await dbSet.AddRangeAsync(entities);
         }
 
-        public async Task<IEnumerable<TEntity>> GetAllAsync(Expression<Func<TEntity, bool>> predicate)
+        public TEntity Update(TEntity entity)
         {
+            return dbSet.Update(entity).Entity;
+        }
+
+        public async Task<IEnumerable<TEntity>> GetAllAsync(Expression<Func<TEntity, bool>> predicate = null)
+        {
+            if (predicate == null)
+                return await dbSet.ToListAsync();
+
+            //  Func<IQueryable<TEntity>, Expression<Func<TEntity, bool>>, IQueryable<TEntity>> whereFunc 
+            // = (query, predicate) => query.Where(predicate);
+
             return await dbSet.Where(predicate).ToListAsync();
         }
 
         public async Task<TEntity> GetByIdAsync(int id)
         {
             return await dbSet.FindAsync(id);
+        }
+
+        public async Task<TEntity> GetOneAsync(Expression<Func<TEntity, bool>> predicate)
+        {
+            return await dbSet.Where(predicate).FirstOrDefaultAsync();
         }
 
         public TEntity Remove(TEntity entity)

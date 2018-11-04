@@ -37,15 +37,15 @@ namespace ChessWeb.Controllers
         }
 
         // POST: Players
-        public async Task<IActionResult> AddPlayer([FromBody]PlayerDTO player)
-        {
-            if (!ModelState.IsValid)
-                return BadRequest() as IActionResult;
+        //public async Task<IActionResult> AddPlayer([FromBody]PlayerDTO player)
+        //{
+        //    if (!ModelState.IsValid)
+        //        return BadRequest() as IActionResult;
 
-            var entity = await service.AddAsync(player);
-            return entity == null ? StatusCode(409) as IActionResult
-                : StatusCode(201) as IActionResult;
-        }
+        //    var entity = await service.AddAsync(player);
+        //    return entity == null ? StatusCode(409) as IActionResult
+        //        : StatusCode(201) as IActionResult;
+        //}
 
         // DELETE: Players/5
         [HttpDelete("{id}")]

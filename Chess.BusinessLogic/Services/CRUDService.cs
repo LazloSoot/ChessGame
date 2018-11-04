@@ -11,8 +11,8 @@ namespace Chess.BusinessLogic.Services
         where TEntity : Entity, new()
         where TEntityDTO : class, new()
     {
-        private readonly IMapper mapper;
-        private readonly IUnitOfWork uow;
+        protected readonly IMapper mapper;
+        protected readonly IUnitOfWork uow;
 
         public CRUDService(IMapper mapper, IUnitOfWork unitOfWork)
         {
@@ -20,7 +20,7 @@ namespace Chess.BusinessLogic.Services
             this.uow = unitOfWork;
         }
 
-        public async Task<TEntityDTO> AddAsync(TEntityDTO entity)
+        public virtual async Task<TEntityDTO> AddAsync(TEntityDTO entity)
         {
             if (uow == null)
                 return null;
@@ -35,7 +35,19 @@ namespace Chess.BusinessLogic.Services
             return mapper.Map<TEntity, TEntityDTO>(target);
         }
 
-        public async Task<TEntityDTO> GetByIdAsync(int id)
+        public virtual async Task<TEntityDTO> UpdateAsync(TEntityDTO entity)
+        {
+            if (uow == null)
+                return null;
+
+            var target = uow.GetRepository<TEntity>()
+                .Update(mapper.Map<TEntity>(entity));
+
+            await uow.SaveAsync();
+            return mapper.Map<TEntityDTO>(target);
+        }
+
+        public virtual async Task<TEntityDTO> GetByIdAsync(int id)
         {
             if (uow == null)
                 return null;
@@ -44,7 +56,7 @@ namespace Chess.BusinessLogic.Services
             return target == null ? null : mapper.Map<TEntityDTO>(target);
         }
 
-        public async Task<IEnumerable<TEntityDTO>> GetListAsync()
+        public virtual async Task<IEnumerable<TEntityDTO>> GetListAsync()
         {
             if (uow == null)
                 return null;
@@ -53,7 +65,7 @@ namespace Chess.BusinessLogic.Services
             return mapper.Map<IEnumerable<TEntityDTO>>(targets);
         }
 
-        public async Task<bool> TryRemoveAsync(int id)
+        public virtual async Task<bool> TryRemoveAsync(int id)
         {
             if (uow == null)
                 return false;

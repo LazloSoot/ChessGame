@@ -19,16 +19,18 @@ namespace Chess.Common.Mappings
                 .ForMember(p => p.Status, opt => opt.MapFrom(po => po.Status))
                 .ForMember(p => p.Fen, opt => opt.MapFrom(po => po.Fen));
 
-                cfg.CreateMap<Move, MoveDTO>()
+                cfg.CreateMap<Move, CommitedMoveDTO>()
                 .ForMember(p => p.Id, opt => opt.MapFrom(po => po.Id))
-                .ForMember(p => p.Fen, opt => opt.MapFrom(po => po.Fen))
+                .ForMember(p => p.FenBeforeMove, opt => opt.MapFrom(po => po.Fen))
                 .ForMember(p => p.Ply, opt => opt.MapFrom(po => po.Ply))
                 .ForMember(p => p.MoveNext, opt => opt.MapFrom(po => po.MoveNext))
                 .ForMember(p => p.Game, opt => opt.MapFrom(po => po.Game))
-                .ForMember(p => p.Player, opt => opt.MapFrom(po => po.Player));
-                cfg.CreateMap<MoveDTO, Move>()
+                .ForMember(p => p.GameId, opt => opt.MapFrom(po => po.GameId))
+                .ForMember(p => p.Player, opt => opt.MapFrom(po => po.Player))
+                .ForMember(p => p.PlayerId, opt => opt.MapFrom(po => po.PlayerId));
+                cfg.CreateMap<CommitedMoveDTO, Move>()
                 .ForMember(p => p.Id, opt => opt.MapFrom(po => po.Id))
-                .ForMember(p => p.Fen, opt => opt.MapFrom(po => po.Fen))
+                .ForMember(p => p.Fen, opt => opt.MapFrom(po => po.FenBeforeMove))
                 .ForMember(p => p.Ply, opt => opt.MapFrom(po => po.Ply))
                 .ForMember(p => p.MoveNext, opt => opt.MapFrom(po => po.MoveNext))
                 .ForMember(p => p.Game, opt => opt.MapFrom(po => po.Game))

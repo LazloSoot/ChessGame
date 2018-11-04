@@ -11,9 +11,9 @@ namespace ChessWeb.Controllers
     [ApiController]
     public class GamesController : ControllerBase
     {
-        private readonly ICRUDService<Game, GameDTO> service;
+        private readonly IGameDataService service;
 
-        public GamesController(ICRUDService<Game, GameDTO> service)
+        public GamesController(IGameDataService service)
         {
             this.service = service;
         }
@@ -37,12 +37,12 @@ namespace ChessWeb.Controllers
         }
 
         // POST: Games
-        public async Task<IActionResult> AddGame([FromBody]GameDTO game)
+        public async Task<IActionResult> CreateNewGame([FromBody]GameDTO game)
         {
             if (!ModelState.IsValid)
                 return BadRequest() as IActionResult;
 
-            var entity = await service.AddAsync(game);
+            var entity = await service.CreateNewGame(game);
             return entity == null ? StatusCode(409) as IActionResult
                 : StatusCode(201) as IActionResult;
         }

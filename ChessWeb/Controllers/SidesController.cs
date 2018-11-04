@@ -35,24 +35,5 @@ namespace ChessWeb.Controllers
             return side == null ? NotFound($"Side with id = {id} not found!") as IActionResult
                 : Ok(side);
         }
-
-        // POST: Sides
-        public async Task<IActionResult> AddSide([FromBody]SideDTO side)
-        {
-            if (!ModelState.IsValid)
-                return BadRequest() as IActionResult;
-
-            var entity = await service.AddAsync(side);
-            return entity == null ? StatusCode(409) as IActionResult
-                : StatusCode(201) as IActionResult;
-        }
-
-        // DELETE: Sides/5
-        [HttpDelete("{id}")]
-        public async Task<IActionResult> DeleteSide(int id)
-        {
-            var success = await service.TryRemoveAsync(id);
-            return success ? Ok() : StatusCode(304) as IActionResult;
-        }
     }
 }
