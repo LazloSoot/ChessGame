@@ -5,15 +5,18 @@ import { AppComponent } from './app.component';
 import { AppRoutingModule } from './app-routing.module';
 import { CoreModule } from './core/core.module';
 import { SharedModule } from './shared/shared.module';
-import { MaterialModule } from './modules/material/material.module';
+import { HomeModule } from './modules/home/home.module';
+import { HeaderComponent, FooterComponent } from './shared/layout';
 
 @NgModule({
   declarations: [
-    AppComponent
+    AppComponent,
+    HeaderComponent,
+    FooterComponent
   ],
   imports: [
     BrowserModule,
-    MaterialModule,
+    HomeModule,
     CoreModule,
     SharedModule,
 
