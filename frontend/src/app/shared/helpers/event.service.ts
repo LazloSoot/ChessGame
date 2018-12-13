@@ -4,7 +4,8 @@ import { Subject, Observable } from 'rxjs';
 @Injectable({
   providedIn: 'root'
 })
-export class HomeEventService {
+export class EventService {
+
   private _listners = new Subject<any>();
   
   listen() : Observable<any> {

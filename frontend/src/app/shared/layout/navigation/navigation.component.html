@@ -1,0 +1,47 @@
+<mat-sidenav-container class="main-wrapper" [class.example-is-mobile]="mobileQuery.matches">
+  <mat-sidenav #snav [mode]="mobileQuery.matches ? 'over' : 'side'" [fixedInViewport]="mobileQuery.matches" position="end">
+      <div fxLayout="column">
+          <section class="user">
+              <a class="user-image" routerLinkActive="active" routerLink="/dashboard">
+                <img src="https://avatarfiles.alphacoders.com/115/115265.png">
+              </a>
+              <a class="user-name" routerLinkActive="active" routerLink="/dashboard">
+                <h4>Grisha Petechkin</h4>
+              </a>
+          </section>
+          
+          <a class="nav-item" mat-button routerLinkActive="active" routerLink="/dashboard">
+            <mat-icon mat-list-icon>home</mat-icon> Play</a>
+          <mat-divider></mat-divider>
+
+          <a class="nav-item" mat-button routerLinkActive="active" routerLink="/profile">
+            <mat-icon mat-list-icon>account_box</mat-icon> Puzzles</a>
+          <mat-divider></mat-divider>
+
+          <a class="nav-item" mat-button routerLinkActive="active" routerLink="/profile">
+            <mat-icon mat-list-icon>account_box</mat-icon> Rules</a>
+          <mat-divider></mat-divider>
+
+          <a *ngIf="isLoggedIn() else logout" class="nav-item" routerLinkActive="active" mat-button color="warn" (click)="onLoginClick();snav.toggle();">
+              <mat-icon mat-list-icon>block</mat-icon> Login</a>
+
+          <ng-template #logout>
+              <a class="nav-item" routerLinkActive="active" mat-button color="warn" (click)="onLogoutClick();snav.toggle();">
+                  <mat-icon mat-list-icon>block</mat-icon> Logout</a>
+          </ng-template>
+        </div>
+  </mat-sidenav>
+
+  <mat-sidenav-content class="page-wrapper">
+      <mat-toolbar class="page-toolbar">
+          <button mat-icon-button fxHide fxShow.lt-md="true" (click)="snav.toggle()">
+              <mat-icon>menu</mat-icon>
+          </button>
+
+          <label class="companyName" routerLink="/">Chess fury</label>
+      </mat-toolbar>
+      <main (click)="snav.close()" class="content">
+          <router-outlet></router-outlet>
+      </main>
+  </mat-sidenav-content>
+</mat-sidenav-container>

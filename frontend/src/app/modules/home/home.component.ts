@@ -1,5 +1,5 @@
 import { Component, OnInit } from '@angular/core';
-import { HomeEventService } from './home-event.service';
+import { EventService } from '../../shared';
 
 @Component({
   selector: 'app-home',
@@ -8,17 +8,13 @@ import { HomeEventService } from './home-event.service';
 })
 export class HomeComponent implements OnInit {
 
-  constructor(private eventService: HomeEventService) { }
+  constructor(private eventService: EventService) { }
 
   ngOnInit() {
     document.body.classList.add('bg-image');
   }
 
-  onSignUpClick() {
-    this.eventService.filter('signUp');
-  }
-
-  onLoginClick() {
+  onSignInClick() {
     this.eventService.filter('login');
   }
 
