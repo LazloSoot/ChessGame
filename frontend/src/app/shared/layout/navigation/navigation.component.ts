@@ -1,6 +1,9 @@
 import { Component, OnInit, ChangeDetectorRef } from "@angular/core";
 import { MediaMatcher } from "@angular/cdk/layout";
 import { EventService } from "../../helpers";
+import { MatDialog } from "@angular/material";
+import { SignInDialogComponent } from "../../dialogs/sign-in-dialog/sign-in-dialog.component";
+import { SignUpDialogComponent } from "../../dialogs/sign-up-dialog/sign-up-dialog.component";
 
 @Component({
 	selector: "app-navigation",
@@ -14,7 +17,8 @@ export class NavigationComponent implements OnInit {
 	constructor(
 		private changeDetectorRef: ChangeDetectorRef,
 		private media: MediaMatcher,
-		private eventService: EventService
+		private eventService: EventService,
+		private dialog: MatDialog
 	) {}
   
 	ngOnInit() {
@@ -44,14 +48,36 @@ export class NavigationComponent implements OnInit {
 	}
 
 	onSignUpClick() {
-		console.log("onSignUp");
+		let dialogRef = this.dialog.open(SignUpDialogComponent);
+
+		dialogRef.componentInstance.successSignUp.subscribe(
+			(signUpData) => {
+				// получить пользователя
+			}
+		)
+
+		dialogRef.afterClosed().subscribe(() => {
+			dialogRef.componentInstance.successSignUp.unsubscribe();
+		});
+		
 	}
 
 	onLoginClick() {
-		console.log("onLogin");
+		let dialogRef = this.dialog.open(SignInDialogComponent);
+
+        dialogRef.componentInstance.onSucceessLogin.subscribe(
+            (loginData) => {
+                // получить пользователя
+            }
+		);
+		
+		dialogRef.afterClosed().subscribe(() => {
+			dialogRef.componentInstance.onSucceessLogin.unsubscribe();
+		});
 	}
 
 	onLogoutClick() {
+		// просто на auth.service делаем logOut
 		console.log("onLogout");
 	}
 }

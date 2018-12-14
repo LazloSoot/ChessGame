@@ -1,0 +1,93 @@
+form {
+    width: 280px;
+    text-align: center;
+}
+
+a {
+    text-decoration: none;
+}
+
+.social-btn {
+    width: 100%;
+	text-align: left;
+}
+
+.devider {
+    position: relative;
+    width: 30px;
+    margin-left: 50%;
+    margin-top: 5px;
+    margin-bottom: 1px;
+    transform: translateX(-15px);
+
+    &::after {
+        content: '';
+        position: absolute;
+        display: block;
+        top: 9px;
+        left: 0;
+        width: 120px;
+        height: 1px;
+        background-color: #949494;
+        transform: translateX(35px);
+    }
+    &::before {
+        content: '';
+        position: absolute;
+        display: block;
+        top: 9px;
+        left: 0;
+        width: 120px;
+        height: 1px;
+        background-color: #949494;
+        transform: translateX(-125px);
+    }
+}
+
+.input-field {
+    width: 100%;
+    font-size: 14px;
+}
+
+button {
+	width: 210px;
+	margin: 3px auto;
+}
+
+.btn-logo {
+	margin-right: 10px;
+}
+
+.login-btn {
+    width: 100%;
+	background-color: #3c56b9;
+	color: #fff;
+}
+
+.finger:hover {
+	cursor: pointer;
+}
+
+.forgot-password,
+.signUp {
+	color: #3f51b5;
+	cursor: pointer;
+	font-family: Roboto, "Helvetica Neue", sans-serif;
+	font-size: 14px;
+	font-weight: 500;
+}
+
+.forgot-box {
+	text-align: right;
+	width: 100%;
+	z-index: 100;
+}
+
+.firebase-error {
+	align-self: center;
+	margin-bottom: 20px;
+}
+
+.signUp-container {
+    padding-top: 10px;
+}

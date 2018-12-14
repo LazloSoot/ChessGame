@@ -1,4 +1,6 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, EventEmitter, Output } from '@angular/core';
+import { MatDialogRef } from '@angular/material';
+import { EventService } from '../../helpers';
 
 @Component({
   selector: 'app-sign-in-dialog',
@@ -6,10 +8,35 @@ import { Component, OnInit } from '@angular/core';
   styleUrls: ['./sign-in-dialog.component.less']
 })
 export class SignInDialogComponent implements OnInit {
+  @Output() onSucceessLogin = new EventEmitter<any>();
+  @Output() onRegister = new EventEmitter<any>();
+  public firebaseError: string;
+  public hide = true;
+  public user = {
+    email: '',
+    password: ''
+  };
 
-  constructor() { }
+  constructor(
+    private dialogRef: MatDialogRef<SignInDialogComponent>,
+    private e: EventService
+  ) { }
 
   ngOnInit() {
   }
+  
+  onForgotPasswordClick() {
+    this.dialogRef.close();
+  }
 
+  onLoginFormSubmit(user, form) {
+    debugger;
+  }
+
+  onSignUp() {
+    this.dialogRef.close();
+    setTimeout(() => {
+      this.e.filter("signUp");
+    }, 50);
+  }
 }

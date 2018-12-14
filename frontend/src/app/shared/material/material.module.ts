@@ -2,13 +2,15 @@ import { NgModule } from '@angular/core';
 import { CommonModule } from '@angular/common';
 
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
-import { MatButtonModule } from '@angular/material';
+import { MatButtonModule, MatInputModule } from '@angular/material';
 import { MatIconModule } from '@angular/material/icon';
 import { MatGridListModule } from '@angular/material/grid-list';
 import { MatSidenavModule } from '@angular/material/sidenav';
 import { MatMenuModule } from '@angular/material/menu';
 import { MatToolbarModule } from '@angular/material/toolbar';
 import { MatDividerModule } from '@angular/material/divider';
+import { MatDialogModule } from '@angular/material/dialog';
+import { MatFormFieldModule } from '@angular/material/form-field';
 
 @NgModule({
   imports: [
@@ -20,7 +22,10 @@ import { MatDividerModule } from '@angular/material/divider';
     MatSidenavModule,
     MatMenuModule,
     MatToolbarModule,
-    MatDividerModule
+    MatDividerModule,
+    MatDialogModule,
+    MatFormFieldModule,
+    MatInputModule
   ],
   exports: [
     BrowserAnimationsModule,
@@ -30,7 +35,10 @@ import { MatDividerModule } from '@angular/material/divider';
     MatSidenavModule,
     MatMenuModule,
     MatToolbarModule,
-    MatDividerModule
+    MatDividerModule,
+    MatDialogModule,
+    MatFormFieldModule,
+    MatInputModule
   ],
   declarations: []
 })

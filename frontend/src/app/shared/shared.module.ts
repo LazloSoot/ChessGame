@@ -3,17 +3,29 @@ import { CommonModule } from '@angular/common';
 
 import { SignInDialogComponent } from './';
 import { MaterialModule } from './material/material.module';
+import { SignUpDialogComponent } from './dialogs/sign-up-dialog/sign-up-dialog.component';
+import { FormsModule } from '@angular/forms';
 
 @NgModule({
   imports: [
     CommonModule,
-    MaterialModule
+    MaterialModule,
+    FormsModule
   ],
+  
   exports: [
-    MaterialModule
+    MaterialModule,
+    FormsModule
   ],
+
   declarations: [
-    SignInDialogComponent
-    ]
+    SignInDialogComponent,
+    SignUpDialogComponent
+    ],
+    
+  entryComponents: [
+    SignInDialogComponent,
+    SignUpDialogComponent
+  ]
 })
 export class SharedModule { }
