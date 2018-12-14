@@ -12,10 +12,7 @@ export class SignInDialogComponent implements OnInit {
   @Output() onRegister = new EventEmitter<any>();
   public firebaseError: string;
   public hide = true;
-  public user = {
-    email: '',
-    password: ''
-  };
+  public user: any;
 
   constructor(
     private dialogRef: MatDialogRef<SignInDialogComponent>,
@@ -23,6 +20,10 @@ export class SignInDialogComponent implements OnInit {
   ) { }
 
   ngOnInit() {
+    this.user = {
+      login: '',
+      password: ''
+    };
   }
   
   onForgotPasswordClick() {

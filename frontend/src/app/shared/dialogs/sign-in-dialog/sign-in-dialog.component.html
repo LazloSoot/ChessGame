@@ -1,4 +1,4 @@
-<form (submit)="onLoginFormSubmit(user, form)" class="d-flex flex-column px-3" action="javascript:void(0)" #form="ngForm">
+<form (submit)="onLoginFormSubmit(user, form)" action="javascript:void(0)" #form="ngForm">
 
     <button class="social-btn" mat-raised-button type="button" (click)="onGoogleClick()"><img class="btn-logo" src="../../../../assets/images/googlelogo.png" alt="G" height="30">Sign In with Google</button>
     <button class="social-btn" mat-raised-button color="primary" type="button" (click)="onFacebookClick()"><img class="btn-logo" src="../../../../assets/images/facebooklogo.png" alt="F" height="30">Sign In with Facebook</button>
@@ -6,21 +6,21 @@
     <p class="devider">or</p>
 
     <mat-form-field class="input-field">
-      <input id="email" name="email" type="email" [(ngModel)]="user.email" required matInput placeholder="Your Email"
-        #email="ngModel" autocomplete="on"
+      <input id="login" name="login" type="login" [(ngModel)]="user.login" required matInput placeholder="Your Email"
+        #login="ngModel" autocomplete="on"
         pattern="[a-z0-9!#$%&'*+/=?^_`{|}~-]+(?:\.[a-z0-9!#$%&'*+/=?^_`{|}~-]+)*@(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\.)+[a-z0-9](?:[a-z0-9-]*[a-z0-9])?"
         maxlength="50">
-      <mat-error *ngIf="email.errors && email.errors.required">
+      <mat-error *ngIf="login.errors && login.errors.required">
         Email is
         <strong>required</strong>
       </mat-error>
   
-      <mat-error *ngIf="email.errors && email.errors.pattern">
+      <mat-error *ngIf="login.errors && login.errors.pattern">
         Email is
         <strong>not valid</strong>
       </mat-error>
   
-      <mat-error *ngIf="email.errors && email.errors.maxlength">
+      <mat-error *ngIf="login.errors && login.errors.maxlength">
         Email <strong>cannot</strong> be more than 50 characters long
       </mat-error>
     </mat-form-field>
