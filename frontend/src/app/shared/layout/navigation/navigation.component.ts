@@ -50,14 +50,14 @@ export class NavigationComponent implements OnInit {
 	onSignUpClick() {
 		let dialogRef = this.dialog.open(SignUpDialogComponent);
 
-		dialogRef.componentInstance.successSignUp.subscribe(
+		dialogRef.componentInstance.onSuccessSignUp.subscribe(
 			(signUpData) => {
 				// получить пользователя
 			}
 		)
 
 		dialogRef.afterClosed().subscribe(() => {
-			dialogRef.componentInstance.successSignUp.unsubscribe();
+			dialogRef.componentInstance.onSuccessSignUp.unsubscribe();
 		});
 		
 	}

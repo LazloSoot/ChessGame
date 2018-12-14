@@ -1,4 +1,7 @@
 import { Component, OnInit, EventEmitter, Output } from '@angular/core';
+import { AuthService } from '../../../core';
+import { MatDialogRef } from '@angular/material';
+import { AuthProviderType } from '../../../core';
 
 @Component({
   selector: 'app-sign-up-dialog',
@@ -6,12 +9,15 @@ import { Component, OnInit, EventEmitter, Output } from '@angular/core';
   styleUrls: ['./sign-up-dialog.component.less']
 })
 export class SignUpDialogComponent implements OnInit {
-  @Output() successSignUp = new EventEmitter<any>();
-  private repeatPass: string;
+  @Output() onSuccessSignUp = new EventEmitter<any>();
+  public firebaseError: string;
   private user: any; 
   private hide = true;
   
-  constructor() { }
+  constructor(
+    private dialogRef: MatDialogRef<SignUpDialogComponent>,
+    private authService: AuthService
+    ) { }
 
   ngOnInit() {
     this.user = {
@@ -22,15 +28,29 @@ export class SignUpDialogComponent implements OnInit {
     };
   }
 
-  onSignUpFormSubmit(user, form) {
+  signUpFormSubmit(user, form) {
 
   }
 
-  onGoogleClick() {
-
+  signUpWithGoogle() {
+    this.authService.signIn(AuthProviderType.Google).then(error => {
+			if (error) {
+				this.firebaseError = error.message;
+			} else {
+				this.onSuccessSignUp.emit(true);
+				this.dialogRef.close();
+			}
+		});
   }
 
-  onFacebookClick() {
-
+  signUpWithFacebook() {
+    this.authService.signIn(AuthProviderType.Google).then(error => {
+			if (error) {
+				this.firebaseError = error.message;
+			} else {
+				this.onSuccessSignUp.emit(true);
+				this.dialogRef.close();
+			}
+		});
   }
 }
