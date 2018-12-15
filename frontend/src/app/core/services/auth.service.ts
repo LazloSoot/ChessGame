@@ -12,15 +12,69 @@ export class AuthService {
 	constructor(
 		private firebaseAuth: AngularFireAuth,
 		private appStateService: AppStateService
-		) {}
+	) {}
 
 	signUpRegular(email: string, password: string) {
+		// aSfg14Gszs
 		return from(
 			this.firebaseAuth.auth.createUserWithEmailAndPassword(
 				email,
 				password
 			)
-		);
+		)
+			.toPromise()
+			.then(
+				async userCred => {
+					await userCred.user
+						.sendEmailVerification()
+						.then(() => {
+							throw new Error(`You need to confirm your email address in order to use our service. Email confirmation was already send to ${userCred.user.email}. Check your email.`);
+						})
+						.catch(error => {
+							throw error;
+						});
+				},
+				error => {
+					return error;
+				}
+			)
+			.catch(error => {
+				return error;
+			});
+	}
+
+	signInRegular(email: string, password: string) {
+		return from(
+			this.firebaseAuth.auth.signInWithEmailAndPassword(email, password)
+		)
+			.toPromise()
+			.then(
+				async userCred => {
+					if (userCred.user.emailVerified) {
+						this.appStateService.updateAuthState(
+							this.firebaseAuth.authState,
+							userCred.user,
+							await userCred.user.getIdToken(),
+							false
+						);
+					} else {
+						await userCred.user
+							.sendEmailVerification()
+							.then(() => {
+								throw new Error(`You need to confirm your email address in order to use our service.Email confirmation was already send to ${userCred.user.email}. Please check your email.`);
+							})
+							.catch(error => {
+								throw error;
+							});
+					}
+				},
+				error => {
+					return error;
+				}
+			)
+			.catch(error => {
+				return error;
+			});
 	}
 
 	signIn(authProviderType: AuthProviderType) {
@@ -40,7 +94,12 @@ export class AuthService {
 			.toPromise()
 			.then(
 				async userCred => {
-					this.appStateService.updateAuthState(userCred.user, await userCred.user.getIdToken(), true);
+					this.appStateService.updateAuthState(
+						this.firebaseAuth.authState,
+						userCred.user,
+						await userCred.user.getIdToken(),
+						false
+					);
 				},
 				error => {
 					return error;
@@ -48,15 +107,7 @@ export class AuthService {
 			);
 	}
 
-	signInRegular(email: string, password: string) {
-		return from(
-			this.firebaseAuth.auth.signInWithEmailAndPassword(email, password)
-		);
-	}
-
-	refreshToken() {
-
-	}
+	refreshToken() {}
 
 	logout() {
 		return from(this.firebaseAuth.auth.signOut());

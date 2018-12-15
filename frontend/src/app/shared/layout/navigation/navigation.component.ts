@@ -71,8 +71,10 @@ export class NavigationComponent implements OnInit {
 		let dialogRef = this.dialog.open(SignUpDialogComponent);
 
 		dialogRef.componentInstance.onSuccessSignUp.subscribe(
-			(signUpData) => {
-				// получить пользователя
+			(isSuccess) => {
+				if(isSuccess) {
+					// route to ....
+				}
 			}
 		)
 
@@ -86,8 +88,10 @@ export class NavigationComponent implements OnInit {
 		let dialogRef = this.dialog.open(SignInDialogComponent);
 
         dialogRef.componentInstance.onSucceessLogin.subscribe(
-            (loginData) => {
-                // получить пользователя
+            (isSuccess) => {
+				if(isSuccess) {
+					// route to ....
+				}
             }
 		);
 		
@@ -97,8 +101,6 @@ export class NavigationComponent implements OnInit {
 	}
 
 	onLogoutClick() {
-		this.authService.logout().subscribe(() => {
-			this.appStateService.updateAuthState();
-		});
+		this.authService.logout();
 	}
 }

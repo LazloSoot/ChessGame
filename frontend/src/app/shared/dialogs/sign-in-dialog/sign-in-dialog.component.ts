@@ -9,7 +9,7 @@ import { AuthService, AuthProviderType } from "../../../core";
 	styleUrls: ["./sign-in-dialog.component.less"]
 })
 export class SignInDialogComponent implements OnInit {
-	@Output() onSucceessLogin = new EventEmitter<any>();
+	@Output() onSucceessLogin = new EventEmitter<boolean>();
 	public firebaseError: string;
 	public hide = true;
 	public user: any;
@@ -39,7 +39,8 @@ export class SignInDialogComponent implements OnInit {
 	}
 
 	signInWithFacebook() {
-		this.authService.signIn(AuthProviderType.Facebook).then(error => {
+		this.authService.signIn(AuthProviderType.Facebook)
+		.then(error => {
 			if (error) {
 				this.firebaseError = error.message;
 			} else {
@@ -49,13 +50,28 @@ export class SignInDialogComponent implements OnInit {
 		});
 	}
 
+	
+	onLoginFormSubmit(user, form) {
+		if (form.valid) {
+			this.authService.signInRegular(user.login, user.password)
+			.then(error => {
+				if(error){
+					this.firebaseError = error.message;
+				} else {
+					this.onSucceessLogin.emit(true);
+					this.dialogRef.close();
+				}
+			})
+			.catch(error => {
+				this.firebaseError = error.message;
+			})
+		 }
+	}
+
 	onForgotPasswordClick() {
 		this.dialogRef.close();
 	}
 
-	onLoginFormSubmit(user, form) {
-		debugger;
-	}
 
 	onSignUp() {
 		this.dialogRef.close();

@@ -29,7 +29,12 @@ export class SignUpDialogComponent implements OnInit {
   }
 
   signUpFormSubmit(user, form) {
-
+    if(form.valid){
+      this.authService.signUpRegular(user.login, user.password)
+      .then(info => {
+        this.firebaseError = info;
+      });
+    }
   }
 
   signUpWithGoogle() {
