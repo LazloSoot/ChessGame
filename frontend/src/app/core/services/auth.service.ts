@@ -3,18 +3,16 @@ import { AngularFireAuth } from "@angular/fire/auth";
 import * as firebase from "firebase/app";
 import { from } from "rxjs";
 import { AuthProviderType } from "../models";
+import { AppStateService } from "./app-state.service";
 
 @Injectable({
 	providedIn: "root"
 })
 export class AuthService {
-	private _token: string;
-
-	public get token(): string {
-		return this._token;
-	}
-
-	constructor(private firebaseAuth: AngularFireAuth) {}
+	constructor(
+		private firebaseAuth: AngularFireAuth,
+		private appStateService: AppStateService
+		) {}
 
 	signUpRegular(email: string, password: string) {
 		return from(
@@ -42,8 +40,7 @@ export class AuthService {
 			.toPromise()
 			.then(
 				async userCred => {
-					
-					// update app state
+					this.appStateService.updateAuthState(userCred.user, await userCred.user.getIdToken(), true);
 				},
 				error => {
 					return error;
@@ -57,5 +54,11 @@ export class AuthService {
 		);
 	}
 
-	refreshToken() {}
+	refreshToken() {
+
+	}
+
+	logout() {
+		return from(this.firebaseAuth.auth.signOut());
+	}
 }

@@ -3,10 +3,10 @@
       <div fxLayout="column">
           <section class="user">
               <a class="user-image" routerLinkActive="active" routerLink="/dashboard">
-                <img src="https://avatarfiles.alphacoders.com/115/115265.png">
+                <img src="{{user.avatarUrl}}">
               </a>
               <a class="user-name" routerLinkActive="active" routerLink="/dashboard">
-                <h4>Grisha Petechkin</h4>
+                <h4>{{user.nickname}}</h4>
               </a>
           </section>
           
@@ -22,7 +22,7 @@
             <mat-icon mat-list-icon>account_box</mat-icon> Rules</a>
           <mat-divider></mat-divider>
 
-          <a *ngIf="isLoggedIn() else logout" class="nav-item" routerLinkActive="active" mat-button color="warn" (click)="onLoginClick();snav.toggle();">
+          <a *ngIf="!isLoggedIn() else logout" class="nav-item" routerLinkActive="active" mat-button color="warn" (click)="onLoginClick();snav.toggle();">
               <mat-icon mat-list-icon>block</mat-icon> Login</a>
 
           <ng-template #logout>
