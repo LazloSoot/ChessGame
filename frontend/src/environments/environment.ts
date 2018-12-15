@@ -3,7 +3,16 @@
 // The list of file replacements can be found in `angular.json`.
 
 export const environment = {
-  production: false
+  production: false,
+  firebase: {
+    apiKey: "AIzaSyDYdvkQT7wPf-kt5PIOOSh5KPOVMNnWK6E",
+    authDomain: "chess-zm.firebaseapp.com",
+    databaseURL: "https://chess-zm.firebaseio.com",
+    projectId: "chess-zm",
+    storageBucket: "",
+    messagingSenderId: "297708221272"
+  },
+  apiUrl: 'http://localhost:58828'
 };
 
 /*
