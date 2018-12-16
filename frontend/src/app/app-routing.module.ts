@@ -5,7 +5,7 @@ import { NotFoundComponent } from './shared';
 const routes: Routes = [
   {
     path: '',
-    loadChildren: './modules/home/home.module#HomeModule'
+    loadChildren: './modules/landing/landing.module#LandingModule'
   },
   {
     path: 'play',

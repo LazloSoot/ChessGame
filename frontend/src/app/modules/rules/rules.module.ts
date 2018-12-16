@@ -1,11 +1,11 @@
 import { NgModule } from "@angular/core";
-import { CommonModule } from "@angular/common";
+import { SharedModule } from "../../shared/shared.module";
 import { RulesRoutingModule } from "./rules-routing.module";
 import { RulesComponent } from "./rules.component";
 import { AuthGuard } from "../../core";
 
 @NgModule({
-	imports: [CommonModule, RulesRoutingModule],
+	imports: [SharedModule, RulesRoutingModule],
 	declarations: [RulesComponent],
 	providers: [AuthGuard]
 })

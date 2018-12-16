@@ -1,15 +1,12 @@
-import { NgModule } from '@angular/core';
-import { CommonModule } from '@angular/common';
-import { ChessGameRoutingModule } from './chess-game-routing.module';
-import { ChessGameComponent } from './chess-game.component';
-import { AuthGuard } from '../../core';
+import { NgModule } from "@angular/core";
+import { SharedModule } from "../../shared/shared.module";
+import { ChessGameRoutingModule } from "./chess-game-routing.module";
+import { ChessGameComponent } from "./chess-game.component";
+import { AuthGuard } from "../../core";
 
 @NgModule({
-  imports: [
-    CommonModule,
-    ChessGameRoutingModule
-  ],
-  declarations: [ ChessGameComponent ],
-  providers: [AuthGuard]
+	imports: [SharedModule, ChessGameRoutingModule],
+	declarations: [ChessGameComponent],
+	providers: [AuthGuard]
 })
-export class ChessGameModule { }
+export class ChessGameModule {}
