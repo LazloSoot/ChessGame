@@ -5,6 +5,7 @@ import { MatDialog } from "@angular/material";
 import { SignInDialogComponent } from "../../dialogs/sign-in-dialog/sign-in-dialog.component";
 import { SignUpDialogComponent } from "../../dialogs/sign-up-dialog/sign-up-dialog.component";
 import { AppStateService, SignedUser, AuthService } from "../../../core";
+import { Router } from "@angular/router";
 
 @Component({
 	selector: "app-navigation",
@@ -21,6 +22,7 @@ export class NavigationComponent implements OnInit {
 		private media: MediaMatcher,
 		private eventService: EventService,
 		private dialog: MatDialog,
+		private router: Router,
 		private appStateService: AppStateService,
 		private authService: AuthService
 	) {
@@ -73,7 +75,7 @@ export class NavigationComponent implements OnInit {
 		dialogRef.componentInstance.onSuccessSignUp.subscribe(
 			(isSuccess) => {
 				if(isSuccess) {
-					// route to ....
+					this.router.navigate(['/play']);
 				}
 			}
 		)
@@ -90,7 +92,7 @@ export class NavigationComponent implements OnInit {
         dialogRef.componentInstance.onSucceessLogin.subscribe(
             (isSuccess) => {
 				if(isSuccess) {
-					// route to ....
+					this.router.navigate(['/play']);
 				}
             }
 		);

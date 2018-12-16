@@ -5,18 +5,24 @@ import { AppComponent } from './app.component';
 import { AppRoutingModule } from './app-routing.module';
 import { CoreModule } from './core/core.module';
 import { SharedModule } from './shared/shared.module';
-import { HomeModule } from './modules/home/home.module';
-import { FooterComponent, NavigationComponent } from './shared';
+import { HomeModule, ChessGameModule, PuzzlesModule, RulesModule } from './modules';
+import { FooterComponent, NavigationComponent, NotFoundComponent } from './shared';
+import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 
 @NgModule({
   declarations: [
     AppComponent,
     FooterComponent,
-    NavigationComponent
+    NavigationComponent,
+    NotFoundComponent
   ],
   imports: [
-    BrowserModule,
-    HomeModule,
+    BrowserAnimationsModule,
+    //HomeModule,
+    //ChessGameModule, 
+    //PuzzlesModule, 
+    //RulesModule,
+
     CoreModule,
     SharedModule,
 
