@@ -4,7 +4,7 @@ import { EventService } from "../../helpers";
 import { MatDialog } from "@angular/material";
 import { SignInDialogComponent } from "../../dialogs/sign-in-dialog/sign-in-dialog.component";
 import { SignUpDialogComponent } from "../../dialogs/sign-up-dialog/sign-up-dialog.component";
-import { AppStateService, SignedUser, AuthService } from "../../../core";
+import { AppStateService, User, AuthService } from "../../../core";
 import { Router } from "@angular/router";
 
 @Component({
@@ -15,7 +15,7 @@ import { Router } from "@angular/router";
 export class NavigationComponent implements OnInit {
 	mobileQuery: MediaQueryList;
 	private _mobileQueryListener: () => void;
-	private user: SignedUser;
+	private user: User;
 	
 	constructor(
 		private changeDetectorRef: ChangeDetectorRef,
@@ -26,10 +26,6 @@ export class NavigationComponent implements OnInit {
 		private appStateService: AppStateService,
 		private authService: AuthService
 	) {
-		this.user = {
-			avatarUrl: "../../../../assets/images/anonAvatar.png",
-			nickname: "not signed"
-		}
 	}
   
 	ngOnInit() {
@@ -48,15 +44,18 @@ export class NavigationComponent implements OnInit {
 					break;
 			}
 		});
-		this.appStateService.getFirebaseUser()
+		this.appStateService.getCurrentUser()
 		.subscribe((user) => {
 			if(user){
-				this.user.avatarUrl = user.photoURL;
-				this.user.nickname = user.displayName;
+				this.user = user;
 			}
 			else {
-				this.user.avatarUrl = "../../../../assets/images/anonAvatar.png";
-				this.user.nickname = "not signed";
+				this.user = {
+					id: undefined,
+					uid: undefined,
+					avatarUrl: "../../../../assets/images/anonAvatar.png",
+					name: "not signed"
+				}
 			}
 		})
 	}

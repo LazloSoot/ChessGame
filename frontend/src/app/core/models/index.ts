@@ -1,2 +1,2 @@
 export * from './authProviderType';
-export * from './signedUser';
+export * from './user';

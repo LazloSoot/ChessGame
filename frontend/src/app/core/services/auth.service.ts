@@ -4,6 +4,7 @@ import * as firebase from "firebase/app";
 import { from } from "rxjs";
 import { AuthProviderType } from "../models";
 import { AppStateService } from "./app-state.service";
+import { HttpService } from './http.service';
 
 @Injectable({
 	providedIn: "root"
@@ -51,12 +52,13 @@ export class AuthService {
 			.then(
 				async userCred => {
 					if (userCred.user.emailVerified) {
-						this.appStateService.updateAuthState(
+						await this.appStateService.updateAuthState(
 							this.firebaseAuth.authState,
 							userCred.user,
 							await userCred.user.getIdToken(),
 							false
-						);
+						)
+						.catch(error => { throw error; });
 					} else {
 						await userCred.user
 							.sendEmailVerification()
@@ -94,17 +96,25 @@ export class AuthService {
 			.toPromise()
 			.then(
 				async userCred => {
-					this.appStateService.updateAuthState(
+					await this.appStateService.updateAuthState(
 						this.firebaseAuth.authState,
 						userCred.user,
 						await userCred.user.getIdToken(),
 						false
-					);
+					)
+					.catch(error => { 
+						debugger; 
+						throw error; });
 				},
 				error => {
+					debugger;
 					return error;
 				}
-			);
+			)
+			.catch(error => {
+				debugger;
+				return error;
+			});
 	}
 
 	refreshToken() {}

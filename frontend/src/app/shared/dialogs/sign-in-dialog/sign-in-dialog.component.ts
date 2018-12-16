@@ -30,7 +30,7 @@ export class SignInDialogComponent implements OnInit {
 	signInWithGoogle() {
 		this.authService.signIn(AuthProviderType.Google).then(error => {
 			if (error) {
-				this.firebaseError = error.message;
+				this.firebaseError = (error.message) ? error.message : error;
 			} else {
 				this.onSucceessLogin.emit(true);
 				this.dialogRef.close();
@@ -42,7 +42,7 @@ export class SignInDialogComponent implements OnInit {
 		this.authService.signIn(AuthProviderType.Facebook)
 		.then(error => {
 			if (error) {
-				this.firebaseError = error.message;
+				this.firebaseError = (error.message) ? error.message : error;
 			} else {
 				this.onSucceessLogin.emit(true);
 				this.dialogRef.close();
@@ -56,14 +56,14 @@ export class SignInDialogComponent implements OnInit {
 			this.authService.signInRegular(user.login, user.password)
 			.then(error => {
 				if(error){
-					this.firebaseError = error.message;
+					this.firebaseError = (error.message) ? error.message : error;
 				} else {
 					this.onSucceessLogin.emit(true);
 					this.dialogRef.close();
 				}
 			})
 			.catch(error => {
-				this.firebaseError = error.message;
+				this.firebaseError = (error.message) ? error.message : error;
 			})
 		 }
 	}

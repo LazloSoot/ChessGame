@@ -1,6 +1,8 @@
 import { Injectable } from '@angular/core';
 import { BehaviorSubject, Observable } from 'rxjs';
 import { Router } from '@angular/router';
+import { HttpService, RequestMethod } from './http.service';
+import { User } from '../models';
 
 @Injectable({
   providedIn: 'root'
@@ -8,7 +10,7 @@ import { Router } from '@angular/router';
 export class AppStateService {
   private tokenSubject: BehaviorSubject<string> = new BehaviorSubject<string>("");
   private isLogedInSubject: BehaviorSubject<boolean> = new BehaviorSubject<boolean>(false);
-  private firebaseUserSubject: BehaviorSubject<firebase.User> = new BehaviorSubject<firebase.User>(null);
+  private currentUserSubject: BehaviorSubject<User> = new BehaviorSubject<User>(null);
 
 	public get token(): string {
 		return this.tokenSubject.value;
@@ -29,40 +31,75 @@ export class AppStateService {
   }
 
   constructor(
-    private router: Router
+    private router: Router,
+    private httpService: HttpService
   ) { 
-    /////// BAD PRACTICE
+    /////// BAD IDEA
     this.isLogedIn = localStorage.getItem("chess-zm-isLogedIn") === "true";
     this.token = localStorage.getItem("chess-zm-token");
   }
 
-  getFirebaseUser(): Observable<firebase.User> {
-    return this.firebaseUserSubject.asObservable();
+  getCurrentUser(): Observable<User> {
+    return this.currentUserSubject.asObservable();
   }
 
-  updateAuthState(authState: Observable<firebase.User>, firebaseUser: firebase.User, token: string, isRemember: boolean) {
+  async updateAuthState(authState: Observable<firebase.User>, firebaseUser: firebase.User, 
+	token: string, isRemember: boolean): Promise<void> {
     if(authState)
     {
       authState.subscribe((currentUser) => this.listenAuthState(currentUser));
-    }
-    this.firebaseUserSubject.next(firebaseUser);
+	  await this.initializeCurrentUser(firebaseUser)
+	  .catch(error => { throw error; });
+	}
+	
     this.token = token;
     this.isLogedIn = true;
 
     if(isRemember) {
 
-      /////// BAD PRACTICE
+      /////// BAD IDEA
       localStorage.setItem("chess-zm-isLogedIn", "true");
       localStorage.setItem("chess-zm-token", token);
     }
   }
+  
+  private async initializeCurrentUser(firebaseUser: firebase.User): Promise<void> {
+	  debugger;
+	  // userInfo.providerId === "password" means that user logged in by email and password
+	  // i.e we need to take a data like avatarUrl and name from our db
+	  if(firebaseUser.providerData.filter(userInfo => userInfo.providerId === "password").length > 1)
+	  {
+		return await this.httpService.sendRequest(RequestMethod.Get, "/users", firebaseUser.uid)
+      		.toPromise()
+      		.then(async user => {
+				  debugger;
+      		  if(user) {
+					this.currentUserSubject.next(user);
+      		  } else {
+				debugger;
+      		    throw new Error(`There is no such user in db!`);
+      		  }
+			})
+			.catch(error => {
+				debugger;
+				 throw error; } )  ;
+	  } else {
+		  let u: User = {
+			  id: undefined,
+			  uid: firebaseUser.uid,
+			  name: firebaseUser.displayName,
+			  avatarUrl: firebaseUser.photoURL
+		  }
+		  this.currentUserSubject.next(u);
+	  }
+  }
 
   private listenAuthState(currentUser: firebase.User | null) {
     if(!currentUser){
-      this.firebaseUserSubject.next(null);
-      this.token = null;
-      this.isLogedIn = false;
-      this.router.navigate(["/"]);
+		this.currentUserSubject.next(null);
+      	this.token = null;
+      	this.isLogedIn = false;
+      	this.router.navigate(["/"]);
     }
   }
 }
