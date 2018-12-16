@@ -10,15 +10,15 @@
               </a>
           </section>
           
-          <a class="nav-item" mat-button routerLinkActive="active" routerLink="/dashboard">
+          <a class="nav-item" mat-button routerLinkActive="active" routerLink="/play">
             <mat-icon mat-list-icon>home</mat-icon> Play</a>
           <mat-divider></mat-divider>
 
-          <a class="nav-item" mat-button routerLinkActive="active" routerLink="/profile">
+          <a class="nav-item" mat-button routerLinkActive="active" routerLink="/puzzles">
             <mat-icon mat-list-icon>account_box</mat-icon> Puzzles</a>
           <mat-divider></mat-divider>
 
-          <a class="nav-item" mat-button routerLinkActive="active" routerLink="/profile">
+          <a class="nav-item" mat-button routerLinkActive="active" routerLink="/rules">
             <mat-icon mat-list-icon>account_box</mat-icon> Rules</a>
           <mat-divider></mat-divider>
 
@@ -38,7 +38,7 @@
               <mat-icon>menu</mat-icon>
           </button>
 
-          <label class="companyName" routerLink="/">Chess fury</label>
+          <label class="companyName" routerLink="/play">Chess fury</label>
       </mat-toolbar>
       <main (click)="snav.close()" class="content">
           <router-outlet></router-outlet>

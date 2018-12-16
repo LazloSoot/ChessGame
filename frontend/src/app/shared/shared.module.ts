@@ -6,6 +6,7 @@ import { MaterialModule } from './material/material.module';
 import { SignUpDialogComponent } from './dialogs/sign-up-dialog/sign-up-dialog.component';
 import { FormsModule } from '@angular/forms';
 import { ConfirmEqualityValidatorDirective } from './directives/confirm-equality-validator.directive';
+import { ForgotPasswordDialogComponent } from './dialogs/forgot-password-dialog/forgot-password-dialog.component';
 
 @NgModule({
   imports: [
@@ -22,12 +23,14 @@ import { ConfirmEqualityValidatorDirective } from './directives/confirm-equality
   declarations: [
     SignInDialogComponent,
     SignUpDialogComponent,
-    ConfirmEqualityValidatorDirective
+    ForgotPasswordDialogComponent,
+    ConfirmEqualityValidatorDirective,
     ],
     
   entryComponents: [
     SignInDialogComponent,
-    SignUpDialogComponent
+    SignUpDialogComponent,
+    ForgotPasswordDialogComponent
   ]
 })
 export class SharedModule { }

@@ -1,5 +1,6 @@
 import { Injectable } from '@angular/core';
 import { BehaviorSubject, Observable } from 'rxjs';
+import { Router } from '@angular/router';
 
 @Injectable({
   providedIn: 'root'
@@ -27,7 +28,9 @@ export class AppStateService {
     this.isLogedInSubject.next(value);
   }
 
-  constructor() { 
+  constructor(
+    private router: Router
+  ) { 
     /////// BAD PRACTICE
     this.isLogedIn = localStorage.getItem("chess-zm-isLogedIn") === "true";
     this.token = localStorage.getItem("chess-zm-token");
@@ -59,7 +62,7 @@ export class AppStateService {
       this.firebaseUserSubject.next(null);
       this.token = null;
       this.isLogedIn = false;
-      console.log("LOGED OUT");
+      this.router.navigate(["/"]);
     }
   }
 }
