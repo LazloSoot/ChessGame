@@ -4,14 +4,16 @@ using Chess.DataAccess;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 namespace Chess.DataAccess.Migrations
 {
     [DbContext(typeof(DataContext))]
-    partial class DataContextModelSnapshot : ModelSnapshot
+    [Migration("20181216184634_PlayerExtention")]
+    partial class PlayerExtention
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -59,6 +61,23 @@ namespace Chess.DataAccess.Migrations
                     b.ToTable("Moves");
                 });
 
+            modelBuilder.Entity("Chess.DataAccess.Entities.Player", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
+
+                    b.Property<string>("AvatarUrl");
+
+                    b.Property<string>("Name");
+
+                    b.Property<string>("Uid");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("Players");
+                });
+
             modelBuilder.Entity("Chess.DataAccess.Entities.Side", b =>
                 {
                     b.Property<int>("Id")
@@ -86,23 +105,6 @@ namespace Chess.DataAccess.Migrations
                     b.ToTable("Sides");
                 });
 
-            modelBuilder.Entity("Chess.DataAccess.Entities.User", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
-
-                    b.Property<string>("AvatarUrl");
-
-                    b.Property<string>("Name");
-
-                    b.Property<string>("Uid");
-
-                    b.HasKey("Id");
-
-                    b.ToTable("Users");
-                });
-
             modelBuilder.Entity("Chess.DataAccess.Entities.Move", b =>
                 {
                     b.HasOne("Chess.DataAccess.Entities.Game", "Game")
@@ -110,7 +112,7 @@ namespace Chess.DataAccess.Migrations
                         .HasForeignKey("GameId")
                         .OnDelete(DeleteBehavior.Cascade);
 
-                    b.HasOne("Chess.DataAccess.Entities.User", "Player")
+                    b.HasOne("Chess.DataAccess.Entities.Player", "Player")
                         .WithMany()
                         .HasForeignKey("PlayerId");
                 });
@@ -122,7 +124,7 @@ namespace Chess.DataAccess.Migrations
                         .HasForeignKey("GameId")
                         .OnDelete(DeleteBehavior.Cascade);
 
-                    b.HasOne("Chess.DataAccess.Entities.User", "Player")
+                    b.HasOne("Chess.DataAccess.Entities.Player", "Player")
                         .WithMany()
                         .HasForeignKey("PlayerId");
                 });

@@ -68,7 +68,6 @@ export class HttpService {
         if ((type === RequestMethod.Post || type === RequestMethod.Put) && typeOfContent == 'json') {
             headers = new HttpHeaders({ 'Content-Type': 'application/json' });
         }
-
         let request: Observable<any>;
 
         switch (type) {
