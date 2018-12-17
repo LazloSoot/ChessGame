@@ -11,6 +11,8 @@ namespace Chess.BusinessLogic
         {
             services.AddScoped(typeof(ICRUDService<,>), typeof(CRUDService<,>));
             services.AddScoped<IChessMovesService, ChessMovesService>();
+            services.AddScoped<IGameDataService, GameDataService>();
+            services.AddScoped<IUserService, UserService>();
         }
     }
 }

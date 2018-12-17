@@ -47,27 +47,27 @@ export class AppStateService {
 	token: string, isRemember: boolean): Promise<void> {
     if(authState)
     {
-      authState.subscribe((currentUser) => this.listenAuthState(currentUser));
+	  authState.subscribe((currentUser) => this.listenAuthState(currentUser));
+
+	  this.token = token;
+	  
 	  await this.initializeCurrentUser(firebaseUser)
 	  .catch(error => { throw error; });
+
+	  this.isLogedIn = true;
+      if(isRemember) {
+        /////// BAD IDEA
+        localStorage.setItem("chess-zm-isLogedIn", "true");
+        localStorage.setItem("chess-zm-token", token);
+      }
 	}
-	
-    this.token = token;
-    this.isLogedIn = true;
-
-    if(isRemember) {
-
-      /////// BAD IDEA
-      localStorage.setItem("chess-zm-isLogedIn", "true");
-      localStorage.setItem("chess-zm-token", token);
-    }
   }
   
   private async initializeCurrentUser(firebaseUser: firebase.User): Promise<void> {
 	  debugger;
 	  // userInfo.providerId === "password" means that user logged in by email and password
 	  // i.e we need to take a data like avatarUrl and name from our db
-	  if(firebaseUser.providerData.filter(userInfo => userInfo.providerId === "password").length > 1)
+	  if(firebaseUser.providerData.filter(userInfo => userInfo.providerId === "password").length > 0)
 	  {
 		return await this.httpService.sendRequest(RequestMethod.Get, "/users", firebaseUser.uid)
       		.toPromise()

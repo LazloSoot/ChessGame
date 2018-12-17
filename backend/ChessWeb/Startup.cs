@@ -10,6 +10,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Chess.BusinessLogic;
 using Chess.Common;
 using Chess.DataAccess;
+using ChessWeb.Authentication;
 
 namespace ChessWeb
 {
@@ -44,6 +45,7 @@ namespace ChessWeb
                     options => options.SerializerSettings.ReferenceLoopHandling = Newtonsoft.Json.ReferenceLoopHandling.Ignore
                     );
 
+            services.AddFirebaseAuthentication(Configuration.GetValue<string>("Firebase:ProjectId"));
             BuisinessLogicModule.ConfigureServices(services, Configuration);
             DataAccessModule.ConfigureServices(services, Configuration);
             CommonModule.ConfigureServices(services, Configuration);
@@ -58,6 +60,7 @@ namespace ChessWeb
             }
 
             app.UseCors("AllowAll");
+            app.UseAuthentication();
             app.UseMvc();
         }
     }
