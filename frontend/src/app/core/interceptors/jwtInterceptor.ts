@@ -10,7 +10,6 @@ export class JwtInterceptor implements HttpInterceptor {
     ) { }
 
     intercept(request: HttpRequest<any>, next: HttpHandler): Observable<HttpEvent<any>> {
-debugger;
         //add auth header with jwt token if available
         if(this.appStateService.token) {
             request = request.clone({

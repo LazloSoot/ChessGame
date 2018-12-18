@@ -1,8 +1,8 @@
 import { Injectable } from '@angular/core';
 import { BehaviorSubject, Observable } from 'rxjs';
 import { Router } from '@angular/router';
-import { HttpService, RequestMethod } from './http.service';
 import { User } from '../models';
+import { UserService } from './user.service';
 
 @Injectable({
   providedIn: 'root'
@@ -32,7 +32,7 @@ export class AppStateService {
 
   constructor(
     private router: Router,
-    private httpService: HttpService
+    private userService: UserService
   ) { 
     /////// BAD IDEA
     this.isLogedIn = localStorage.getItem("chess-zm-isLogedIn") === "true";
@@ -43,22 +43,18 @@ export class AppStateService {
     return this.currentUserSubject.asObservable();
   }
 
-  async updateAuthState(authState: Observable<firebase.User>, firebaseUser: firebase.User, 
-	token: string, isRemember: boolean): Promise<void> {
+  async updateAuthState(authState: Observable<firebase.User>, currentUser: User, isRemember: boolean): Promise<void> {
     if(authState)
     {
 	  authState.subscribe((currentUser) => this.listenAuthState(currentUser));
 
-	  this.token = token;
-	  
-	  await this.initializeCurrentUser(firebaseUser)
-	  .catch(error => { throw error; });
+    this.currentUserSubject.next(currentUser);
 
 	  this.isLogedIn = true;
       if(isRemember) {
         /////// BAD IDEA
         localStorage.setItem("chess-zm-isLogedIn", "true");
-        localStorage.setItem("chess-zm-token", token);
+        localStorage.setItem("chess-zm-token", this.token);
       }
 	}
   }
@@ -69,7 +65,7 @@ export class AppStateService {
 	  // i.e we need to take a data like avatarUrl and name from our db
 	  if(firebaseUser.providerData.filter(userInfo => userInfo.providerId === "password").length > 0)
 	  {
-		return await this.httpService.sendRequest(RequestMethod.Get, "/users", firebaseUser.uid)
+		return await this.userService.get(firebaseUser.uid)
       		.toPromise()
       		.then(async user => {
 				  debugger;

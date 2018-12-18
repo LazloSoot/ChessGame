@@ -12,6 +12,10 @@ export class UserService {
     private httpService: HttpService
   ) { }
 
+  get(uid: string): Observable<User> {
+    return this.httpService.sendRequest(RequestMethod.Get, this.apiUrl, uid);
+  }
+
   add(user: User): Observable<User> {
     return this.httpService.sendRequest(RequestMethod.Post, this.apiUrl, undefined, user);
   }

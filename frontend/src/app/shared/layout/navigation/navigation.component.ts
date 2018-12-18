@@ -16,6 +16,7 @@ export class NavigationComponent implements OnInit {
 	mobileQuery: MediaQueryList;
 	private _mobileQueryListener: () => void;
 	private user: User;
+	private defaultAvatarUrl ="../../../../assets/images/anonAvatar.png";
 	
 	constructor(
 		private changeDetectorRef: ChangeDetectorRef,
