@@ -2,21 +2,22 @@ import { Injectable } from "@angular/core";
 import { AngularFireAuth } from "@angular/fire/auth";
 import * as firebase from "firebase/app";
 import { from } from "rxjs";
-import { AuthProviderType } from "../models";
+import { AuthProviderType, User } from "../models";
 import { AppStateService } from "./app-state.service";
-import { HttpService } from './http.service';
+import { UserService } from './user.service';
 
+		// aSfg14Gszs
 @Injectable({
 	providedIn: "root"
 })
 export class AuthService {
 	constructor(
 		private firebaseAuth: AngularFireAuth,
-		private appStateService: AppStateService
+		private appStateService: AppStateService,
+		private userService: UserService
 	) {}
 
-	signUpRegular(email: string, password: string) {
-		// aSfg14Gszs
+	signUpRegular(email: string, userName: string, password: string) {
 		return from(
 			this.firebaseAuth.auth.createUserWithEmailAndPassword(
 				email,
@@ -52,13 +53,16 @@ export class AuthService {
 			.then(
 				async userCred => {
 					if (userCred.user.emailVerified) {
+
+						this.appStateService.token = await userCred.user.getIdToken();
 						await this.appStateService.updateAuthState(
 							this.firebaseAuth.authState,
-							userCred.user,
-							await userCred.user.getIdToken(),
+							await this.initializeCurrentUser(userCred.user),
 							false
 						)
 						.catch(error => { throw error; });
+
+
 					} else {
 						await userCred.user
 							.sendEmailVerification()
@@ -96,10 +100,10 @@ export class AuthService {
 			.toPromise()
 			.then(
 				async userCred => {
+					this.appStateService.token = await userCred.user.getIdToken();
 					await this.appStateService.updateAuthState(
 						this.firebaseAuth.authState,
-						userCred.user,
-						await userCred.user.getIdToken(),
+						await this.initializeCurrentUser(userCred.user),
 						false
 					)
 					.catch(error => { 
@@ -121,5 +125,36 @@ export class AuthService {
 
 	logout() {
 		return from(this.firebaseAuth.auth.signOut());
+	}
+
+	private async initializeCurrentUser(firebaseUser: firebase.User): Promise<User> {
+		debugger;
+		// userInfo.providerId === "password" means that user logged in by email and password
+		// i.e we need to take a data like avatarUrl and name from our db
+		if(firebaseUser.providerData.filter(userInfo => userInfo.providerId === "password").length > 0)
+		{
+		  return await this.userService.get(firebaseUser.uid)
+				.toPromise()
+				.then(async user => {
+					debugger;
+				  if(user) {
+					  return user;
+				  } else {
+				  debugger;
+					throw new Error(`There is no such user in db!`);
+				  }
+			  })
+			  .catch(error => {
+				  debugger;
+				   throw error; } )  ;
+		} else {
+			let u: User = {
+				id: undefined,
+				uid: firebaseUser.uid,
+				name: firebaseUser.displayName,
+				avatarUrl: firebaseUser.photoURL
+			}
+			return u;
+		}
 	}
 }
