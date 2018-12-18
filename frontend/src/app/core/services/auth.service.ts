@@ -29,7 +29,18 @@ export class AuthService {
 				async userCred => {
 					await userCred.user
 						.sendEmailVerification()
-						.then(() => {
+						.then(async () => {
+							let newUser: User = {
+								id: undefined,
+								avatarUrl: undefined,
+								name: userName,
+								uid: userCred.user.uid
+							};
+							
+							this.appStateService.token = await userCred.user.getIdToken();
+							await this.userService.add(newUser).toPromise();
+							this.appStateService.token = undefined;
+
 							throw new Error(`You need to confirm your email address in order to use our service. Email confirmation was already send to ${userCred.user.email}. Check your email.`);
 						})
 						.catch(error => {

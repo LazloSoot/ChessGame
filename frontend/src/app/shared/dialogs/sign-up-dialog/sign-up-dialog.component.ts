@@ -30,7 +30,7 @@ export class SignUpDialogComponent implements OnInit {
 
   signUpFormSubmit(user, form) {
     if(form.valid){
-      this.authService.signUpRegular(user.login, user.password)
+      this.authService.signUpRegular(user.login, user.nickname, user.password)
       .then(info => {
         this.firebaseError = info;
       });

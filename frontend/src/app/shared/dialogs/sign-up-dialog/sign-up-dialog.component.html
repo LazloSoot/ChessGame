@@ -41,6 +41,7 @@
     <mat-form-field class="input-field">
       <input id="password" name="password" [type]="hide ? 'password' : 'text'" [(ngModel)]="user.password" required matInput placeholder="Your Password"
         #password="ngModel"
+        minlength="6"
         maxlength="30">
       <mat-icon class="finger" matSuffix (click)="hide = !hide">{{hide ? 'visibility' : 'visibility_off'}}</mat-icon>
       <mat-error *ngIf="password.errors && password.errors.required">
@@ -50,6 +51,9 @@
   
       <mat-error *ngIf="password.errors && password.errors.maxlength">
         Password <strong>cannot</strong> be more than 30 characters long
+      </mat-error>
+      <mat-error *ngIf="password.errors && password.errors.minLength">
+        Password <strong>have to be</strong> at least 6 chatacters long
       </mat-error>
     </mat-form-field>
     
