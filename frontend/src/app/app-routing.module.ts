@@ -19,6 +19,10 @@ const routes: Routes = [
     path: 'rules',
     loadChildren: './modules/rules/rules.module#RulesModule'
   },
+  {
+    path: 'profile',
+    loadChildren: './modules/profile/profile.module#ProfileModule'
+  },
   { path: '404', component: NotFoundComponent },
   { path: '**', redirectTo: '/404' }
 ];
