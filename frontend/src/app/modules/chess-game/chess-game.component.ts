@@ -1,5 +1,5 @@
 import { Component, OnInit } from '@angular/core';
-import { BoardTextureType, PiecesTextureType } from '../../core';
+import { BoardTextureType, PiecesTextureType, Move } from '../../core';
 
 @Component({
   selector: 'app-chess-game',
@@ -13,5 +13,10 @@ export class ChessGameComponent implements OnInit {
   constructor() { }
 
   ngOnInit() {
+  }
+
+  onMove(move: Move)
+  {
+    console.log(move);
   }
 }

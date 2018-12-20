@@ -1,4 +1,9 @@
 <p>
   chess-game works!
 </p>
-<app-chess-board [piecesTextureType]="piecesType" [boardTextureType]="boardType" [fen]="fen"></app-chess-board>
+<app-chess-board 
+[piecesTextureType]="piecesType" 
+[boardTextureType]="boardType" 
+[fen]="fen" 
+(move)="onMove($event)">
+</app-chess-board>
