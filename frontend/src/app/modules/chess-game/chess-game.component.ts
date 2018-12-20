@@ -14,20 +14,4 @@ export class ChessGameComponent implements OnInit {
 
   ngOnInit() {
   }
-
-  change1(){
-    this.boardType = BoardTextureType.StoneBlack;
-  }
-
-  change2(){
-    this.boardType = BoardTextureType.StoneBlue;
-  }
-
-  change3(){
-    this.boardType = BoardTextureType.StoneGrey;
-  }
-
-  change4(){
-    this.piecesType = PiecesTextureType.Pieces;
-  }
 }

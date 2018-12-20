@@ -1,15 +1,15 @@
 export enum PieceType {
-	WhiteKing = "KingW.png",
-	WhiteQueen = "QueenW.png",
-	WhiteRook = "RookW.png",
-	WhiteBishop = "BishopW.png",
-	WhiteKnight = "KnightW.png",
-	WhitePawn = "PawnW.png",
+	K = "KingW.png",
+	Q = "QueenW.png",
+	R = "RookW.png",
+	B = "BishopW.png",
+	N = "KnightW.png",
+	P = "PawnW.png",
 
-	BlackKing = "KingB.png",
-	BlackQueen = "QueenB.png",
-	BlackRook = "RookB.png",
-	BlackBishop = "BishopB.png",
-	BlackKnight = "KnightB.png",
-	BlackPawn = "PawnB.png"
+	k = "KingB.png",
+	q = "QueenB.png",
+	r = "RookB.png",
+	b = "BishopB.png",
+	n = "KnightB.png",
+	p = "PawnB.png"
 }

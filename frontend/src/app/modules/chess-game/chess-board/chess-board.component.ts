@@ -1,5 +1,5 @@
-import { Component, OnInit, Input, SimpleChange } from '@angular/core';
-import { PieceType, PiecesTextureType, BoardTextureType } from '../../../core';
+import { Component, OnInit, Input, Output, SimpleChange, EventEmitter } from '@angular/core';
+import { PieceType, PiecesTextureType, BoardTextureType, Square } from '../../../core';
 import { BehaviorSubject } from 'rxjs';
 
 @Component({
@@ -11,17 +11,19 @@ export class ChessBoardComponent implements OnInit {
   @Input() piecesTextureType: PiecesTextureType = PiecesTextureType.Symbols;
   @Input() boardTextureType: BoardTextureType = BoardTextureType.Wood;
   @Input() fen: string = 'rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1';
+  @Output() onError: EventEmitter<Error> = new EventEmitter<Error>(null);
   private baseBoardPath: BehaviorSubject<string> = new BehaviorSubject<string>(null);
   private basePiecePath: BehaviorSubject<string> = new BehaviorSubject<string>(null);
   private bgColor = "#813A0D";
-  private squares;
+  private squares: Square[];
 
   constructor() { }
 
   ngOnInit() {
-    this.initSquares();
     this.basePiecePath.next(this.getPieceBasePath());
     this.baseBoardPath.next(imgsUrl + this.boardTextureType);
+    this.initSquares();
+    this.initBoard(this.fen);
   }
 
   getSquaresCount() {
@@ -32,11 +34,12 @@ export class ChessBoardComponent implements OnInit {
     for(let propName in changes){
       if(propName === 'piecesTextureType')
       {
-        this.basePiecePath.next(imgsUrl + changes[propName].currentValue);
+        this.basePiecePath.next(this.getPieceBasePath());
       }
       if(propName === 'boardTextureType')
       {
         this.baseBoardPath.next(imgsUrl + changes[propName].currentValue);
+        this.basePiecePath.next(this.getPieceBasePath());
         let colorKey = Object.keys(BoardTextureType).find(key => BoardTextureType[key] === changes[propName].currentValue);
         if(colorKey && colors[colorKey])
         {
@@ -54,7 +57,8 @@ export class ChessBoardComponent implements OnInit {
     {
       currentIndex = i % 8;
       x = {
-        name: String.fromCharCode(97 + currentIndex) + currentRow
+        name: String.fromCharCode(97 + currentIndex) + currentRow,
+        piece: undefined
       };
       if(currentIndex === 7)
       {
@@ -65,17 +69,52 @@ export class ChessBoardComponent implements OnInit {
     );
   }
 
-  getSquarePath(squareName) {
-    return `${this.baseBoardPath.value}/` +  squareName + '.png';
+  getSquareImgUrlExpression(square: Square) {
+    let pieceUrl = (square.piece) ? `url(${this.getPiecePath(square.piece)}),` : '';
+    let squareUrl = `url(${this.baseBoardPath.value}/${square.name}.png)`
+    return  `${pieceUrl}${squareUrl}`;
   }
 
   getPiecePath(piece: PieceType) {
     return  this.basePiecePath.value + '/' + piece;
   }
 
+  initBoard(fen: string) {
+    let parts = fen.split(' ');
+    if(parts.length < 6)
+    {
+      this.onError.emit(new SyntaxError("Fen is not valid!"));
+      return;
+    }
+
+    let lines = parts[0].split('/');
+    let currentSkipCount: number;
+    for(let y = 0; y < 8; y++) {
+      for(let x = 0, currentFenX = 0; x < 8; x++){
+        currentSkipCount = Number(lines[y][currentFenX]);
+        if(currentSkipCount)
+        {
+          currentFenX++;
+          x += currentSkipCount - 1;
+        }
+        else 
+        {
+          let a: keyof typeof PieceType = lines[y][currentFenX] as keyof typeof PieceType;
+          if(!a)
+          {
+            this.onError.emit(new SyntaxError(`Fen is not valid! '${lines[y][currentFenX]}' is not a valid piece notation. `));
+            return;
+          }
+          currentFenX++;
+          this.squares[y * 8 + x].piece = PieceType[a];
+        }
+      }
+    }
+  }
+
   private getPieceBasePath(): string {
-    return `${imgsUrl}` + this.piecesTextureType + 
-    (this.boardTextureType == BoardTextureType.Wood) ? '/Wood' : '/Stone';
+    return `${imgsUrl}${this.piecesTextureType}` +
+    ((this.boardTextureType == BoardTextureType.Wood) ? '/Wood' : '/Stone')
   }
 }
 
