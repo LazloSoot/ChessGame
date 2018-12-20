@@ -1,0 +1,68 @@
+.container {
+    padding: 2%;
+}
+.chess-board {
+    display: flex;
+    width: 60vw;
+    height: 60vw;
+    background-color: #813A0D;
+}
+
+.chess-board__wrapper {
+    display: flex;
+    flex-wrap: wrap;
+    width: 56.4706vw;
+}
+.chess-board__board,
+.square {
+    background-repeat: no-repeat;
+    background-size: cover;
+}
+
+.square {
+    display: block;
+    height: 7.0588vw;
+    width: 7.0588vw;
+    padding: 0;
+    margin: 0;
+   // font-size: 0;
+}
+
+.chess-board__board {
+    background-repeat: no-repeat;
+    background-size: cover;
+    &--top,
+    &--bottom {
+        width: 56.4706vw;
+        //height: 1.7647vw;
+        
+    }
+
+    &--top {
+        height: 2.11764vw;
+        background-image: url('../../../../assets/images/Chess/Board/Wood/border_top.png');
+    }
+    &--bottom {
+        height: 1.41176vw;
+        background-image: url('../../../../assets/images/Chess/Board/Wood/border_bottom_legend.png');
+    }
+
+    &--left,
+    &--right {
+        width: 1.7647vw;
+        height: 60vw;
+    }
+
+    &--left {
+        background-image: url('../../../../assets/images/Chess/Board/Wood/border_left_legend.png');
+    }
+    &--right {
+        background-image: url('../../../../assets/images/Chess/Board/Wood/border_right.png');
+    }
+}
+
+.clearfix::after {
+    content: "";
+    display: table;
+    clear: both;
+  }
