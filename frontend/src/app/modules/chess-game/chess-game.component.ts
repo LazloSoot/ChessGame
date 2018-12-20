@@ -9,7 +9,7 @@ import { BoardTextureType, PiecesTextureType } from '../../core';
 export class ChessGameComponent implements OnInit {
   private boardType: BoardTextureType = BoardTextureType.Wood;
   private piecesType: PiecesTextureType = PiecesTextureType.Symbols;
-
+  private fen: string = 'rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1';
   constructor() { }
 
   ngOnInit() {

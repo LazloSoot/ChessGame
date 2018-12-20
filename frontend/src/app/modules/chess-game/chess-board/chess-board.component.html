@@ -1,17 +1,22 @@
 <div class="container">
-	<div class="chess-board">
-		<div class="chess-board__board chess-board__board--left"></div>
+	<div class="chess-board"
+		[ngStyle]="{'background-color': bgColor }">
+		<div class="chess-board__board chess-board__board--left"
+			[ngStyle]="{'background-image': 'url(' + baseBoardPath.value + '/border_left_legend.png )'}"></div>
 
 		<div class="chess-board__wrapper">
-				<div class="chess-board__board chess-board__board--top"></div>
-			<div *ngFor="let square of getSquaresCount()" [ngStyle]="{'background-image': 'url('+ getImagePath(square.name) + ')'}"
+				<div class="chess-board__board chess-board__board--top"
+				[ngStyle]="{'background-image': 'url('+ baseBoardPath.value + '/border_top.png )'}"></div>
+			<div *ngFor="let square of getSquaresCount()" [ngStyle]="{'background-image': 'url('+ getSquarePath(square.name) + ')'}"
 			 class="square">{{square.name}}
 			<div *ngIf="square.piece" class="piece" [ngStyle]="{'background-image': 'url('+ getPiecePath(square.piece) + ')'}"></div>
 			</div>
-			 <div class="chess-board__board chess-board__board--bottom"></div>
+			 <div class="chess-board__board chess-board__board--bottom"
+			 [ngStyle]="{'background-image': 'url('+ baseBoardPath.value + '/border_bottom_legend.png )'}"></div>
 		</div>
 
-		<div class="chess-board__board chess-board__board--right"></div>
+		<div class="chess-board__board chess-board__board--right"
+		[ngStyle]="{'background-image': 'url('+ baseBoardPath.value + '/border_right.png )'}"></div>
 		
 	</div>
 </div>

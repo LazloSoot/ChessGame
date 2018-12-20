@@ -1,5 +1,6 @@
-import { Component, OnInit, Input } from '@angular/core';
+import { Component, OnInit, Input, SimpleChange } from '@angular/core';
 import { PieceType, PiecesTextureType, BoardTextureType } from '../../../core';
+import { BehaviorSubject } from 'rxjs';
 
 @Component({
   selector: 'app-chess-board',
@@ -9,17 +10,41 @@ import { PieceType, PiecesTextureType, BoardTextureType } from '../../../core';
 export class ChessBoardComponent implements OnInit {
   @Input() piecesTextureType: PiecesTextureType = PiecesTextureType.Symbols;
   @Input() boardTextureType: BoardTextureType = BoardTextureType.Wood;
-  private basePiecePath: string;
+  @Input() fen: string = 'rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1';
+  private baseBoardPath: BehaviorSubject<string> = new BehaviorSubject<string>(null);
+  private basePiecePath: BehaviorSubject<string> = new BehaviorSubject<string>(null);
+  private bgColor = "#813A0D";
   private squares;
+
   constructor() { }
 
   ngOnInit() {
     this.initSquares();
-    this.basePiecePath = this.getPieceBasePath();
+    this.basePiecePath.next(this.getPieceBasePath());
+    this.baseBoardPath.next(imgsUrl + this.boardTextureType);
   }
 
   getSquaresCount() {
     return this.squares;
+  }
+
+  ngOnChanges(changes: SimpleChange) {
+    for(let propName in changes){
+      if(propName === 'piecesTextureType')
+      {
+        this.basePiecePath.next(imgsUrl + changes[propName].currentValue);
+      }
+      if(propName === 'boardTextureType')
+      {
+        this.baseBoardPath.next(imgsUrl + changes[propName].currentValue);
+        let colorKey = Object.keys(BoardTextureType).find(key => BoardTextureType[key] === changes[propName].currentValue);
+        if(colorKey && colors[colorKey])
+        {
+          this.bgColor = colors[colorKey];
+        }
+      }
+    }
+    
   }
 
   initSquares(){
@@ -40,12 +65,12 @@ export class ChessBoardComponent implements OnInit {
     );
   }
 
-  getImagePath(squareName) {
-    return `${imgsUrl}${this.boardTextureType}/` +  squareName + '.png';
+  getSquarePath(squareName) {
+    return `${this.baseBoardPath.value}/` +  squareName + '.png';
   }
 
   getPiecePath(piece: PieceType) {
-    return  this.basePiecePath + '/' + piece;
+    return  this.basePiecePath.value + '/' + piece;
   }
 
   private getPieceBasePath(): string {
@@ -55,3 +80,10 @@ export class ChessBoardComponent implements OnInit {
 }
 
 const imgsUrl = '../../../../assets/images/Chess';
+const colors = 
+{
+  "Wood" : "#813A0D",
+  "StoneBlack" : "#181818",
+  "StoneBlue" : "#43849D",
+  "StoneGrey" : "#535352"
+}
