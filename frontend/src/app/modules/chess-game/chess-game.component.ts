@@ -1,6 +1,6 @@
 import { Component, OnInit } from '@angular/core';
-import { BoardTextureType, PiecesTextureType, Move, ChessGameService } from '../../core';
-import { MatDialog } from '@angular/material';
+import { BoardTextureType, PiecesTextureType, Move, ChessGameService, GameSettings } from '../../core';
+import { MatDialog, MatDialogConfig } from '@angular/material';
 import { GameSettingsDialogComponent } from '../../shared';
 
 @Component({
@@ -9,8 +9,7 @@ import { GameSettingsDialogComponent } from '../../shared';
 	styleUrls: ['./chess-game.component.less']
 })
 export class ChessGameComponent implements OnInit {
-	private boardType: BoardTextureType = BoardTextureType.Wood;
-	private piecesType: PiecesTextureType = PiecesTextureType.Symbols;
+	private gameSettings: GameSettings = new GameSettings();
 	private fen: string = 'rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1';
 	private isGameInitialized = false;
 	constructor(
@@ -25,13 +24,18 @@ export class ChessGameComponent implements OnInit {
 
 	ngAfterViewInit() {
 		setTimeout(() => {
-			let dialogRef = this.dialog.open(GameSettingsDialogComponent);
+			let config :  MatDialogConfig = {
+				disableClose: true,
+				closeOnNavigation: true
+			};
+			let dialogRef = this.dialog.open(GameSettingsDialogComponent, config);
 		dialogRef.componentInstance.onSettingsDefined
 		.subscribe(
 			(settings) => {
 				if(settings)
 				{
 					this.chessGame.initializeGame(settings);
+					this.gameSettings = settings;
 				}else {
 
 				}

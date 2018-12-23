@@ -1,14 +1,40 @@
 .container {
     max-width: 280px;
-    min-width: 220px;
+    min-width: 250px;
     text-align: center;
 }
 
 .pieces-prev,
 .board-prev,
 .side__img {
-    width: 200px;
-    height: 60px;
     background-repeat: no-repeat;
     background-size: contain;
+}
+
+.pieces-prev,
+.board-prev {
+    width: 125px; 
+    height: 62.5px;
+}
+
+.theme-container {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    flex-wrap: wrap;
+
+    h3 {
+        width: 100%;
+    }
+}
+
+.theme-container__select {
+    width: 125px;
+
+}
+
+
+.options__container, 
+.options__toggle {
+    margin-bottom: 10px;
 }

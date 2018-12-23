@@ -21,6 +21,8 @@ export class GameSettingsDialogComponent implements OnInit {
 	private pieceStyles: PieceStyle[];
 	private pieceStyle: PieceStyle = new PieceStyle;
 	private isEnPassantOn: boolean = true;
+	private isWhiteSide: boolean = true;
+	private a;
 	constructor(
 		private dialogRef: MatDialogRef<GameSettingsDialogComponent>,
 	) {}
@@ -45,24 +47,27 @@ export class GameSettingsDialogComponent implements OnInit {
 		this.onSettingsDefined.emit(
 			new GameSettings(
 				new StyleOptions(this.boardColor.value, this.pieceStyle.value),
-				new GameOptions(this.isEnPassantOn)
+				new GameOptions(this.isEnPassantOn, this.isWhiteSide)
 			)
 		);
 		this.dialogRef.close();
 	}
 
+	back() {
+		this.onSettingsDefined.emit(undefined);
+		this.dialogRef.close();
+	}
+
 	getBoardUrlPrev() {
-		let a = `${imgsUrl}${this.boardColor.value}/prev.jpg`;
-		debugger;
-		return a;
+		return `${imgsUrl}${this.boardColor.value}/prev.jpg`;
 	}
 
 	getPieceUrlPrev() {
-		return `${imgsUrl}${this.pieceStyle.value}/prev.jpg`;
+		return `${imgsUrl}${this.pieceStyle.value}/prev.png`;
 	}
 
 	getSidePrev() {
-		return `${imgsUrl}/sides.png`;
+		return `${imgsUrl}/Symbols/Stone/` + ((this.isWhiteSide) ? 'QueenW.png' : 'QueenB.png');
 	}
 }
 

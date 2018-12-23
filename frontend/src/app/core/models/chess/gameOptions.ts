@@ -1,5 +1,6 @@
 export class GameOptions {
     constructor(
-        isEnPassantOn: boolean = true
+        isEnPassantOn: boolean = true,
+        isWhiteSide: boolean = true
     ) {}
 }
