@@ -100,6 +100,13 @@ export class ChessBoardComponent implements OnInit {
 
 		let lines = parts[0].split('/');
 		let currentSkipCount: number;
+		let baseNum;
+		if(this.gameSettings.options.isWhiteSide) {
+			baseNum = 0;
+		}
+		else {
+			baseNum = 63;
+		}
 		for (let y = 0; y < 8; y++) {
 			for (let x = 0, currentFenX = 0; x < 8; x++) {
 				currentSkipCount = Number(lines[y][currentFenX]);
@@ -108,13 +115,13 @@ export class ChessBoardComponent implements OnInit {
 					x += currentSkipCount - 1;
 				}
 				else {
-					let a: keyof typeof PieceType = lines[y][currentFenX] as keyof typeof PieceType;
-					if (!a) {
+					let pieceKey: keyof typeof PieceType = lines[y][currentFenX] as keyof typeof PieceType;
+					if (!pieceKey) {
 						this.error.emit(new SyntaxError(`Fen is not valid! '${lines[y][currentFenX]}' is not a valid piece notation. `));
 						return;
 					}
 					currentFenX++;
-					this.squares[y * 8 + x].piece = PieceType[a];
+					this.squares[Math.abs(baseNum - (y * 8 + x))].piece = PieceType[pieceKey];
 				}
 			}
 		}
