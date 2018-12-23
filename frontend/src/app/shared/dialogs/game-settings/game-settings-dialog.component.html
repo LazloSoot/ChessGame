@@ -1,0 +1,38 @@
+<div class="container">
+	<h2>Game settings</h2>
+		<section class="options__container">
+				<div class="side__img" [ngStyle]="{'background-image': 'url(' + getSidePrev() + ')'}"></div>
+				<span>Your side: </span>
+				<mat-button-toggle-group class="options__toggle" [(value)]="isWhiteSide" name="side" aria-label="Side">
+						<mat-button-toggle checked [value]="true">White</mat-button-toggle>
+						<mat-button-toggle [value]="false">Black</mat-button-toggle>
+				</mat-button-toggle-group>
+		<mat-checkbox [(checked)]="isEnPassantOn" [color]="primary">en passant</mat-checkbox>
+	</section>
+		<mat-divider></mat-divider>
+		<section class="theme-container">
+				<h3>Board and pieces</h3>
+				<section class="theme-container__board">
+					<div class="board-prev" [ngStyle]="{'background-image': 'url(' + getBoardUrlPrev() + ')'}"></div>
+						<mat-form-field class="theme-container__select">
+								<mat-select placeholder="Board colors" [(value)]="boardColor.value">
+								  <mat-option *ngFor="let bc of boardColors" [value]="bc.value">
+									{{bc.viewValue}}
+								  </mat-option>
+								</mat-select>
+							  </mat-form-field>
+				</section>
+				<section class="theme-container__pieces">
+						<div class="pieces-prev" [ngStyle]="{'background-image': 'url(' + getPieceUrlPrev() + '), url(' + getBoardUrlPrev() + ')'}"></div>
+						<mat-form-field class="theme-container__select">
+								<mat-select placeholder="Pieces style" [(value)]="pieceStyle.value">
+								  <mat-option *ngFor="let ps of pieceStyles" [value]="ps.value">
+									{{ps.viewValue}}
+								  </mat-option>
+								</mat-select>
+							  </mat-form-field>
+				</section>
+		</section>
+		<button mat-stroked-button (click)="back()">Back</button>
+		<button mat-stroked-button (click)="submit()">Start</button>
+</div>

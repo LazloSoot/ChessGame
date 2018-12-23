@@ -10,6 +10,9 @@ import { MatToolbarModule } from '@angular/material/toolbar';
 import { MatDividerModule } from '@angular/material/divider';
 import { MatDialogModule } from '@angular/material/dialog';
 import { MatFormFieldModule } from '@angular/material/form-field';
+import { MatButtonToggleModule } from '@angular/material/button-toggle';
+import { MatCheckboxModule } from '@angular/material/checkbox';
+import { MatSelectModule } from '@angular/material/select';
 
 @NgModule({
   imports: [
@@ -23,7 +26,10 @@ import { MatFormFieldModule } from '@angular/material/form-field';
     MatDividerModule,
     MatDialogModule,
     MatFormFieldModule,
-    MatInputModule
+    MatInputModule,
+    MatButtonToggleModule,
+    MatCheckboxModule,
+    MatSelectModule
   ],
   exports: [
     MatButtonModule,
@@ -35,7 +41,10 @@ import { MatFormFieldModule } from '@angular/material/form-field';
     MatDividerModule,
     MatDialogModule,
     MatFormFieldModule,
-    MatInputModule
+    MatInputModule,
+    MatButtonToggleModule,
+    MatCheckboxModule,
+    MatSelectModule
   ],
   declarations: []
 })

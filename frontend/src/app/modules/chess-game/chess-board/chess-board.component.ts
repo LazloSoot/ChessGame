@@ -1,5 +1,5 @@
 import { Component, OnInit, Input, Output, SimpleChange, EventEmitter } from '@angular/core';
-import { PieceType, PiecesTextureType, BoardTextureType, Square, Move } from '../../../core';
+import { PieceType, PiecesTextureType, BoardTextureType, Square, Move, GameSettings } from '../../../core';
 import { BehaviorSubject } from 'rxjs';
 
 @Component({
@@ -8,8 +8,7 @@ import { BehaviorSubject } from 'rxjs';
 	styleUrls: ['./chess-board.component.less']
 })
 export class ChessBoardComponent implements OnInit {
-	@Input() piecesTextureType: PiecesTextureType = PiecesTextureType.Symbols;
-	@Input() boardTextureType: BoardTextureType = BoardTextureType.Wood;
+	@Input() gameSettings: GameSettings = new GameSettings();
 	@Input() fen: string = 'rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1';
 	@Output() error: EventEmitter<Error> = new EventEmitter<Error>(null);
 	@Output() move: EventEmitter<Move> = new EventEmitter<Move>(null);
@@ -37,19 +36,17 @@ export class ChessBoardComponent implements OnInit {
 
 	ngOnChanges(changes: SimpleChange) {
 		for (let propName in changes) {
-			if (propName === 'piecesTextureType') {
-				this.basePiecePath.next(this.getPieceBasePath());
+			if(propName === 'fen') {
+				this.initBoard(changes[propName].currentValue);
 			}
-			if (propName === 'boardTextureType') {
-				this.baseBoardPath.next(imgsUrl + changes[propName].currentValue);
+			if (propName === 'gameSettings') {
+				this.initBoard(this.gameSettings.startFen);
+				this.baseBoardPath.next(imgsUrl + this.gameSettings.style.boardColor);
 				this.basePiecePath.next(this.getPieceBasePath());
-				let colorKey = Object.keys(BoardTextureType).find(key => BoardTextureType[key] === changes[propName].currentValue);
+				let colorKey = Object.keys(BoardTextureType).find(key => BoardTextureType[key] === this.gameSettings.style.boardColor);
 				if (colorKey && colors[colorKey]) {
 					this.bgColor = colors[colorKey];
 				}
-			}
-			if(propName === 'fen') {
-				this.initBoard(changes[propName].currentValue);
 			}
 		}
 
@@ -134,8 +131,8 @@ export class ChessBoardComponent implements OnInit {
 	}
 
 	private getPieceBasePath(): string {
-		return `${imgsUrl}${this.piecesTextureType}` +
-			((this.boardTextureType == BoardTextureType.Wood) ? '/Wood' : '/Stone')
+		return `${imgsUrl}${this.gameSettings.style.piecesStyle}` +
+			((this.gameSettings.style.boardColor == BoardTextureType.Wood) ? '/Wood' : '/Stone')
 	}
 }
 
