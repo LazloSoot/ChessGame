@@ -8,7 +8,7 @@ import { BehaviorSubject } from 'rxjs';
 	styleUrls: ['./chess-board.component.less']
 })
 export class ChessBoardComponent implements OnInit {
-	@Input() gameSettings: GameSettings = new GameSettings();
+	@Input() gameSettings: GameSettings;// = new GameSettings();
 	@Input() fen: string = 'rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1';
 	@Output() error: EventEmitter<Error> = new EventEmitter<Error>(null);
 	@Output() move: EventEmitter<Move> = new EventEmitter<Move>(null);
@@ -20,8 +20,7 @@ export class ChessBoardComponent implements OnInit {
 
 	constructor() 
 	{
-		this.initSquares();
-	 }
+	}
 
 	ngOnInit() {
 		//this.basePiecePath.next(this.getPieceBasePath());
@@ -40,6 +39,7 @@ export class ChessBoardComponent implements OnInit {
 				this.initBoard(changes[propName].currentValue);
 			}
 			if (propName === 'gameSettings') {
+				this.initSquares();
 				this.initBoard(this.gameSettings.startFen);
 				this.baseBoardPath.next(imgsUrl + this.gameSettings.style.boardColor);
 				this.basePiecePath.next(this.getPieceBasePath());
@@ -54,17 +54,29 @@ export class ChessBoardComponent implements OnInit {
 
 	initSquares() {
 		let currentIndex = 0;
-		let currentRow = 8;
-		this.squares = Array(64).fill({}).map((x, i) => {
+		let increment;
+		let currentRow;
+		let correspondingCharCode;
+		if(this.gameSettings.options.isWhiteSide) {
+			currentRow = 8;
+			increment = -1;
+			correspondingCharCode = 97;
+		} else {
+			currentRow = 1;
+			increment = 1;
+			correspondingCharCode = 104;
+		}
+
+		this.squares = Array(64).fill({}).map((square, i) => {
 			currentIndex = i % 8;
-			x = {
-				name: String.fromCharCode(97 + currentIndex) + currentRow,
+			square = {
+				name: String.fromCharCode(correspondingCharCode - currentIndex * increment) + currentRow,
 				piece: undefined
 			};
 			if (currentIndex === 7) {
-				currentRow--;
+				currentRow += increment;
 			}
-			return x;
+			return square;
 		}
 		);
 	}

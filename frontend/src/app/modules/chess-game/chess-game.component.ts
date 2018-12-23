@@ -36,6 +36,7 @@ export class ChessGameComponent implements OnInit {
 				{
 					this.chessGame.initializeGame(settings);
 					this.gameSettings = settings;
+					this.isGameInitialized = true;
 				}else {
 
 				}
