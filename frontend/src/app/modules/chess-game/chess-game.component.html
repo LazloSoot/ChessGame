@@ -2,6 +2,7 @@
   chess-game works!
 </p>
 <app-chess-board 
+*ngIf="isGameInitialized"
 [piecesTextureType]="piecesType" 
 [boardTextureType]="boardType" 
 [fen]="fen" 
