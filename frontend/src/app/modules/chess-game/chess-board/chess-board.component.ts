@@ -1,5 +1,5 @@
 import { Component, OnInit, Input, Output, SimpleChange, EventEmitter } from '@angular/core';
-import { PieceType, PiecesTextureType, BoardTextureType, Square, Move, GameSettings } from '../../../core';
+import { PieceType, BoardTextureType, Square, Move, GameSettings } from '../../../core';
 import { BehaviorSubject } from 'rxjs';
 
 @Component({
@@ -23,10 +23,6 @@ export class ChessBoardComponent implements OnInit {
 	}
 
 	ngOnInit() {
-		//this.basePiecePath.next(this.getPieceBasePath());
-		//this.baseBoardPath.next(imgsUrl + this.boardTextureType);
-		//this.initSquares();
-		//this.initBoard(this.fen);
 	}
 
 	getSquaresCount() {
