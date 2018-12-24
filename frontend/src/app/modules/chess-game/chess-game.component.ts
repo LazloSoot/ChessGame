@@ -1,7 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { BoardTextureType, PiecesTextureType, Move, ChessGameService, GameSettings } from '../../core';
 import { MatDialog, MatDialogConfig } from '@angular/material';
-import { GameSettingsDialogComponent } from '../../shared';
+import { NewGameDialogComponent } from '../../shared';
 
 @Component({
 	selector: 'app-chess-game',
@@ -28,7 +28,7 @@ export class ChessGameComponent implements OnInit {
 				disableClose: true,
 				closeOnNavigation: true
 			};
-			let dialogRef = this.dialog.open(GameSettingsDialogComponent, config);
+			let dialogRef = this.dialog.open(NewGameDialogComponent, config);
 		dialogRef.componentInstance.onSettingsDefined
 		.subscribe(
 			(settings) => {

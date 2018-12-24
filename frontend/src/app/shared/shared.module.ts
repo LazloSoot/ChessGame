@@ -7,7 +7,7 @@ import { SignUpDialogComponent } from './dialogs/sign-up-dialog/sign-up-dialog.c
 import { FormsModule } from '@angular/forms';
 import { ConfirmEqualityValidatorDirective } from './directives/confirm-equality-validator.directive';
 import { ForgotPasswordDialogComponent } from './dialogs/forgot-password-dialog/forgot-password-dialog.component';
-import { GameSettingsDialogComponent } from './dialogs/game-settings/game-settings-dialog.component';
+import { NewGameDialogComponent } from './dialogs/new-game/new-game-dialog.component';
 
 @NgModule({
   imports: [
@@ -26,14 +26,14 @@ import { GameSettingsDialogComponent } from './dialogs/game-settings/game-settin
     SignUpDialogComponent,
     ForgotPasswordDialogComponent,
     ConfirmEqualityValidatorDirective,
-    GameSettingsDialogComponent,
+    NewGameDialogComponent,
     ],
     
   entryComponents: [
     SignInDialogComponent,
     SignUpDialogComponent,
     ForgotPasswordDialogComponent,
-    GameSettingsDialogComponent
+    NewGameDialogComponent
   ]
 })
 export class SharedModule { }

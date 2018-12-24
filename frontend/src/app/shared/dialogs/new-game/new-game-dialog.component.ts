@@ -10,11 +10,11 @@ import { GameOptions } from "../../../core/models/chess/gameOptions";
 import { MatDialogRef } from "@angular/material";
 
 @Component({
-	selector: "app-game-settings-dialog",
-	templateUrl: "./game-settings-dialog.component.html",
-	styleUrls: ["./game-settings-dialog.component.less"]
+	selector: "app-new-game-dialog",
+	templateUrl: "./new-game-dialog.component.html",
+	styleUrls: ["./new-game-dialog.component.less"]
 })
-export class GameSettingsDialogComponent implements OnInit {
+export class NewGameDialogComponent implements OnInit {
 	@Output() onSettingsDefined: EventEmitter<GameSettings> = new EventEmitter<GameSettings>(null);
 	private boardColors: BoardColor[];
 	private boardColor: BoardColor = new BoardColor;
@@ -24,7 +24,7 @@ export class GameSettingsDialogComponent implements OnInit {
 	private isWhiteSide: boolean = true;
 	private a;
 	constructor(
-		private dialogRef: MatDialogRef<GameSettingsDialogComponent>,
+		private dialogRef: MatDialogRef<NewGameDialogComponent>,
 	) {}
 
 	ngOnInit() {
