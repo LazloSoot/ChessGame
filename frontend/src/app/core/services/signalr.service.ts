@@ -11,6 +11,7 @@ export class SignalRService {
   constructor(private appState: AppStateService) {}
 
   connect(groupName: string, hub: Hub) {
+      debugger;
       let targetConnection = this.userConnections.find(c => c.hub == hub);
       if (!targetConnection) {
           // создаем подключение

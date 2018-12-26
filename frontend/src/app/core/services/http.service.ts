@@ -64,7 +64,7 @@ export class HttpService {
         respType: string = 'json',
         typeOfContent: string = "json") {
 
-        let headers;
+        let headers = new HttpHeaders({ 'Access-Control-Allow-Origin': '*'});
         if ((type === RequestMethod.Post || type === RequestMethod.Put) && typeOfContent == 'json') {
             headers = new HttpHeaders({ 'Content-Type': 'application/json' });
         }

@@ -1,5 +1,5 @@
 import { Component, OnInit } from '@angular/core';
-import { BoardTextureType, PiecesTextureType, Move, ChessGameService, GameSettings } from '../../core';
+import { BoardTextureType, PiecesTextureType, Move, ChessGameService, GameSettings, SignalRService, AppStateService, Group, Hub } from '../../core';
 import { MatDialog, MatDialogConfig } from '@angular/material';
 import { NewGameDialogComponent } from '../../shared';
 
@@ -12,14 +12,27 @@ export class ChessGameComponent implements OnInit {
 	private gameSettings: GameSettings = new GameSettings();
 	private fen: string = 'rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1';
 	private isGameInitialized = false;
+	private signalRConnection;
 	constructor(
 		private dialog: MatDialog,
-		private chessGame: ChessGameService
+		private chessGame: ChessGameService,
+		private signalRService: SignalRService,
+		private appStateService: AppStateService
 	) { }
 
 	ngOnInit() {
+		this.signalRConnection = this.signalRService.connect(
+			`${Group[Group.PlayRoom]}`,
+			Hub.ChessGame
+		);
 		
-		
+	}
+
+	ngOnDestroy() {
+		this.signalRService.leaveGroup(`
+		${Group[Group.PlayRoom]}`,
+		Hub.ChessGame
+		);
 	}
 
 	ngAfterViewInit() {

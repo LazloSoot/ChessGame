@@ -35,6 +35,7 @@ namespace Chess.BusinessLogic
                 {
                     options.MapHub<CommonHub>(HubType.CommonHub.GetStringValue());
                     options.MapHub<NotificationHub>(HubType.NotificationHub.GetStringValue());
+                    options.MapHub<ChessGameHub>(HubType.ChessGameHub.GetStringValue());
                 });
             }
             else
@@ -43,6 +44,7 @@ namespace Chess.BusinessLogic
                 {
                     options.MapHub<CommonHub>(HubType.CommonHub.GetStringValue());
                     options.MapHub<NotificationHub>(HubType.NotificationHub.GetStringValue());
+                    options.MapHub<ChessGameHub>(HubType.ChessGameHub.GetStringValue());
                 });
             }
         }

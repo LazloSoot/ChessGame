@@ -1,4 +1,5 @@
 export enum Hub {
     Common = 'commonHub',
-    Notification = 'notificationHub'
+    Notification = 'notificationHub',
+    ChessGame = 'chessHub'
 }
