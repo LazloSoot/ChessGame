@@ -1,4 +1,4 @@
-import { StyleOptions } from "./styleOptions";
+import { StyleOptions } from "./styles/styleOptions";
 import { GameOptions } from "./gameOptions";
 
 export class GameSettings {

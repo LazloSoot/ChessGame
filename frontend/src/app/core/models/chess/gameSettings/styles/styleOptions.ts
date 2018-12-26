@@ -1,5 +1,5 @@
-import { BoardTextureType } from "./texturesTypes/boardTextureType";
-import { PiecesTextureType } from "./texturesTypes/piecesTextureType";
+import { BoardTextureType } from "./boardTextureType";
+import { PiecesTextureType } from "./piecesTextureType";
 
 export class StyleOptions {
     constructor(

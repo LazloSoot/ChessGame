@@ -1,13 +1,18 @@
-import { Component, OnInit, Output } from "@angular/core";
+import { Component, OnInit, Output, ViewChild } from "@angular/core";
 import {
 	BoardTextureType,
 	PiecesTextureType,
 	GameSettings,
-	StyleOptions
+	StyleOptions,
+	BoardColor,
+	PieceStyle,
+	GameSide,
+	OpponentType,
+	User
 } from "../../../core";
 import { EventEmitter } from "@angular/core";
-import { GameOptions } from "../../../core/models/chess/gameOptions";
-import { MatDialogRef } from "@angular/material";
+import { GameOptions } from "../../../core/models/chess/gameSettings/gameOptions";
+import { MatDialogRef, MatTableDataSource, MatPaginator } from "@angular/material";
 
 @Component({
 	selector: "app-new-game-dialog",
@@ -22,12 +27,20 @@ export class NewGameDialogComponent implements OnInit {
 	private pieceStyle: PieceStyle = new PieceStyle;
 	private isEnPassantOn: boolean = true;
 	private isWhiteSide: boolean = true;
-	private a;
+	private side: GameSide = GameSide.Random;
+	private opponentType: OpponentType = OpponentType.Computer;
+	private selectedTab: number = 0;
+	private opponent: User;
+
+	private users = new MatTableDataSource<User>(MOCK_USERS);
+	
 	constructor(
 		private dialogRef: MatDialogRef<NewGameDialogComponent>,
 	) {}
 
 	ngOnInit() {
+		let tabHeader = document.getElementsByClassName('mat-tab-header')[0];
+		tabHeader.classList.add('hidden');
 		let keys = Object.keys(BoardTextureType);
 		this.boardColors = Array(keys.length)
 			.fill({})
@@ -54,8 +67,13 @@ export class NewGameDialogComponent implements OnInit {
 	}
 
 	back() {
-		this.onSettingsDefined.emit(undefined);
-		this.dialogRef.close();
+		if(this.selectedTab === 0) {
+			this.onSettingsDefined.emit(undefined);
+			this.dialogRef.close();
+		}
+		else {
+			this.selectedTab = 0;
+		}
 	}
 
 	getBoardUrlPrev() {
@@ -66,17 +84,46 @@ export class NewGameDialogComponent implements OnInit {
 		return `${imgsUrl}${this.pieceStyle.value}/prev.png`;
 	}
 
-	getSidePrev() {
-		return `${imgsUrl}/Symbols/Stone/` + ((this.isWhiteSide) ? 'QueenW.png' : 'QueenB.png');
+	removeOpponent() {
+		this.opponent = undefined;
+		this.opponentType = OpponentType.Computer;
+	}
+
+	selectUser(user: User){
+		if(user)
+		{
+			this.opponent = user;
+			this.opponentType = OpponentType.Friend;
+			this.selectedTab = 0;
+		}
 	}
 }
 
 const imgsUrl = "../../../../assets/images/Chess";
 
-export class BoardColor {
-	constructor(public value: BoardTextureType = BoardTextureType.Wood, public viewValue: string = 'Wood') {}
-}
-
-export class PieceStyle {
-	constructor(public value: PiecesTextureType = PiecesTextureType.Symbols, public viewValue: string = "Symbols") {}
-}
+const MOCK_USERS: User[] = [
+	{
+		id: 0,
+		uid: "",
+		avatarUrl: "",
+		name: "Grisha"
+	},
+	{
+		id: 0,
+		uid: "",
+		avatarUrl: "",
+		name: "Misha"
+	},
+	{
+		id: 0,
+		uid: "",
+		avatarUrl: "",
+		name: "Sasha"
+	},
+	{
+		id: 0,
+		uid: "",
+		avatarUrl: "",
+		name: "Pasha"
+	}
+] 
