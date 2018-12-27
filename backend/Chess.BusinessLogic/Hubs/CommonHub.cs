@@ -7,17 +7,18 @@ using Chess.Common.Helpers;
 using Chess.BusinessLogic.Interfaces;
 using Chess.DataAccess.Entities;
 using Chess.DataAccess.Interfaces;
+using Chess.Common.Interfaces;
 
 namespace Chess.BusinessLogic.Hubs
 {
     [Authorize]
     public class CommonHub : Hub
     {
-        private IRepository<User> usersProvider;
+        private readonly IRepository<User> _usersProvider;
         protected static ConcurrentDictionary<string, string> ConnectedUsers { get; set; } = new ConcurrentDictionary<string, string>();
         public CommonHub(IRepository<User> usersRepo)
         {
-            usersProvider = usersRepo;
+            _usersProvider = usersRepo;
         }
 
         public virtual async Task JoinGroup(string groupName)
@@ -48,7 +49,7 @@ namespace Chess.BusinessLogic.Hubs
             var userName = Context.User.GetName();
             if (string.IsNullOrEmpty(userName))
             {
-                userName = (await usersProvider.GetOneAsync(u => string.Equals(u.Uid, uid))).Name;
+                userName = (await _usersProvider.GetOneAsync(u => string.Equals(u.Uid, uid))).Name;
             }
              ConnectedUsers.TryAdd(uid, userName);
              await base.OnConnectedAsync();

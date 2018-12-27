@@ -21,7 +21,6 @@ export class ChessGameComponent implements OnInit, OnDestroy {
 	) { }
 
 	ngOnInit() {
-		debugger;
 		this.signalRConnection = this.signalRService.connect(
 			`${Group[Group.PlayRoom]}`,
 			Hub.ChessGame
@@ -30,9 +29,8 @@ export class ChessGameComponent implements OnInit, OnDestroy {
 	}
 
 	ngOnDestroy() {
-		debugger;
-		this.signalRService.leaveGroup(`
-		${Group[Group.PlayRoom]}`,
+		this.signalRService.leaveGroup(
+		`${Group[Group.PlayRoom]}`,
 		Hub.ChessGame
 		);
 	}
