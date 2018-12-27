@@ -14,11 +14,11 @@ namespace Chess.BusinessLogic.Hubs
     public class CommonHub : Hub
     {
         private IRepository<User> usersProvider;
-        protected static ConcurrentDictionary<string, int> ConnectedUsers { get; set; } = new ConcurrentDictionary<string, int>();
-     //  public CommonHub(IRepository<User> usersRepo)
-     //  {
-     //      usersProvider = usersRepo;
-     //  }
+        protected static ConcurrentDictionary<string, string> ConnectedUsers { get; set; } = new ConcurrentDictionary<string, string>();
+        public CommonHub(IRepository<User> usersRepo)
+        {
+            usersProvider = usersRepo;
+        }
 
         public virtual async Task JoinGroup(string groupName)
         {
@@ -43,17 +43,21 @@ namespace Chess.BusinessLogic.Hubs
         {
             // NHCblkzx89Qy3xhDgE2GxxkiSqt2
             //int userDbId = await chatService.ChangeUserStatus(targetUserUid: Context.UserIdentifier, isOnline: true);
-            var a = Context.UserIdentifier;
-            var aa = Context.User.GetName();
-            var abc = Context.User.GetUid();
-             // ConnectedUsers.TryAdd(Context.UserIdentifier, userDbId);
+
+            var uid = Context.UserIdentifier;
+            var userName = Context.User.GetName();
+            if (string.IsNullOrEmpty(userName))
+            {
+                userName = (await usersProvider.GetOneAsync(u => string.Equals(u.Uid, uid))).Name;
+            }
+             ConnectedUsers.TryAdd(uid, userName);
              await base.OnConnectedAsync();
         }
 
         public override async Task OnDisconnectedAsync(Exception exception)
         {
             //await chatService.ChangeUserStatus(targetUserUid: Context.UserIdentifier, isOnline: false);
-          //  ConnectedUsers.Remove(Context.UserIdentifier);
+            ConnectedUsers.TryRemove(Context.UserIdentifier, out string value);
             await base.OnDisconnectedAsync(exception);
         }
 

@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, OnDestroy } from '@angular/core';
 import { BoardTextureType, PiecesTextureType, Move, ChessGameService, GameSettings, SignalRService, AppStateService, Group, Hub } from '../../core';
 import { MatDialog, MatDialogConfig } from '@angular/material';
 import { NewGameDialogComponent } from '../../shared';
@@ -8,7 +8,7 @@ import { NewGameDialogComponent } from '../../shared';
 	templateUrl: './chess-game.component.html',
 	styleUrls: ['./chess-game.component.less']
 })
-export class ChessGameComponent implements OnInit {
+export class ChessGameComponent implements OnInit, OnDestroy {
 	private gameSettings: GameSettings = new GameSettings();
 	private fen: string = 'rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1';
 	private isGameInitialized = false;
@@ -21,6 +21,7 @@ export class ChessGameComponent implements OnInit {
 	) { }
 
 	ngOnInit() {
+		debugger;
 		this.signalRConnection = this.signalRService.connect(
 			`${Group[Group.PlayRoom]}`,
 			Hub.ChessGame
@@ -29,6 +30,7 @@ export class ChessGameComponent implements OnInit {
 	}
 
 	ngOnDestroy() {
+		debugger;
 		this.signalRService.leaveGroup(`
 		${Group[Group.PlayRoom]}`,
 		Hub.ChessGame

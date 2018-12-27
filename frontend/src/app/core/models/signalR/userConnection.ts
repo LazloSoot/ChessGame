@@ -80,6 +80,7 @@ export class UserConnection {
     }
 
     leaveGroup(groupName: string) {
+        groupName = groupName.trim();
         if (this.groups.includes(groupName)) {
             if (this.connection.connection.connectionState === 1) {
                 console.log(`Disconnecting from group ${groupName}`);

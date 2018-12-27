@@ -1,4 +1,4 @@
-import { Component, OnInit, Input, Output, SimpleChange, EventEmitter } from '@angular/core';
+import { Component, OnInit, Input, Output, SimpleChange, EventEmitter, OnDestroy } from '@angular/core';
 import { PieceType, BoardTextureType, Square, Move, GameSettings } from '../../../core';
 import { BehaviorSubject } from 'rxjs';
 
@@ -23,6 +23,10 @@ export class ChessBoardComponent implements OnInit {
 	}
 
 	ngOnInit() {
+	}
+
+	ngOnDestroy() {
+		debugger;
 	}
 
 	getSquaresCount() {
