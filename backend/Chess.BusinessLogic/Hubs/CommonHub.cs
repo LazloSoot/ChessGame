@@ -8,6 +8,7 @@ using Chess.BusinessLogic.Interfaces;
 using Chess.DataAccess.Entities;
 using Chess.DataAccess.Interfaces;
 using Chess.Common.Interfaces;
+using System.Collections.Generic;
 
 namespace Chess.BusinessLogic.Hubs
 {
@@ -15,10 +16,15 @@ namespace Chess.BusinessLogic.Hubs
     public class CommonHub : Hub
     {
         private readonly IRepository<User> _usersProvider;
-        internal static ConcurrentDictionary<string, string> ConnectedUsers { get; set; } = new ConcurrentDictionary<string, string>();
+        internal static ConcurrentDictionary<string, string> ConnectedUsers { get; private set; } 
         public CommonHub(IRepository<User> usersRepo)
         {
             _usersProvider = usersRepo;
+        }
+
+        static CommonHub()
+        {
+            ConnectedUsers = new ConcurrentDictionary<string, string>(MOCK_USERS);
         }
 
         public virtual async Task JoinGroup(string groupName)
@@ -62,5 +68,16 @@ namespace Chess.BusinessLogic.Hubs
             await base.OnDisconnectedAsync(exception);
         }
 
+
+        static Dictionary<string, string> MOCK_USERS = new Dictionary<string, string>()
+        {
+            {"1", "Grisha Petrow"},
+            {"2", "Oleg Komarow" },
+            {"3", "Marina Popowa Ebat" },
+            {"4", "Vladimir Petrogor" },
+            {"5", "Anatolii Pomidor" },
+            {"6", "pROstoWitia" },
+            {"7", "Gena" }
+        };
     }
 }

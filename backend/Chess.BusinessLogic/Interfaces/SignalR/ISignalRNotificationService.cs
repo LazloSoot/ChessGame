@@ -8,6 +8,7 @@ namespace Chess.BusinessLogic.Interfaces.SignalR
 {
     public interface ISignalRNotificationService
     {
+        Dictionary<string, string> GetOnlineUsersInfoByNameStartsWith(string part);
         Dictionary<string, string> GetOnlineUsersInfo();
         Task InviteUserAsync(string userUid, int gameId);
     }

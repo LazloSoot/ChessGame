@@ -45,10 +45,15 @@ namespace ChessWeb.Controllers
         [HttpGet("online", Name ="GetOnlineUsers")]
         public ActionResult GetOnlineUsers()
         {
-            return Ok(_notificationService.GetOnlineUsersInfo().Values);
-            //var users = 
+            return Ok(_notificationService.GetOnlineUsersInfo());
         }
 
+        // GET: Users/online/:{part}
+        [HttpGet("online/{part}", Name= "GetOnlineUsersInfoByNameStartsWith")]
+        public ActionResult GetOnlineUsersInfoByNameStartsWith(string part)
+        {
+            return Ok(_notificationService.GetOnlineUsersInfoByNameStartsWith(part));
+        }
         // POST: Users
         public async Task<IActionResult> AddUser([FromBody]UserDTO user)
         {

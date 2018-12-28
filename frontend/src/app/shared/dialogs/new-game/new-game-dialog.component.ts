@@ -71,6 +71,7 @@ export class NewGameDialogComponent implements OnInit {
 	}
 
 	back() {
+		this.users = [];
 		if(this.selectedTab === 0) {
 			this.onSettingsDefined.emit(undefined);
 			this.dialogRef.close();
@@ -105,9 +106,8 @@ export class NewGameDialogComponent implements OnInit {
                     if (this.filterInput.length > 0) {
 
 						this.userService
-						.getOnlineUsers()
-                           // .getUserProfilesByNameStartWith(this.filterInput)
-                            .subscribe(users => {
+                            .getOnlineUsersByNameStartsWith(this.filterInput)
+                            .then(users => {
                                 this.users = users;
                                 this.timeOutSearch = false;
                             });
@@ -120,12 +120,14 @@ export class NewGameDialogComponent implements OnInit {
 	}
 
 	resetFilterInput() {
-        this.isSearchMode = false;
+		this.isSearchMode = false;
+		this.users = [];
 	}
 	
 	selectUser(user: User){
 		if(user)
 		{
+			this.users = [];
 			this.opponent = user;
 			this.opponentType = OpponentType.Friend;
 			this.selectedTab = 0;

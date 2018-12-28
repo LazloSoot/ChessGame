@@ -26,7 +26,6 @@ export class ChessBoardComponent implements OnInit {
 	}
 
 	ngOnDestroy() {
-		debugger;
 	}
 
 	getSquaresCount() {
