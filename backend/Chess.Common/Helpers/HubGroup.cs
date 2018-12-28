@@ -2,7 +2,7 @@
 {
     public enum HubGroup
     {
-        [StringValue("playRoom")]
-        PlayRoom
+        [StringValue("user")]
+        User
     }
 }

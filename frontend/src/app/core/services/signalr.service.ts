@@ -1,6 +1,5 @@
 import { Injectable } from '@angular/core';
 import { UserConnection, Hub } from '../models';
-import { AppStateService } from './app-state.service';
 
 @Injectable({
   providedIn: 'root'
@@ -8,14 +7,14 @@ import { AppStateService } from './app-state.service';
 export class SignalRService {
   private userConnections: UserConnection[] = [];
 
-  constructor(private appState: AppStateService) {}
+  constructor() {}
 
-  connect(groupName: string, hub: Hub) {
+  connect(groupName: string, hub: Hub, token: string) {
       debugger;
       let targetConnection = this.userConnections.find(c => c.hub == hub);
       if (!targetConnection) {
           // создаем подключение
-          targetConnection = new UserConnection(hub, this.appState);
+          targetConnection = new UserConnection(hub, token);
           this.userConnections.push(targetConnection);
           targetConnection.isClosedByUser.subscribe(hub => {
               this.userConnections = this.userConnections.filter(

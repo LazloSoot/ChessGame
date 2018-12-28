@@ -16,6 +16,14 @@ export class UserService {
     return this.httpService.sendRequest(RequestMethod.Get, this.apiUrl, uid);
   }
 
+  getOnlineUsers(): Observable<User[]> {
+    return this.httpService.sendRequest(RequestMethod.Get, `${this.apiUrl}/online`);
+  }
+
+  getOnlineUsersByNameStartsWith(part: string): Observable<User[]> {
+    return this.httpService.sendRequest(RequestMethod.Get, `${this.apiUrl}/online`, part);
+  }
+
   add(user: User): Observable<User> {
     return this.httpService.sendRequest(RequestMethod.Post, this.apiUrl, undefined, user);
   }

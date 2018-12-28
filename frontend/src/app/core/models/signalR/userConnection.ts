@@ -13,7 +13,7 @@ export class UserConnection {
      connection: any;
      isClosedByUser = new EventEmitter<Hub>(true);
 
-    constructor(public hub: Hub, private appState: AppStateService) {}
+    constructor(public hub: Hub, private token: string) {}
 
     joinGroup(groupName: string) {
         if (this.groups.includes(groupName)) {
@@ -122,6 +122,13 @@ export class UserConnection {
         }
     }
 
+    offAll(): void {
+        for(let m in this.connection.methods)
+        {
+            this.off(m);
+        }
+    }
+
     connect(): Promise<void> {
         if (this.connectAttemptsCount < 1) {
             console.log(
@@ -138,7 +145,7 @@ export class UserConnection {
                this.connection = new signalR.HubConnectionBuilder()
                            .withUrl(`${environment.apiUrl}/${this.hub}`, {
                                accessTokenFactory: () =>
-                                   this.appState.token
+                                   this.token
                            })
                            .build();
 

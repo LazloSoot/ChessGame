@@ -15,7 +15,7 @@ namespace Chess.BusinessLogic.Hubs
     public class CommonHub : Hub
     {
         private readonly IRepository<User> _usersProvider;
-        protected static ConcurrentDictionary<string, string> ConnectedUsers { get; set; } = new ConcurrentDictionary<string, string>();
+        internal static ConcurrentDictionary<string, string> ConnectedUsers { get; set; } = new ConcurrentDictionary<string, string>();
         public CommonHub(IRepository<User> usersRepo)
         {
             _usersProvider = usersRepo;

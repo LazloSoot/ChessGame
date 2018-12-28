@@ -1,5 +1,5 @@
 import { Component, OnInit, OnDestroy } from '@angular/core';
-import { BoardTextureType, PiecesTextureType, Move, ChessGameService, GameSettings, SignalRService, AppStateService, Group, Hub } from '../../core';
+import { Action, Move, ChessGameService, GameSettings, SignalRService, AppStateService, Group, Hub } from '../../core';
 import { MatDialog, MatDialogConfig } from '@angular/material';
 import { NewGameDialogComponent } from '../../shared';
 
@@ -8,31 +8,25 @@ import { NewGameDialogComponent } from '../../shared';
 	templateUrl: './chess-game.component.html',
 	styleUrls: ['./chess-game.component.less']
 })
-export class ChessGameComponent implements OnInit, OnDestroy {
+export class ChessGameComponent implements OnInit {
 	private gameSettings: GameSettings = new GameSettings();
 	private fen: string = 'rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1';
 	private isGameInitialized = false;
-	private signalRConnection;
 	constructor(
 		private dialog: MatDialog,
 		private chessGame: ChessGameService,
-		private signalRService: SignalRService,
 		private appStateService: AppStateService
 	) { }
 
 	ngOnInit() {
-		this.signalRConnection = this.signalRService.connect(
-			`${Group[Group.PlayRoom]}`,
-			Hub.ChessGame
-		);
-		
+		this.appStateService.signalRConnection.on(Action.InvocationReceived, 
+			(invocation) => {
+				console.log(invocation);
+		});
 	}
 
 	ngOnDestroy() {
-		this.signalRService.leaveGroup(
-		`${Group[Group.PlayRoom]}`,
-		Hub.ChessGame
-		);
+		this.appStateService.signalRConnection.off(Action.InvocationReceived);
 	}
 
 	ngAfterViewInit() {
