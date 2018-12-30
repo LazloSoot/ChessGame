@@ -3,12 +3,14 @@ using Microsoft.AspNetCore.Mvc;
 using Chess.BusinessLogic.Interfaces;
 using Chess.DataAccess.Entities;
 using Chess.Common.DTOs;
+using Microsoft.AspNetCore.Authorization;
 
 namespace ChessWeb.Controllers
 {
     [Route("[controller]")]
     [Produces("application/json")]
     [ApiController]
+    [Authorize]
     public class GamesController : ControllerBase
     {
         private readonly IGameDataService service;

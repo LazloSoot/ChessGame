@@ -37,7 +37,7 @@ namespace ChessWeb.Controllers
         }
 
         // POST: Moves
-        public async Task<IActionResult> Move([FromBody]MoveDTO move)
+        public async Task<IActionResult> Move([FromBody]MoveRequest move)
         {
             if (!ModelState.IsValid)
                 return BadRequest() as IActionResult;
