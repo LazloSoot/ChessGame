@@ -1,5 +1,5 @@
 import { Injectable } from "@angular/core";
-import { GameSettings, User, GameOptions } from "../models";
+import { GameSettings, User, GameOptions, Side } from "../models";
 import { HttpService, RequestMethod } from "./http.service";
 import { Observable } from "rxjs";
 import { Game } from "../models/chess/game";
@@ -8,7 +8,7 @@ import { Game } from "../models/chess/game";
 	providedIn: "root"
 })
 export class ChessGameService {
-	private apiUrl: string = "/games";
+	private _apiUrl: string = "/games";
 	private _gameSettings: GameSettings;
 	private fen: string;
 	constructor(private httpService: HttpService) {}
@@ -31,7 +31,15 @@ export class ChessGameService {
 		}
 	}
 
+	public get(id: number): Observable<Game> {
+		return this.httpService.sendRequest(RequestMethod.Get, this._apiUrl, id);
+	}
+
 	public createGame(game: Game): Observable<Game> {
-		return this.httpService.sendRequest(RequestMethod.Post, this.apiUrl, undefined, game);
+		return this.httpService.sendRequest(RequestMethod.Post, this._apiUrl, undefined, game);
+	}
+
+	public joinGame(side: Side): Observable<Side> {
+		return this.httpService.sendRequest(RequestMethod.Put, this._apiUrl, undefined, side);
 	}
 }

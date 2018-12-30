@@ -44,8 +44,12 @@ export class AppStateService {
 		this.token = localStorage.getItem("chess-zm-token");
 	}
 
-	getCurrentUser(): Observable<User> {
+	getCurrentUserObs(): Observable<User> {
 		return this.currentUserSubject.asObservable();
+	}
+
+	getCurrentUser(): User {
+		return this.currentUserSubject.value;
 	}
 
 	async updateAuthState(

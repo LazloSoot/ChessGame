@@ -1,0 +1,10 @@
+<mat-dialog-content>
+  <h2>Invitation</h2>
+  <p>
+    {{inviter?.name}} invited you to a game of chess!
+  </p>
+</mat-dialog-content>
+<mat-dialog-actions align="end">
+  <button mat-button mat-dialog-close>Dismiss</button>
+  <button mat-button [mat-dialog-close]="true" cdkFocusInitial>Accept</button>
+</mat-dialog-actions>

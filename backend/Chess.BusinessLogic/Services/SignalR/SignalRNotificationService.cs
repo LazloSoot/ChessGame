@@ -10,7 +10,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Threading.Tasks;
-using Action = Chess.Common.Helpers.Action;
+using ClientEvent = Chess.Common.Helpers.ClientEvent;
 
 namespace Chess.BusinessLogic.Services.SignalR
 {
@@ -49,7 +49,7 @@ namespace Chess.BusinessLogic.Services.SignalR
             await _hubContext
                 .Clients
                 .Group($"{HubGroup.User.GetStringValue()}{userUid}")
-                .SendAsync(Action.Invocation.GetStringValue(), invition);
+                .SendAsync(ClientEvent.Invocation.GetStringValue(), invition);
         }
     }
 }

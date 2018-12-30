@@ -1,8 +1,8 @@
 import { EventEmitter } from "@angular/core";
 import { Hub } from './hub';
-import { AppStateService } from "../../services/app-state.service";
 import { environment } from '../../../../environments/environment';
 import * as signalR from '@aspnet/signalr';
+import { ServerAction } from "./serverAction";
 
 export class UserConnection {
     private joinGroupAttemptsСount = maxJoinAttemptsСount;
@@ -77,6 +77,10 @@ export class UserConnection {
                 break;
             }
         }
+    }
+
+    send(serverActionName: ServerAction | string, ...args: any[]): Promise<void> {
+        return this.connection.send(serverActionName, args);
     }
 
     leaveGroup(groupName: string) {

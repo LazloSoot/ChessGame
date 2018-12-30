@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Authorization;
 using System;
 using System.Collections.Generic;
 using System.Text;
+using System.Threading.Tasks;
 
 namespace Chess.BusinessLogic.Hubs
 {
@@ -13,6 +14,16 @@ namespace Chess.BusinessLogic.Hubs
         public NotificationHub(IRepository<User> usersRepo) : base(usersRepo)
         {
 
+        }
+        
+        public Task DismissInvocation()
+        {
+            return null;
+        }
+
+        public Task CancelInvocation()
+        {
+            return null;
         }
     }
 }

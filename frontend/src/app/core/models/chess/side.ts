@@ -5,6 +5,7 @@ import { GameSide } from "./gameSettings";
 export class Side {
     id?: number;
     game?: Game;
+    gameId?: number;
     points?: number;
     isDraw?: boolean;
     isResign?: boolean;

@@ -1,6 +1,6 @@
 import { Component, OnInit, OnDestroy } from "@angular/core";
 import {
-	Action,
+	ClientEvent,
 	Move,
 	ChessGameService,
 	GameSettings,
@@ -8,10 +8,16 @@ import {
 	AppStateService,
 	Group,
 	Hub,
-	GameSide
+	GameSide,
+	Invocation,
+	ServerAction
 } from "../../core";
-import { MatDialog, MatDialogConfig } from "@angular/material";
-import { NewGameDialogComponent } from "../../shared";
+import { MatDialog, MatDialogConfig, MatDialogRef } from "@angular/material";
+import {
+	NewGameDialogComponent,
+	InvitationDialogComponent,
+	WaitingDialogComponent
+} from "../../shared";
 import { Game } from "../../core/models/chess/game";
 import { Side } from "../../core/models/chess/side";
 
@@ -25,6 +31,7 @@ export class ChessGameComponent implements OnInit {
 	private fen: string =
 		"rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
 	private isGameInitialized = false;
+	private waitingDialog: MatDialogRef<WaitingDialogComponent>;
 	constructor(
 		private dialog: MatDialog,
 		private chessGame: ChessGameService,
@@ -33,17 +40,31 @@ export class ChessGameComponent implements OnInit {
 
 	ngOnInit() {
 		this.appStateService.signalRConnection.on(
-			Action.InvocationReceived,
-			invocation => {
-				debugger;
-				console.log('---------------------------------------------------------');
-				console.log(invocation);
+			ClientEvent.InvocationReceived,
+			(invocation: Invocation) => {
+				this.handleInvocation(invocation);
+			}
+		);
+		this.appStateService.signalRConnection.on(
+			ClientEvent.InvocationAccepted,
+			() => {
+				this.waitingDialog.close();
+				// вывод инфо о начале игры
+			}
+		);
+		this.appStateService.signalRConnection.on(
+			ClientEvent.InvocationDismissed,
+			() => {
+				this.waitingDialog.close();
+				// вывод инфо об отказе
 			}
 		);
 	}
 
 	ngOnDestroy() {
-		this.appStateService.signalRConnection.off(Action.InvocationReceived);
+		this.appStateService.signalRConnection.off(
+			ClientEvent.InvocationReceived
+		);
 	}
 
 	ngAfterViewInit() {
@@ -77,6 +98,10 @@ export class ChessGameComponent implements OnInit {
 								.subscribe(game => {
 									if (game) {
 										this.gameSettings.gameId = game.id;
+										this.waitingDialog = this.dialog.open(
+											WaitingDialogComponent,
+											config
+										);
 										// открыть dialog и ждать пользователя
 									}
 								});
@@ -101,5 +126,42 @@ export class ChessGameComponent implements OnInit {
 		let rand = Math.random() * 100;
 		let side = rand > 54 ? GameSide.Black : GameSide.White;
 		return side;
+	}
+
+	private handleInvocation(invocation: Invocation) {
+		let dialogRef = this.dialog.open(InvitationDialogComponent, {
+			data: invocation
+		});
+		dialogRef.afterClosed().subscribe(result => {
+			if (result) {
+				this.chessGame.get(invocation.gameId).subscribe(game => {
+					if (game) {
+						let inviterSide = game.sides.find(
+							s => s.player.uid === invocation.inviter.uid
+						);
+						let side = new Side(
+							inviterSide.color === GameSide.White
+								? GameSide.Black
+								: GameSide.White,
+							this.appStateService.getCurrentUser()
+						);
+						side.gameId = game.id;
+
+						this.chessGame.joinGame(side).subscribe(side => {
+							if (game) {
+								console.log("game ready");
+							} else {
+								console.log("user does not join to game.ERROR");
+							}
+						});
+					}
+				});
+			} else {
+				this.appStateService.signalRConnection.send(
+					ServerAction.DismissInvocation,
+					`${Group.User}${invocation.inviter.uid}`
+				);
+			}
+		});
 	}
 }

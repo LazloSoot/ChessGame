@@ -79,35 +79,35 @@ namespace Chess.BusinessLogic.Services
             return targetGame;
         }
 
-        public async Task<JoinGameDTO> JoinToGame(JoinGameDTO joinGameData)
+        public async Task<GameDTO> JoinToGame(SideDTO side)
         {
-            if (uow == null || joinGameData.GameId < 1)
+            if (uow == null || !side.GameId.HasValue || side.GameId.Value < 1)
                 return null;
 
-            var targetGame = await uow.GetRepository<Game>().GetByIdAsync(joinGameData.GameId);
+            var targetGame = await uow.GetRepository<Game>().GetByIdAsync(side.GameId.Value);
 #warning кинуть исключение (игры нет\ нельзя подключится к игре)
             if (targetGame == null || targetGame.Status != DataAccess.Helpers.GameStatus.Waiting)
                 return null;
 
-            var sides = targetGame.Sides;
-#warning кинуть исключение (цвет занят)
-            var targetSide = sides.Where(s => s.Color == joinGameData.SelectedColor).First();
-            if (targetSide.Player != null)
-                return null;
-            else
-            {
 #warning установить current user в качестве игрока
 
-                if (sides.Where(s => s.Player != null).Count() < 1)
-                {
-                    targetGame.Status = DataAccess.Helpers.GameStatus.Going;
-                    uow.GetRepository<Game>().Update(targetGame);
-                }
+            var hostSide = targetGame.Sides.FirstOrDefault();
+#warning кинуть исключение, игра не валидна
+            if (hostSide == null)
+                return null;
 
-                // обвновить sides, инициализировать player в joinGameData
-                await uow.SaveAsync();
-                return joinGameData;
-            }
+            var color = (hostSide.Color == DataAccess.Helpers.Color.Black) ? DataAccess.Helpers.Color.White : DataAccess.Helpers.Color.Black;
+            targetGame.Sides.Add(new Side()
+            {
+                Color = color,
+                PlayerId = side.Player.Id
+            });
+            targetGame.Status = DataAccess.Helpers.GameStatus.Going;
+            uow.GetRepository<Game>().Update(targetGame);
+
+            // обвновить sides, инициализировать player в joinGameData
+            await uow.SaveAsync();
+            return mapper.Map<GameDTO>(targetGame);
 
         }
 
