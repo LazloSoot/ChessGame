@@ -5,6 +5,8 @@ using Chess.BusinessLogic.Services;
 using Microsoft.AspNetCore.Builder;
 using Chess.BusinessLogic.Hubs;
 using Chess.Common.Helpers;
+using Chess.BusinessLogic.Interfaces.SignalR;
+using Chess.BusinessLogic.Services.SignalR;
 
 namespace Chess.BusinessLogic
 {
@@ -16,6 +18,8 @@ namespace Chess.BusinessLogic
             services.AddScoped<IChessMovesService, ChessMovesService>();
             services.AddScoped<IGameDataService, GameDataService>();
             services.AddScoped<IUserService, UserService>();
+            services.AddScoped<ISignalRChessService, SignalRChessService>();
+            services.AddScoped<ISignalRNotificationService, SignalRNotificationService>();
             
             if (configuration.GetValue<bool>("UseLocalSignalR"))
             {
@@ -35,6 +39,7 @@ namespace Chess.BusinessLogic
                 {
                     options.MapHub<CommonHub>(HubType.CommonHub.GetStringValue());
                     options.MapHub<NotificationHub>(HubType.NotificationHub.GetStringValue());
+                    options.MapHub<ChessGameHub>(HubType.ChessGameHub.GetStringValue());
                 });
             }
             else
@@ -43,6 +48,7 @@ namespace Chess.BusinessLogic
                 {
                     options.MapHub<CommonHub>(HubType.CommonHub.GetStringValue());
                     options.MapHub<NotificationHub>(HubType.NotificationHub.GetStringValue());
+                    options.MapHub<ChessGameHub>(HubType.ChessGameHub.GetStringValue());
                 });
             }
         }

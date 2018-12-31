@@ -4,9 +4,9 @@ using System.Threading.Tasks;
 
 namespace Chess.BusinessLogic.Interfaces
 {
-    public interface IChessMovesService : ICRUDService<Move, CommitedMoveDTO>
+    public interface IChessMovesService : ICRUDService<Move, MoveDTO>
     {
-        Task<CommitedMoveDTO> Move(MoveDTO moveRequest);
+        Task<MoveDTO> Move(MoveRequest moveRequest);
 
         Task Resign();
     }

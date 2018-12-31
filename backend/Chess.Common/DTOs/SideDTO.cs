@@ -5,6 +5,7 @@ namespace Chess.Common.DTOs
     {
         public int Id { get; set; }
         public GameDTO Game { get; set; }
+        public int? GameId { get; set; }
         public UserDTO Player { get; set; }
         public Color Color { get; set; }
         public int Points { get; set; }

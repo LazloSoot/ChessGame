@@ -10,7 +10,7 @@ using System.Linq;
 
 namespace Chess.BusinessLogic.Services
 {
-    public class ChessMovesService : CRUDService<Move, CommitedMoveDTO> , IChessMovesService
+    public class ChessMovesService : CRUDService<Move, MoveDTO> , IChessMovesService
     {
         //"rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1"
         // 0-позиция фигур                             1 2    3 4 5
@@ -24,20 +24,20 @@ namespace Chess.BusinessLogic.Services
 
         }
 
-        public async Task<CommitedMoveDTO> Move(MoveDTO moveRequest)
+        public async Task<MoveDTO> Move(MoveRequest moveRequest)
         {
 #warning кинуть разные исключения вместо null
             if (uow == null || string.IsNullOrWhiteSpace(moveRequest.Move) || moveRequest.GameId < 1)
                 return null;
 
-            return await AddAsync(new CommitedMoveDTO()
+            return await AddAsync(new MoveDTO()
             {
                 GameId = moveRequest.GameId,
                 MoveNext = moveRequest.Move
             });
         }
 
-        public async Task<CommitedMoveDTO> CommitMove(CommitedMoveDTO move)
+        public async Task<MoveDTO> CommitMove(MoveDTO move)
         {
             var game = await FindGame(move);
 
@@ -86,7 +86,7 @@ namespace Chess.BusinessLogic.Services
             throw new NotImplementedException();
         }
 
-        private async Task<Game> FindGame(CommitedMoveDTO move)
+        private async Task<Game> FindGame(MoveDTO move)
         {
             int gameId;
 

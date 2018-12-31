@@ -1,8 +1,8 @@
 import { EventEmitter } from "@angular/core";
 import { Hub } from './hub';
-import { AppStateService } from "../../services/app-state.service";
 import { environment } from '../../../../environments/environment';
 import * as signalR from '@aspnet/signalr';
+import { ServerAction } from "./serverAction";
 
 export class UserConnection {
     private joinGroupAttemptsСount = maxJoinAttemptsСount;
@@ -13,7 +13,7 @@ export class UserConnection {
      connection: any;
      isClosedByUser = new EventEmitter<Hub>(true);
 
-    constructor(public hub: Hub, private appState: AppStateService) {}
+    constructor(public hub: Hub, private token: string) {}
 
     joinGroup(groupName: string) {
         if (this.groups.includes(groupName)) {
@@ -79,7 +79,12 @@ export class UserConnection {
         }
     }
 
+    send(serverActionName: ServerAction | string, arg: string): Promise<void> {
+        return this.connection.send(serverActionName, arg);
+    }
+
     leaveGroup(groupName: string) {
+        groupName = groupName.trim();
         if (this.groups.includes(groupName)) {
             if (this.connection.connection.connectionState === 1) {
                 console.log(`Disconnecting from group ${groupName}`);
@@ -87,7 +92,7 @@ export class UserConnection {
             }
             this.groups = this.groups.filter(g => g !== groupName);
             if (this.groups.length < 1) {
-                console.log(`Stoping SignalR connection to ${Hub[this.hub]}`);
+                console.log(`Stoping SignalR connection to ${this.hub}`);
                 this.isDisconnectedByUser = true;
                 this.isClosedByUser.emit(this.hub);
                 this.connection.stop();
@@ -121,27 +126,35 @@ export class UserConnection {
         }
     }
 
+    offAll(): void {
+        for(let m in this.connection.methods)
+        {
+            this.off(m);
+        }
+    }
+
     connect(): Promise<void> {
         if (this.connectAttemptsCount < 1) {
             console.log(
                 `Maximum number of attempts to connect ${
-                    Hub[this.hub]
+                    this.hub
                 } was exhausted`
             );
             return;
         } else {
+            debugger;
             if (!this.connection) {
-                console.log(`Creating SignalR ${Hub[this.hub]} connection...`);
+                console.log(`Creating SignalR ${this.hub} connection...`);
 
                this.connection = new signalR.HubConnectionBuilder()
-                           .withUrl(`${environment.apiUrl}/${Hub[this.hub]}`, {
+                           .withUrl(`${environment.apiUrl}/${this.hub}`, {
                                accessTokenFactory: () =>
-                                   this.appState.token
+                                   this.token
                            })
                            .build();
 
                 this.connection.onclose(err => {
-                    console.log(`SignalR hub ${Hub[this.hub]} disconnected.`);
+                    console.log(`SignalR hub ${this.hub} disconnected.`);
                     setTimeout(() => {
                         if (!this.isDisconnectedByUser) {
                             this.connectAttemptsCount--;
@@ -159,7 +172,7 @@ export class UserConnection {
         if (!this.connection) {
             this.connect();
         } else {
-            console.log(`SignalR hub ${Hub[this.hub]} reconnection started...`);
+            console.log(`SignalR hub ${this.hub} reconnection started...`);
             if (this.connection.connection.connectionState === 2) {
                 const connPromise = this.connection.start();
 

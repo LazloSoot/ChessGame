@@ -1,5 +1,5 @@
 export enum Group {
     Common,
-    PlayRoom
+    User = "user"
 
 }

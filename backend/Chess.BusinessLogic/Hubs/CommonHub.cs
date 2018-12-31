@@ -3,13 +3,29 @@ using Microsoft.AspNetCore.SignalR;
 using System;
 using System.Collections.Concurrent;
 using System.Threading.Tasks;
+using Chess.Common.Helpers;
+using Chess.BusinessLogic.Interfaces;
+using Chess.DataAccess.Entities;
+using Chess.DataAccess.Interfaces;
+using Chess.Common.Interfaces;
+using System.Collections.Generic;
 
 namespace Chess.BusinessLogic.Hubs
 {
     [Authorize]
     public class CommonHub : Hub
     {
-        protected static ConcurrentDictionary<string, int> ConnectedUsers { get; set; } = new ConcurrentDictionary<string, int>();
+        private readonly IRepository<User> _usersProvider;
+        internal static ConcurrentDictionary<string, string> ConnectedUsers { get; private set; } 
+        public CommonHub(IRepository<User> usersRepo)
+        {
+            _usersProvider = usersRepo;
+        }
+
+        static CommonHub()
+        {
+            ConnectedUsers = new ConcurrentDictionary<string, string>();
+        }
 
         public virtual async Task JoinGroup(string groupName)
         {
@@ -32,19 +48,24 @@ namespace Chess.BusinessLogic.Hubs
 
         public override async Task OnConnectedAsync()
         {
-
+            // NHCblkzx89Qy3xhDgE2GxxkiSqt2
             //int userDbId = await chatService.ChangeUserStatus(targetUserUid: Context.UserIdentifier, isOnline: true);
-            var a = Context.UserIdentifier;
-             // ConnectedUsers.TryAdd(Context.UserIdentifier, userDbId);
+
+            var uid = Context.UserIdentifier;
+            var userName = Context.User.GetName();
+            if (string.IsNullOrEmpty(userName))
+            {
+                userName = (await _usersProvider.GetOneAsync(u => string.Equals(u.Uid, uid))).Name;
+            }
+             ConnectedUsers.TryAdd(uid, userName);
              await base.OnConnectedAsync();
         }
 
         public override async Task OnDisconnectedAsync(Exception exception)
         {
             //await chatService.ChangeUserStatus(targetUserUid: Context.UserIdentifier, isOnline: false);
-          //  ConnectedUsers.Remove(Context.UserIdentifier);
+            ConnectedUsers.TryRemove(Context.UserIdentifier, out string value);
             await base.OnDisconnectedAsync(exception);
         }
-
     }
 }

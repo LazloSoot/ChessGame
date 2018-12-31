@@ -1,5 +1,5 @@
-import { Component, OnInit, Input, Output, SimpleChange, EventEmitter } from '@angular/core';
-import { PieceType, BoardTextureType, Square, Move, GameSettings } from '../../../core';
+import { Component, OnInit, Input, Output, SimpleChange, EventEmitter, OnDestroy } from '@angular/core';
+import { PieceType, BoardTextureType, Square, Move, GameSettings, GameSide } from '../../../core';
 import { BehaviorSubject } from 'rxjs';
 
 @Component({
@@ -23,6 +23,9 @@ export class ChessBoardComponent implements OnInit {
 	}
 
 	ngOnInit() {
+	}
+
+	ngOnDestroy() {
 	}
 
 	getSquaresCount() {
@@ -53,7 +56,7 @@ export class ChessBoardComponent implements OnInit {
 		let increment;
 		let currentRow;
 		let correspondingCharCode;
-		if(this.gameSettings.options.isWhiteSide) {
+		if(this.gameSettings.options.selectedSide === GameSide.White) {
 			currentRow = 8;
 			increment = -1;
 			correspondingCharCode = 97;
@@ -97,7 +100,7 @@ export class ChessBoardComponent implements OnInit {
 		let lines = parts[0].split('/');
 		let currentSkipCount: number;
 		let baseNum;
-		if(this.gameSettings.options.isWhiteSide) {
+		if(this.gameSettings.options.selectedSide === GameSide.White) {
 			baseNum = 0;
 		}
 		else {

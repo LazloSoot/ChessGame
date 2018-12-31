@@ -45,7 +45,7 @@ export class NavigationComponent implements OnInit {
 					break;
 			}
 		});
-		this.appStateService.getCurrentUser()
+		this.appStateService.getCurrentUserObs()
 		.subscribe((user) => {
 			if(user){
 				this.user = user;

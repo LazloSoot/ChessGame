@@ -5,6 +5,8 @@
         [StringValue("/commonHub")]
         CommonHub,
         [StringValue("/notificationHub")]
-        NotificationHub
+        NotificationHub,
+        [StringValue("/chessHub")]
+        ChessGameHub
     }
 }

@@ -100,6 +100,10 @@ namespace Chess.DataAccess.Migrations
 
                     b.HasKey("Id");
 
+                    b.HasIndex("Uid")
+                        .IsUnique()
+                        .HasFilter("[Uid] IS NOT NULL");
+
                     b.ToTable("Users");
                 });
 
