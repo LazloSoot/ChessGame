@@ -28,6 +28,10 @@ namespace Chess.DataAccess
                 .WithOne(s => s.Game)
                 .HasForeignKey(s => s.GameId)
                 .OnDelete(DeleteBehavior.Cascade);
+
+            modelBuilder.Entity<User>()
+                .HasIndex(u => u.Uid)
+                .IsUnique(true);
         }
 
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
