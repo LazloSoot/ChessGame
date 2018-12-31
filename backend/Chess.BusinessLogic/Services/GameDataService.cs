@@ -80,36 +80,39 @@ namespace Chess.BusinessLogic.Services
             return targetGame;
         }
 
-        public async Task<GameDTO> JoinToGame(SideDTO side)
+        public async Task<GameDTO> JoinToGame(int gameId)
         {
-            if (uow == null || !side.GameId.HasValue || side.GameId.Value < 1)
+            if (uow == null)
                 return null;
 
-            var targetGame = await uow.GetRepository<Game>().GetByIdAsync(side.GameId.Value);
+            var targetGame = await uow.GetRepository<Game>().GetByIdAsync(gameId);
 #warning кинуть исключение (игры нет\ нельзя подключится к игре)
             if (targetGame == null || targetGame.Status != DataAccess.Helpers.GameStatus.Waiting)
                 return null;
-
-#warning установить current user в качестве игрока
-
+            
             var hostSide = targetGame.Sides.FirstOrDefault();
 #warning кинуть исключение, игра не валидна
             if (hostSide == null)
                 return null;
 
             var color = (hostSide.Color == DataAccess.Helpers.Color.Black) ? DataAccess.Helpers.Color.White : DataAccess.Helpers.Color.Black;
+            var curentUserUid = _currentUserProvider.GetCurrentUserUid();
+            var currentDbUser = await uow.GetRepository<User>().GetOneAsync(u => string.Equals(u.Uid, curentUserUid));
+            if (currentDbUser == null)
+                return null;
+
             targetGame.Sides.Add(new Side()
             {
                 Color = color,
-                PlayerId = side.Player.Id
+                Player = currentDbUser
             });
             targetGame.Status = DataAccess.Helpers.GameStatus.Going;
             uow.GetRepository<Game>().Update(targetGame);
-
-            // обвновить sides, инициализировать player в joinGameData
+            
             await uow.SaveAsync();
-            return mapper.Map<GameDTO>(targetGame);
 
+            await _notificationService.AcceptInvitation(hostSide.Player.Uid, targetGame.Id);
+            return mapper.Map<GameDTO>(targetGame);
         }
 
         public Task<GameDTO> SuspendGame(int gameId)

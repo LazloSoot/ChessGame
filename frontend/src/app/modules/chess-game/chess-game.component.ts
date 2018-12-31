@@ -10,7 +10,9 @@ import {
 	Hub,
 	GameSide,
 	Invocation,
-	ServerAction
+	ServerAction,
+	StyleOptions,
+	GameOptions
 } from "../../core";
 import { MatDialog, MatDialogConfig, MatDialogRef } from "@angular/material";
 import {
@@ -29,6 +31,7 @@ import { BehaviorSubject } from "rxjs";
 })
 export class ChessGameComponent implements OnInit {
 	private gameSettings: GameSettings = new GameSettings();
+	private game: Game;
 	private fen: string =
 		"rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
 	private isGameInitialized = false;
@@ -56,10 +59,18 @@ export class ChessGameComponent implements OnInit {
 		);
 		this.appStateService.signalRConnection.on(
 			ClientEvent.InvocationAccepted,
-			() => {
-				debugger;
-				this.awaitedUserUid.next(null);
-				// вывод инфо о начале игры
+			(gameId) => {
+				if(gameId && this.gameSettings && this.gameSettings.gameId === gameId)
+				{
+					this.awaitedUserUid.next(null);
+					// вывод инфо о начале игры
+					this.chessGame.get(gameId)
+					.subscribe((game) => {
+						this.game = game;
+						this.gameSettings.startFen = game.fen;
+						this.fen = game.fen;
+					})
+				}
 			}
 		);
 		this.appStateService.signalRConnection.on(
@@ -175,28 +186,18 @@ export class ChessGameComponent implements OnInit {
 		});
 		this.invitationDialog.afterClosed().subscribe(result => {
 			if (result) {
-				this.chessGame.get(invocation.gameId).subscribe(game => {
-					if (game) {
-						let inviterSide = game.sides.find(
-							s => s.player.uid === invocation.inviter.uid
-						);
-						let side = new Side(
-							inviterSide.color === GameSide.White
-								? GameSide.Black
-								: GameSide.White,
-							this.appStateService.getCurrentUser()
-						);
-						side.gameId = game.id;
-
-						this.chessGame.joinGame(side).subscribe(side => {
+						this.chessGame.joinGame(invocation.gameId).subscribe(game => {
 							if (game) {
+								this.gameSettings = new GameSettings(new StyleOptions(), new GameOptions(), game.fen);
+								this.gameSettings.gameId = game.id;
+								this.fen = game.fen;
+								this.chessGame.initializeGame(this.gameSettings);
+								this.isGameInitialized = true;
 								console.log("game ready");
 							} else {
 								console.log("user does not join to game.ERROR");
 							}
 						});
-					}
-				});
 			} else {
 				this.appStateService.signalRConnection.send(
 					ServerAction.DismissInvocation,

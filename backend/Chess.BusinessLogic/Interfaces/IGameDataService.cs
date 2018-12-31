@@ -11,7 +11,7 @@ namespace Chess.BusinessLogic.Interfaces
     {
         Task<GameDTO> CreateNewGame(GameDTO entity);
 
-        Task<GameDTO> JoinToGame(SideDTO side);
+        Task<GameDTO> JoinToGame(int gameId);
 
         Task<GameDTO> SuspendGame(int gameId);
     }

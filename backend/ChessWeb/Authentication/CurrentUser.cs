@@ -45,6 +45,12 @@ namespace ChessWeb.Authentication
             var result = RequestLevelCache["User"] as User;
             return result;
         }
+
+        public string GetCurrentUserUid()
+        {
+            return CurrentContext.User.GetUid();
+        }
+
         private async Task<User> CurrentUserContainerAsync()
         {
             var userUid = CurrentContext.User.GetUid();

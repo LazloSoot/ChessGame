@@ -49,15 +49,13 @@ namespace ChessWeb.Controllers
                 : Ok(entity);
         }
 
-        // PUT: Games
-        [HttpPut]
-        public async Task<IActionResult> JoinGame([FromBody]SideDTO side)
+        // PUT: Games/{:id}/join
+        [HttpPut("{gameId}/join", Name ="JoinGame")]
+        public async Task<IActionResult> JoinGame(int gameId)
         {
-            if (!ModelState.IsValid)
-                return BadRequest() as IActionResult;
-
-            var readyGame = await _service.JoinToGame(side);
-            return readyGame as IActionResult;
+            var readyGame = await _service.JoinToGame(gameId);
+            return readyGame == null ? StatusCode(304) as IActionResult
+                : Ok(readyGame);
         }
 
         // DELETE: Games/5

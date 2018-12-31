@@ -51,5 +51,13 @@ namespace Chess.BusinessLogic.Services.SignalR
                 .Group($"{HubGroup.User.GetStringValue()}{userUid}")
                 .SendAsync(ClientEvent.Invocation.GetStringValue(), invition);
         }
+
+        public async Task AcceptInvitation(string inviterUid, int gameId)
+        {
+            await _hubContext
+                .Clients
+                .Group($"{HubGroup.User.GetStringValue()}{inviterUid}")
+                .SendAsync(ClientEvent.InvocationAccepted.GetStringValue(), gameId);
+        }
     }
 }

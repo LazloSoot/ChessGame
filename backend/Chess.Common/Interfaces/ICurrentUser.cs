@@ -6,5 +6,7 @@ namespace Chess.Common.Interfaces
     public interface ICurrentUser
     {
         Task<User> GetCurrentUserAsync();
+
+        string GetCurrentUserUid();
     }
 }

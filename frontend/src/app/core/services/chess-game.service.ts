@@ -14,12 +14,11 @@ export class ChessGameService {
 	constructor(private httpService: HttpService) {}
 
 	public initializeGame(
-		settings: GameSettings = new GameSettings(),
-		fen: string = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1"
+		settings: GameSettings = new GameSettings()
 	) {
 		this._gameSettings = settings;
-		if (this.isFenValid(fen)) {
-			this.fen = fen;
+		if (this.isFenValid(settings.startFen)) {
+			this.fen = settings.startFen;
 		} else {
 			throw new Error("Fen is not valid!");
 		}
@@ -39,7 +38,7 @@ export class ChessGameService {
 		return this.httpService.sendRequest(RequestMethod.Post, this._apiUrl, undefined, game);
 	}
 
-	public joinGame(side: Side): Observable<Side> {
-		return this.httpService.sendRequest(RequestMethod.Put, this._apiUrl, undefined, side);
+	public joinGame(gameId: number): Observable<Game> {
+		return this.httpService.sendRequest(RequestMethod.Put, `${this._apiUrl}/${gameId}/join`);
 	}
 }
