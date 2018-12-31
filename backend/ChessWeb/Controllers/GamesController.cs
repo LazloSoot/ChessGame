@@ -46,7 +46,7 @@ namespace ChessWeb.Controllers
 
             var entity = await _service.CreateNewGame(game);
             return entity == null ? StatusCode(409) as IActionResult
-                : StatusCode(201) as IActionResult;
+                : Ok(entity);
         }
 
         // PUT: Games

@@ -45,7 +45,7 @@ export class NewGameDialogComponent implements OnInit {
 	) {}
 
 	ngOnInit() {
-		this.appStateService.getCurrentUser().subscribe((user) => {
+		this.appStateService.getCurrentUserObs().subscribe((user) => {
 			this.currentUser = user;
 		});
 		let tabHeader = document.getElementsByClassName("mat-tab-header")[0];

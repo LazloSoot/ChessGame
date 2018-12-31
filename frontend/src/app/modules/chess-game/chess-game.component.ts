@@ -20,6 +20,7 @@ import {
 } from "../../shared";
 import { Game } from "../../core/models/chess/game";
 import { Side } from "../../core/models/chess/side";
+import { BehaviorSubject } from "rxjs";
 
 @Component({
 	selector: "app-chess-game",
@@ -32,6 +33,8 @@ export class ChessGameComponent implements OnInit {
 		"rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
 	private isGameInitialized = false;
 	private waitingDialog: MatDialogRef<WaitingDialogComponent>;
+	private invitationDialog: MatDialogRef<InvitationDialogComponent>;
+	private awaitedUserUid: BehaviorSubject<string> = new BehaviorSubject<string>(null);
 	constructor(
 		private dialog: MatDialog,
 		private chessGame: ChessGameService,
@@ -39,6 +42,12 @@ export class ChessGameComponent implements OnInit {
 	) {}
 
 	ngOnInit() {
+		this.awaitedUserUid.subscribe((value) => {
+			if(!value && this.waitingDialog)
+			{
+				this.waitingDialog.close();
+			}
+		});
 		this.appStateService.signalRConnection.on(
 			ClientEvent.InvocationReceived,
 			(invocation: Invocation) => {
@@ -48,15 +57,32 @@ export class ChessGameComponent implements OnInit {
 		this.appStateService.signalRConnection.on(
 			ClientEvent.InvocationAccepted,
 			() => {
-				this.waitingDialog.close();
+				debugger;
+				this.awaitedUserUid.next(null);
 				// вывод инфо о начале игры
 			}
 		);
 		this.appStateService.signalRConnection.on(
 			ClientEvent.InvocationDismissed,
+			byUserWithUid => {
+				debugger;
+				if (
+					this.awaitedUserUid.value &&
+					byUserWithUid &&
+					this.awaitedUserUid.value === byUserWithUid
+				) {
+					this.awaitedUserUid.next(null);
+					// вывод инфо об отказе
+				}
+			}
+		);
+		this.appStateService.signalRConnection.on(
+			ClientEvent.InvocationCanceled,
 			() => {
-				this.waitingDialog.close();
-				// вывод инфо об отказе
+				if(this.invitationDialog)
+				{
+					this.invitationDialog.close();
+				}
 			}
 		);
 	}
@@ -82,6 +108,7 @@ export class ChessGameComponent implements OnInit {
 							settings.options.selectedSide = this.getRandomSide();
 						}
 						if (settings.options.opponent) {
+							this.awaitedUserUid.next(settings.options.opponent.uid);
 							let sides: Side[] = [
 								new Side(settings.options.selectedSide),
 								new Side(
@@ -96,12 +123,26 @@ export class ChessGameComponent implements OnInit {
 							this.chessGame
 								.createGame(newGame)
 								.subscribe(game => {
+									debugger;
 									if (game) {
 										this.gameSettings.gameId = game.id;
 										this.waitingDialog = this.dialog.open(
 											WaitingDialogComponent,
 											config
 										);
+										this.waitingDialog.afterClosed()
+										.subscribe(
+											(isCanceled) => {
+												debugger;
+												if(isCanceled)
+												{
+													this.appStateService.signalRConnection
+													.send(
+														ServerAction.CancelInvocation,
+														`${Group.User}${this.awaitedUserUid.value}`);
+														this.awaitedUserUid.next(null);
+												}
+										})
 										// открыть dialog и ждать пользователя
 									}
 								});
@@ -129,10 +170,10 @@ export class ChessGameComponent implements OnInit {
 	}
 
 	private handleInvocation(invocation: Invocation) {
-		let dialogRef = this.dialog.open(InvitationDialogComponent, {
+		this.invitationDialog = this.dialog.open(InvitationDialogComponent, {
 			data: invocation
 		});
-		dialogRef.afterClosed().subscribe(result => {
+		this.invitationDialog.afterClosed().subscribe(result => {
 			if (result) {
 				this.chessGame.get(invocation.gameId).subscribe(game => {
 					if (game) {

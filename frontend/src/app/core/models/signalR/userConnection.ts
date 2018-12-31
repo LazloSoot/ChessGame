@@ -79,8 +79,8 @@ export class UserConnection {
         }
     }
 
-    send(serverActionName: ServerAction | string, ...args: any[]): Promise<void> {
-        return this.connection.send(serverActionName, args);
+    send(serverActionName: ServerAction | string, arg: string): Promise<void> {
+        return this.connection.send(serverActionName, arg);
     }
 
     leaveGroup(groupName: string) {

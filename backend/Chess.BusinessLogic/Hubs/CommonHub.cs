@@ -24,7 +24,7 @@ namespace Chess.BusinessLogic.Hubs
 
         static CommonHub()
         {
-            ConnectedUsers = new ConcurrentDictionary<string, string>(MOCK_USERS);
+            ConnectedUsers = new ConcurrentDictionary<string, string>();
         }
 
         public virtual async Task JoinGroup(string groupName)
@@ -67,17 +67,5 @@ namespace Chess.BusinessLogic.Hubs
             ConnectedUsers.TryRemove(Context.UserIdentifier, out string value);
             await base.OnDisconnectedAsync(exception);
         }
-
-
-        static Dictionary<string, string> MOCK_USERS = new Dictionary<string, string>()
-        {
-            {"1", "Grisha Petrow"},
-            {"2", "Oleg Komarow" },
-            {"3", "Marina Popowa Ebat" },
-            {"4", "Vladimir Petrogor" },
-            {"5", "Anatolii Pomidor" },
-            {"6", "pROstoWitia" },
-            {"7", "Gena" }
-        };
     }
 }

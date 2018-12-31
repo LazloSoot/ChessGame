@@ -27,6 +27,7 @@ namespace Chess.BusinessLogic.Services
             _notificationService = notificationService;
         }
 
+#warning работает только с приглашением оппонента
         public async Task<GameDTO> CreateNewGame(GameDTO game)
         {
             if (uow == null)
