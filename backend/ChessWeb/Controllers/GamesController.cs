@@ -3,26 +3,28 @@ using Microsoft.AspNetCore.Mvc;
 using Chess.BusinessLogic.Interfaces;
 using Chess.DataAccess.Entities;
 using Chess.Common.DTOs;
+using Microsoft.AspNetCore.Authorization;
 
 namespace ChessWeb.Controllers
 {
     [Route("[controller]")]
     [Produces("application/json")]
     [ApiController]
+    [Authorize]
     public class GamesController : ControllerBase
     {
-        private readonly IGameDataService service;
+        private readonly IGameDataService _service;
 
         public GamesController(IGameDataService service)
         {
-            this.service = service;
+            _service = service;
         }
 
         // GET: Games
         [HttpGet]
         public async Task<IActionResult> GetAllGames()
         {
-            var games = await service.GetListAsync();
+            var games = await _service.GetListAsync();
             return games == null ? NotFound("No games found!") as IActionResult
                 : Ok(games);
         }
@@ -31,7 +33,7 @@ namespace ChessWeb.Controllers
         [HttpGet("{id}", Name = "GetGame")]
         public async Task<IActionResult> GetGame(int id)
         {
-            var game = await service.GetByIdAsync(id);
+            var game = await _service.GetByIdAsync(id);
             return game == null ? NotFound($"Game with id = {id} not found!") as IActionResult
                 : Ok(game);
         }
@@ -42,16 +44,25 @@ namespace ChessWeb.Controllers
             if (!ModelState.IsValid)
                 return BadRequest() as IActionResult;
 
-            var entity = await service.CreateNewGame(game);
+            var entity = await _service.CreateNewGame(game);
             return entity == null ? StatusCode(409) as IActionResult
-                : StatusCode(201) as IActionResult;
+                : Ok(entity);
+        }
+
+        // PUT: Games/{:id}/join
+        [HttpPut("{gameId}/join", Name ="JoinGame")]
+        public async Task<IActionResult> JoinGame(int gameId)
+        {
+            var readyGame = await _service.JoinToGame(gameId);
+            return readyGame == null ? StatusCode(304) as IActionResult
+                : Ok(readyGame);
         }
 
         // DELETE: Games/5
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteGame(int id)
         {
-            var success = await service.TryRemoveAsync(id);
+            var success = await _service.TryRemoveAsync(id);
             return success ? Ok() : StatusCode(304) as IActionResult;
         }
     }

@@ -142,7 +142,8 @@ export class AuthService {
 		debugger;
 		// userInfo.providerId === "password" means that user logged in by email and password
 		// i.e we need to take a data like avatarUrl and name from our db
-		if(firebaseUser.providerData.filter(userInfo => userInfo.providerId === "password").length > 0)
+		if(firebaseUser.providerData.length < 2 &&
+			firebaseUser.providerData.filter(userInfo => userInfo.providerId === "password").length > 0)
 		{
 		  return await this.userService.get(firebaseUser.uid)
 				.toPromise()

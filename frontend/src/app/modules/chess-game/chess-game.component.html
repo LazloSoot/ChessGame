@@ -1,3 +1,10 @@
 <p>
   chess-game works!
 </p>
+<img src="../../../assets/images/Chess/prev.jpg">
+<app-chess-board
+*ngIf="isGameInitialized"
+[gameSettings]="gameSettings"
+[fen]="fen" 
+(move)="onMove($event)">
+</app-chess-board>

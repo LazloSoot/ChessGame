@@ -6,7 +6,7 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace ChessWeb.Controllers
 {
-    [Route("[controller]")]
+    [Route("games/[controller]")]
     [Produces("application/json")]
     [ApiController]
     public class SidesController : ControllerBase
@@ -18,7 +18,7 @@ namespace ChessWeb.Controllers
             this.service = service;
         }
 
-        // GET: Sides
+        // GET: Games/Sides
         [HttpGet]
         public async Task<IActionResult> GetAllSides()
         {
@@ -27,7 +27,7 @@ namespace ChessWeb.Controllers
                 : Ok(sides);
         }
 
-        // GET: Sides/5
+        // GET: Games/Sides/5
         [HttpGet("{id}", Name = "GetSide")]
         public async Task<IActionResult> GetSide(int id)
         {
@@ -35,5 +35,7 @@ namespace ChessWeb.Controllers
             return side == null ? NotFound($"Side with id = {id} not found!") as IActionResult
                 : Ok(side);
         }
+
+        
     }
 }

@@ -24,6 +24,7 @@ namespace Chess.DataAccess
             });
 
             services.AddScoped(typeof(DbContext), typeof(DataContext));
+            services.AddScoped(typeof(IRepository<>), typeof(ChessRepository<>));
             services.AddScoped<IUnitOfWork, UnitOfWork>();
         }
 

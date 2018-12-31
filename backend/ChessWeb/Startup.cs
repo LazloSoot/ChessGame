@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using Microsoft.AspNetCore.Builder;
+﻿using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
@@ -11,6 +7,7 @@ using Chess.BusinessLogic;
 using Chess.Common;
 using Chess.DataAccess;
 using ChessWeb.Authentication;
+using Chess.Common.Interfaces;
 
 namespace ChessWeb
 {
@@ -45,6 +42,8 @@ namespace ChessWeb
                     options => options.SerializerSettings.ReferenceLoopHandling = Newtonsoft.Json.ReferenceLoopHandling.Ignore
                     );
 
+            services.AddHttpContextAccessor();
+            services.AddScoped<ICurrentUser, CurrentUser>();
             services.AddFirebaseAuthentication(Configuration.GetValue<string>("Firebase:ProjectId"));
             BuisinessLogicModule.ConfigureServices(services, Configuration);
             DataAccessModule.ConfigureServices(services, Configuration);
@@ -62,6 +61,8 @@ namespace ChessWeb
             app.UseCors("AllowAll");
             app.UseAuthentication();
             app.UseMvc();
+
+            BuisinessLogicModule.ConfigureMiddleware(app, Configuration);
         }
     }
 }
