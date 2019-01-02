@@ -62,7 +62,7 @@ namespace ChessWeb.Controllers
 
             var entity = await _service.AddAsync(user);
             return entity == null ? StatusCode(409) as IActionResult
-                : StatusCode(201) as IActionResult;
+                : Ok(entity) as IActionResult;
         }
 
         // DELETE: Users/5

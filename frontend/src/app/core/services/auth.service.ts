@@ -4,9 +4,9 @@ import * as firebase from "firebase/app";
 import { from } from "rxjs";
 import { AuthProviderType, User } from "../models";
 import { AppStateService } from "./app-state.service";
-import { UserService } from './user.service';
+import { UserService } from "./user.service";
 
-		// aSfg14Gszs
+// aSfg14Gszs
 @Injectable({
 	providedIn: "root"
 })
@@ -30,18 +30,17 @@ export class AuthService {
 					await userCred.user
 						.sendEmailVerification()
 						.then(async () => {
-							let newUser: User = {
-								id: undefined,
-								avatarUrl: undefined,
-								name: userName,
-								uid: userCred.user.uid
-							};
-							
+							// we initialize token for ability to create record(interceptor need to add token to auth header)
 							this.appStateService.token = await userCred.user.getIdToken();
-							await this.userService.add(newUser).toPromise();
+							await this.userService
+								.add(new User(userCred.user.uid, userName))
+								.toPromise();
 							this.appStateService.token = undefined;
-
-							throw new Error(`You need to confirm your email address in order to use our service. Email confirmation was already send to ${userCred.user.email}. Check your email.`);
+							throw new Error(
+								`You need to confirm your email address in order to use our service. Email confirmation was already send to ${
+									userCred.user.email
+								}. Check your email.`
+							);
 						})
 						.catch(error => {
 							throw error;
@@ -64,21 +63,25 @@ export class AuthService {
 			.then(
 				async userCred => {
 					if (userCred.user.emailVerified) {
-
 						this.appStateService.token = await userCred.user.getIdToken();
-						await this.appStateService.updateAuthState(
-							this.firebaseAuth.authState,
-							await this.initializeCurrentUser(userCred.user),
-							false
-						)
-						.catch(error => { throw error; });
-
-
+						await this.appStateService
+							.updateAuthState(
+								this.firebaseAuth.authState,
+								await this.getCurrentDbUser(userCred.user),
+								false
+							)
+							.catch(error => {
+								throw error;
+							});
 					} else {
 						await userCred.user
 							.sendEmailVerification()
 							.then(() => {
-								throw new Error(`You need to confirm your email address in order to use our service.Email confirmation was already send to ${userCred.user.email}. Please check your email.`);
+								throw new Error(
+									`You need to confirm your email address in order to use our service.Email confirmation was already send to ${
+										userCred.user.email
+									}. Please check your email.`
+								);
 							})
 							.catch(error => {
 								throw error;
@@ -112,14 +115,16 @@ export class AuthService {
 			.then(
 				async userCred => {
 					this.appStateService.token = await userCred.user.getIdToken();
-					await this.appStateService.updateAuthState(
-						this.firebaseAuth.authState,
-						await this.initializeCurrentUser(userCred.user),
-						false
-					)
-					.catch(error => { 
-						debugger; 
-						throw error; });
+					await this.appStateService
+						.updateAuthState(
+							this.firebaseAuth.authState,
+							await this.getCurrentDbUser(userCred.user),
+							false
+						)
+						.catch(error => {
+							debugger;
+							throw error;
+						});
 				},
 				error => {
 					debugger;
@@ -138,35 +143,42 @@ export class AuthService {
 		return from(this.firebaseAuth.auth.signOut());
 	}
 
-	private async initializeCurrentUser(firebaseUser: firebase.User): Promise<User> {
-		debugger;
-		// userInfo.providerId === "password" means that user logged in by email and password
-		// i.e we need to take a data like avatarUrl and name from our db
-		if(firebaseUser.providerData.length < 2 &&
-			firebaseUser.providerData.filter(userInfo => userInfo.providerId === "password").length > 0)
-		{
-		  return await this.userService.get(firebaseUser.uid)
-				.toPromise()
-				.then(async user => {
-					debugger;
-				  if(user) {
-					  return user;
-				  } else {
-				  debugger;
-					throw new Error(`There is no such user in db!`);
-				  }
-			  })
-			  .catch(error => {
-				  debugger;
-				   throw error; } )  ;
-		} else {
-			let u: User = {
-				id: undefined,
-				uid: firebaseUser.uid,
-				name: firebaseUser.displayName,
-				avatarUrl: firebaseUser.photoURL
-			}
-			return u;
-		}
+	private async getCurrentDbUser(firebaseUser: firebase.User): Promise<User> {
+		return await this.userService
+			.get(firebaseUser.uid)
+			.toPromise()
+			.then(user => {
+				return user;
+			})
+			.catch(async error => {
+				if (error.status === 404) {
+					// userInfo.providerId === "password" means that user logged in by email and password
+					// i.e we need to ask user for nickname
+					if (
+						firebaseUser.providerData.length < 2 &&
+						firebaseUser.providerData.filter(
+							userInfo => userInfo.providerId === "password"
+						).length > 0
+					) {
+						throw new Error(`There is no such user in db!`);
+					} else {
+						// we initialize token for ability to create record(interceptor needs to add token to auth header)
+						this.appStateService.token = await firebaseUser.getIdToken();
+						return await this.userService
+							.add(
+								new User(
+									firebaseUser.uid,
+									firebaseUser.displayName,
+									firebaseUser.photoURL
+								)
+							)
+							.toPromise()
+							.then((user: User) => {
+								return user;
+							});
+					}
+				}
+				throw error;
+			});
 	}
 }
