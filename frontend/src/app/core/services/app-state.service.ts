@@ -74,17 +74,16 @@ export class AppStateService {
 	}
 
 	private listenAuthState(currentUser: firebase.User | null) {
+		debugger;
 		if (!currentUser) {
-			this.currentUserSubject.next(null);
-			this.token = null;
-			this.isLogedIn = false;
-
 			this._signalRConnection.offAll();
 			this.signalRService.leaveGroup(
 				`${Group.User}${this.currentUserSubject.value.uid}`,
 				Hub.Notification
 			);
-			
+			this.currentUserSubject.next(null);
+			this.token = null;
+			this.isLogedIn = false;
 			this.router.navigate(["/"]);
 		} else {
 			//this.signalRConnection = 
