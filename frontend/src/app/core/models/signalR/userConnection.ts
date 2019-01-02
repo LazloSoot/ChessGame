@@ -142,7 +142,6 @@ export class UserConnection {
             );
             return;
         } else {
-            debugger;
             if (!this.connection) {
                 console.log(`Creating SignalR ${this.hub} connection...`);
 
@@ -184,9 +183,11 @@ export class UserConnection {
                     }, 500);
                 });
 
-                connPromise.then(d => {
-                    for (let i = 0; i < this.groups.length; i++) {
-                        this.joinGroup(this.groups[i]);
+                connPromise.then(() => {
+                    let groupsForJoin = this.groups;
+                    this.groups = [];
+                    for (let i = 0; i < groupsForJoin.length; i++) {
+                        this.joinGroup(groupsForJoin[i]);
                     }
                     this.connectAttemptsCount = maxConnectAttemptsСount;
                 });
