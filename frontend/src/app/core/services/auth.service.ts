@@ -109,7 +109,6 @@ export class AuthService {
 				break;
 			}
 		}
-
 		return from(this.firebaseAuth.auth.signInWithPopup(authProvider))
 			.toPromise()
 			.then(

@@ -18,13 +18,20 @@ namespace Chess.BusinessLogic.Services
     public class GameDataService : CRUDService<Game, GameDTO>, IGameDataService
     {
         private readonly ICurrentUser _currentUserProvider;
+        private readonly IUserService _userService;
         private readonly ISignalRNotificationService _notificationService;
-        public GameDataService(IMapper mapper, IUnitOfWork unitOfWork, ICurrentUser currentUserProvider,
-            ISignalRNotificationService notificationService)
+        public GameDataService(
+            IMapper mapper, 
+            IUnitOfWork unitOfWork, 
+            ICurrentUser currentUserProvider,
+            IUserService userService,
+            ISignalRNotificationService notificationService
+            )
             : base(mapper, unitOfWork)
         {
             _currentUserProvider = currentUserProvider;
             _notificationService = notificationService;
+            _userService = userService;
         }
 
 #warning работает только с приглашением оппонента
@@ -47,8 +54,8 @@ namespace Chess.BusinessLogic.Services
             var sides = game.Sides.ToList();
             var currentUserSide = sides.Where(s => s.Player == null).First();
             var opponent = sides.Where(s => s.Player != null).First().Player;
-            var currentUser = await _currentUserProvider.GetCurrentUserAsync();
-            currentUserSide.Player = mapper.Map<UserDTO>(currentUser);
+            var currentUser = await _userService.GetByUid(_currentUserProvider.GetCurrentUserUid());
+            currentUserSide.Player = currentUser;
             game.Sides = new List<SideDTO>()
             {
                 currentUserSide

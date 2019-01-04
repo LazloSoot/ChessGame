@@ -12,7 +12,9 @@ import {
 	Invocation,
 	ServerAction,
 	StyleOptions,
-	GameOptions
+	GameOptions,
+	MovesService,
+	MoveRequest
 } from "../../core";
 import { MatDialog, MatDialogConfig, MatDialogRef } from "@angular/material";
 import {
@@ -41,7 +43,8 @@ export class ChessGameComponent implements OnInit {
 	constructor(
 		private dialog: MatDialog,
 		private chessGame: ChessGameService,
-		private appStateService: AppStateService
+		private appStateService: AppStateService,
+		private movesService: MovesService
 	) {}
 
 	ngOnInit() {
@@ -172,6 +175,17 @@ export class ChessGameComponent implements OnInit {
 
 	onMove(move: Move) {
 		console.log(move);
+		debugger;
+		//let request = new MoveRequest(move.moveNext, this.game.id);
+		//this.movesService.commitMove(request);
+		//.subscribe((move) => {
+		//	if(move) {
+		//		
+		//	}
+		//}, error => {
+		//	this.fen = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
+		//})
+		//
 	}
 
 	private getRandomSide() {
