@@ -142,7 +142,6 @@ export class UserConnection {
             );
             return;
         } else {
-            debugger;
             if (!this.connection) {
                 console.log(`Creating SignalR ${this.hub} connection...`);
 

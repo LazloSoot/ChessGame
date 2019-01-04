@@ -49,6 +49,7 @@ export class NavigationComponent implements OnInit {
 		.subscribe((user) => {
 			if(user){
 				this.user = user;
+				this.router.navigate(['/play']);
 			}
 			else {
 				this.user = {
@@ -57,6 +58,7 @@ export class NavigationComponent implements OnInit {
 					avatarUrl: "../../../../assets/images/anonAvatar.png",
 					name: "not signed"
 				}
+				this.router.navigate(['/']);
 			}
 		})
 	}
@@ -65,8 +67,12 @@ export class NavigationComponent implements OnInit {
 		this.mobileQuery.removeListener(this._mobileQueryListener);
 	}
 
-	isLoggedIn() {
-		return this.appStateService.isLogedIn;
+	isLoggedIn(): boolean {
+		if(this.appStateService.getCurrentUser()) {
+			return true;
+		} else {
+			return false;
+		}
 	}
 
 	onSignUpClick() {

@@ -17,7 +17,7 @@ export class LandingGuard implements CanActivate {
 	) {}
 
 	canActivate(route: ActivatedRouteSnapshot, state: RouterStateSnapshot) {
-		if (this.appStateService.isLogedIn) {
+		if (this.appStateService.getCurrentUser()) {
 			this.router.navigate(["/play"]);
 			return false;
 		} else {

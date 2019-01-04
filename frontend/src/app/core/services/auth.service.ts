@@ -11,11 +11,26 @@ import { UserService } from './user.service';
 	providedIn: "root"
 })
 export class AuthService {
+	private isRemember: boolean;
 	constructor(
 		private firebaseAuth: AngularFireAuth,
 		private appStateService: AppStateService,
 		private userService: UserService
-	) {}
+	) {
+		this.isRemember = appStateService.isRemember;
+		this.firebaseAuth.auth.onAuthStateChanged(
+			async firebaseUser => {
+				debugger;
+				await this.appStateService.updateAuthState(
+					firebaseUser
+				)
+				if(firebaseUser) {// && this.isRemember) {
+					
+				} else {
+
+				}
+		});
+	}
 
 	signUpRegular(email: string, userName: string, password: string) {
 		return from(
@@ -37,9 +52,9 @@ export class AuthService {
 								uid: userCred.user.uid
 							};
 							
-							this.appStateService.token = await userCred.user.getIdToken();
-							await this.userService.add(newUser).toPromise();
-							this.appStateService.token = undefined;
+						//	this.appStateService.token = await userCred.user.getIdToken();
+						//	await this.userService.add(newUser).toPromise();
+						//	this.appStateService.token = undefined;
 
 							throw new Error(`You need to confirm your email address in order to use our service. Email confirmation was already send to ${userCred.user.email}. Check your email.`);
 						})
@@ -65,13 +80,13 @@ export class AuthService {
 				async userCred => {
 					if (userCred.user.emailVerified) {
 
-						this.appStateService.token = await userCred.user.getIdToken();
-						await this.appStateService.updateAuthState(
-							this.firebaseAuth.authState,
-							await this.initializeCurrentUser(userCred.user),
-							false
-						)
-						.catch(error => { throw error; });
+						//this.appStateService.token = await userCred.user.getIdToken();
+						//await this.appStateService.updateAuthState(
+						//	this.firebaseAuth.authState,
+						//	await this.initializeCurrentUser(userCred.user),
+						//	false
+						//)
+						//.catch(error => { throw error; });
 
 
 					} else {
@@ -111,15 +126,16 @@ export class AuthService {
 			.toPromise()
 			.then(
 				async userCred => {
-					this.appStateService.token = await userCred.user.getIdToken();
-					await this.appStateService.updateAuthState(
-						this.firebaseAuth.authState,
-						await this.initializeCurrentUser(userCred.user),
-						false
-					)
-					.catch(error => { 
-						debugger; 
-						throw error; });
+					debugger;
+					//this.appStateService.token = await userCred.user.getIdToken();
+					//await this.appStateService.updateAuthState(
+					//	this.firebaseAuth.authState,
+					//	await this.initializeCurrentUser(userCred.user),
+					//	false
+					//)
+					//.catch(error => { 
+					//	debugger; 
+					//	throw error; });
 				},
 				error => {
 					debugger;
@@ -136,37 +152,5 @@ export class AuthService {
 
 	logout() {
 		return from(this.firebaseAuth.auth.signOut());
-	}
-
-	private async initializeCurrentUser(firebaseUser: firebase.User): Promise<User> {
-		debugger;
-		// userInfo.providerId === "password" means that user logged in by email and password
-		// i.e we need to take a data like avatarUrl and name from our db
-		if(firebaseUser.providerData.length < 2 &&
-			firebaseUser.providerData.filter(userInfo => userInfo.providerId === "password").length > 0)
-		{
-		  return await this.userService.get(firebaseUser.uid)
-				.toPromise()
-				.then(async user => {
-					debugger;
-				  if(user) {
-					  return user;
-				  } else {
-				  debugger;
-					throw new Error(`There is no such user in db!`);
-				  }
-			  })
-			  .catch(error => {
-				  debugger;
-				   throw error; } )  ;
-		} else {
-			let u: User = {
-				id: undefined,
-				uid: firebaseUser.uid,
-				name: firebaseUser.displayName,
-				avatarUrl: firebaseUser.photoURL
-			}
-			return u;
-		}
 	}
 }
