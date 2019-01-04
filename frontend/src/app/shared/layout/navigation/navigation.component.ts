@@ -1,4 +1,4 @@
-import { Component, OnInit, ChangeDetectorRef } from "@angular/core";
+import { Component, OnInit, ChangeDetectorRef, NgZone } from "@angular/core";
 import { MediaMatcher } from "@angular/cdk/layout";
 import { EventService } from "../../helpers";
 import { MatDialog } from "@angular/material";
@@ -17,8 +17,10 @@ export class NavigationComponent implements OnInit {
 	private _mobileQueryListener: () => void;
 	private user: User;
 	private defaultAvatarUrl ="../../../../assets/images/anonAvatar.png";
+	private _isLoggedIn: boolean;
 	
 	constructor(
+		private zone: NgZone,
 		private changeDetectorRef: ChangeDetectorRef,
 		private media: MediaMatcher,
 		private eventService: EventService,
@@ -45,11 +47,14 @@ export class NavigationComponent implements OnInit {
 					break;
 			}
 		});
+		
 		this.appStateService.getCurrentUserObs()
 		.subscribe((user) => {
 			if(user){
 				this.user = user;
-				this.router.navigate(['/play']);
+				this.zone.run(() => {
+					this.router.navigate(['/play']);
+				});
 			}
 			else {
 				this.user = {
@@ -60,7 +65,7 @@ export class NavigationComponent implements OnInit {
 				}
 				this.router.navigate(['/']);
 			}
-		})
+		});
 	}
 
 	ngOnDestroy() {

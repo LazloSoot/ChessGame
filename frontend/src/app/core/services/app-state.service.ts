@@ -41,9 +41,6 @@ export class AppStateService {
 	) {
 		localStorage.setItem("chess-zm-isRemember", "true");
 		this._isRemember = localStorage.getItem("chess-zm-isRemember") === "true";
-		/////// BAD IDEA
-		//this.isLogedIn = localStorage.getItem("chess-zm-isLogedIn") === "true";
-		//this.token = localStorage.getItem("chess-zm-token");
 	}
 
 

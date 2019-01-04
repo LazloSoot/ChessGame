@@ -14,8 +14,7 @@ export class AuthService {
 	private isRemember: boolean;
 	constructor(
 		private firebaseAuth: AngularFireAuth,
-		private appStateService: AppStateService,
-		private userService: UserService
+		private appStateService: AppStateService
 	) {
 		this.isRemember = appStateService.isRemember;
 		this.firebaseAuth.auth.onAuthStateChanged(
@@ -25,9 +24,9 @@ export class AuthService {
 					firebaseUser
 				)
 				if(firebaseUser) {// && this.isRemember) {
-					
-				} else {
 
+				} else {
+					
 				}
 		});
 	}

@@ -45,6 +45,7 @@ export class ChessGameComponent implements OnInit {
 	) {}
 
 	ngOnInit() {
+		debugger;
 		this.awaitedUserUid.subscribe((value) => {
 			if(!value && this.waitingDialog)
 			{
@@ -105,6 +106,7 @@ export class ChessGameComponent implements OnInit {
 	}
 
 	ngAfterViewInit() {
+		debugger;
 		setTimeout(() => {
 			let config: MatDialogConfig = {
 				disableClose: true,
