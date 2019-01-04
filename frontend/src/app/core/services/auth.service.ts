@@ -4,9 +4,9 @@ import * as firebase from "firebase/app";
 import { from } from "rxjs";
 import { AuthProviderType, User } from "../models";
 import { AppStateService } from "./app-state.service";
-import { UserService } from './user.service';
+import { UserService } from "./user.service";
 
-		// aSfg14Gszs
+// aSfg14Gszs
 @Injectable({
 	providedIn: "root"
 })
@@ -14,7 +14,8 @@ export class AuthService {
 	private isRemember: boolean;
 	constructor(
 		private firebaseAuth: AngularFireAuth,
-		private appStateService: AppStateService
+		private appStateService: AppStateService,
+		private userService: UserService
 	) {
 		this.isRemember = appStateService.isRemember;
 		this.firebaseAuth.auth.onAuthStateChanged(
@@ -47,18 +48,20 @@ export class AuthService {
 					await userCred.user
 						.sendEmailVerification()
 						.then(async () => {
-							let newUser: User = {
-								id: undefined,
-								avatarUrl: undefined,
-								name: userName,
-								uid: userCred.user.uid
-							};
-							
-						//	this.appStateService.token = await userCred.user.getIdToken();
-						//	await this.userService.add(newUser).toPromise();
-						//	this.appStateService.token = undefined;
 
-							throw new Error(`You need to confirm your email address in order to use our service. Email confirmation was already send to ${userCred.user.email}. Check your email.`);
+							await this.appStateService.updateAuthState(
+								userCred.user,
+								true
+							).then(async () => {
+								await this.userService
+									.add(new User(userCred.user.uid, userName))
+									.toPromise();
+							})
+							//throw new Error(
+							//	`You need to confirm your email address in order to use our service. Email confirmation was already send to ${
+							//		userCred.user.email
+							//	}. Check your email.`
+							//);
 						})
 						.catch(error => {
 							throw error;
@@ -81,21 +84,19 @@ export class AuthService {
 			.then(
 				async userCred => {
 					if (userCred.user.emailVerified) {
-
-						//this.appStateService.token = await userCred.user.getIdToken();
-						//await this.appStateService.updateAuthState(
-						//	this.firebaseAuth.authState,
-						//	await this.initializeCurrentUser(userCred.user),
-						//	false
-						//)
-						//.catch(error => { throw error; });
-
-
+						await this.appStateService.updateAuthState(
+							userCred.user,
+							isRemember
+						);
 					} else {
 						await userCred.user
 							.sendEmailVerification()
 							.then(() => {
-								throw new Error(`You need to confirm your email address in order to use our service.Email confirmation was already send to ${userCred.user.email}. Please check your email.`);
+								throw new Error(
+									`You need to confirm your email address in order to use our service.Email confirmation was already send to ${
+										userCred.user.email
+									}. Please check your email.`
+								);
 							})
 							.catch(error => {
 								throw error;
@@ -131,7 +132,7 @@ export class AuthService {
 					await this.appStateService.updateAuthState(
 						userCred.user,
 						isRemember
-					)
+					);
 				},
 				error => {
 					debugger;

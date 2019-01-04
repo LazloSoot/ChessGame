@@ -43,14 +43,13 @@ export class AppStateService {
 		this._isRemember = localStorage.getItem("chess-zm-isRemember") === "true";
 	}
 
-
-	async updateAuthState(firebaseUser: firebase.User, isRemember?: boolean
-	): Promise<void> {
+	async updateAuthState(firebaseUser: firebase.User, isRemember?: boolean): Promise<void> {
 		if (firebaseUser) {
 			this.tokenSubject.next(await firebaseUser.getIdToken());
 			this.currentUserSubject.next(
 				await this.initializeCurrentUser(firebaseUser)
 			);
+
 			this._signalRConnection = this.signalRService.connect(
 				`${Group.User}${this.currentUserSubject.value.uid}`,
 				Hub.Notification,
@@ -75,9 +74,7 @@ export class AppStateService {
 		}
 	}
 
-	private async initializeCurrentUser(
-		firebaseUser: firebase.User
-	): Promise<User> {
+	private async initializeCurrentUser(firebaseUser: firebase.User): Promise<User> {
 		// userInfo.providerId === "password" means that user logged in by email and password
 		// i.e we need to take a data like avatarUrl and name from our db
 		if (
