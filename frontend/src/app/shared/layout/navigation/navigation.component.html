@@ -2,23 +2,23 @@
   <mat-sidenav #snav [mode]="mobileQuery.matches ? 'over' : 'side'" [fixedInViewport]="mobileQuery.matches" position="end">
       <div fxLayout="column">
           <section class="user">
-              <a class="user-image" routerLinkActive="active" [routerLink]="['/dashboard']">
+              <a class="user-image" routerLinkActive="active" [routerLink]="['/dashboard']" (click)="snav.toggle();">
                 <img src="{{user.avatarUrl || defaultAvatarUrl}}">
               </a>
-              <a class="user-name" routerLinkActive="active" [routerLink]="['/dashboard']">
+              <a class="user-name" routerLinkActive="active" [routerLink]="['/dashboard']" (click)="snav.toggle();">
                 <h4>{{user.name}}</h4>
               </a>
           </section>
           
-          <a class="nav-item" mat-button routerLinkActive="active" [routerLink]="['/play']">
+          <a class="nav-item" mat-button routerLinkActive="active" [routerLink]="['/play']" (click)="snav.toggle();">
             <mat-icon mat-list-icon>home</mat-icon> Play</a>
           <mat-divider></mat-divider>
 
-          <a class="nav-item" mat-button routerLinkActive="active" [routerLink]="['/puzzles']">
+          <a class="nav-item" mat-button routerLinkActive="active" [routerLink]="['/puzzles']" (click)="snav.toggle();">
             <mat-icon mat-list-icon>account_box</mat-icon> Puzzles</a>
           <mat-divider></mat-divider>
 
-          <a class="nav-item" mat-button routerLinkActive="active" [routerLink]="['/rules']">
+          <a class="nav-item" mat-button routerLinkActive="active" [routerLink]="['/rules']" (click)="snav.toggle();">
             <mat-icon mat-list-icon>account_box</mat-icon> Rules</a>
           <mat-divider></mat-divider>
 

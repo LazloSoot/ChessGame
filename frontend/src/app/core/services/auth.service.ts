@@ -11,11 +11,29 @@ import { UserService } from "./user.service";
 	providedIn: "root"
 })
 export class AuthService {
+	private isRemember: boolean;
 	constructor(
 		private firebaseAuth: AngularFireAuth,
 		private appStateService: AppStateService,
 		private userService: UserService
-	) {}
+	) {
+		this.isRemember = appStateService.isRemember;
+		this.firebaseAuth.auth.onAuthStateChanged(
+			async firebaseUser => {
+				if(firebaseUser) {
+					if(this.isRemember) {
+						await this.appStateService.updateAuthState(
+							firebaseUser,
+							true
+						)
+					}
+				} else {
+					await this.appStateService.updateAuthState(
+						firebaseUser
+					)
+				}
+		});
+	}
 
 	signUpRegular(email: string, userName: string, password: string) {
 		return from(
@@ -30,17 +48,20 @@ export class AuthService {
 					await userCred.user
 						.sendEmailVerification()
 						.then(async () => {
-							// we initialize token for ability to create record(interceptor need to add token to auth header)
-							this.appStateService.token = await userCred.user.getIdToken();
-							await this.userService
-								.add(new User(userCred.user.uid, userName))
-								.toPromise();
-							this.appStateService.token = undefined;
-							throw new Error(
-								`You need to confirm your email address in order to use our service. Email confirmation was already send to ${
-									userCred.user.email
-								}. Check your email.`
-							);
+
+							await this.appStateService.updateAuthState(
+								userCred.user,
+								true
+							).then(async () => {
+								await this.userService
+									.add(new User(userCred.user.uid, userName))
+									.toPromise();
+							})
+							//throw new Error(
+							//	`You need to confirm your email address in order to use our service. Email confirmation was already send to ${
+							//		userCred.user.email
+							//	}. Check your email.`
+							//);
 						})
 						.catch(error => {
 							throw error;
@@ -55,7 +76,7 @@ export class AuthService {
 			});
 	}
 
-	signInRegular(email: string, password: string) {
+	signInRegular(email: string, password: string, isRemember?: boolean) {
 		return from(
 			this.firebaseAuth.auth.signInWithEmailAndPassword(email, password)
 		)
@@ -63,16 +84,10 @@ export class AuthService {
 			.then(
 				async userCred => {
 					if (userCred.user.emailVerified) {
-						this.appStateService.token = await userCred.user.getIdToken();
-						await this.appStateService
-							.updateAuthState(
-								this.firebaseAuth.authState,
-								await this.getCurrentDbUser(userCred.user),
-								false
-							)
-							.catch(error => {
-								throw error;
-							});
+						await this.appStateService.updateAuthState(
+							userCred.user,
+							isRemember
+						);
 					} else {
 						await userCred.user
 							.sendEmailVerification()
@@ -97,7 +112,7 @@ export class AuthService {
 			});
 	}
 
-	signIn(authProviderType: AuthProviderType) {
+	signIn(authProviderType: AuthProviderType, isRemember?: boolean) {
 		let authProvider;
 		switch (authProviderType) {
 			case AuthProviderType.Google: {
@@ -113,17 +128,10 @@ export class AuthService {
 			.toPromise()
 			.then(
 				async userCred => {
-					this.appStateService.token = await userCred.user.getIdToken();
-					await this.appStateService
-						.updateAuthState(
-							this.firebaseAuth.authState,
-							await this.getCurrentDbUser(userCred.user),
-							false
-						)
-						.catch(error => {
-							debugger;
-							throw error;
-						});
+					await this.appStateService.updateAuthState(
+						userCred.user,
+						isRemember
+					);
 				},
 				error => {
 					debugger;
@@ -140,44 +148,5 @@ export class AuthService {
 
 	logout() {
 		return from(this.firebaseAuth.auth.signOut());
-	}
-
-	private async getCurrentDbUser(firebaseUser: firebase.User): Promise<User> {
-		return await this.userService
-			.get(firebaseUser.uid)
-			.toPromise()
-			.then(user => {
-				return user;
-			})
-			.catch(async error => {
-				if (error.status === 404) {
-					// userInfo.providerId === "password" means that user logged in by email and password
-					// i.e we need to ask user for nickname
-					if (
-						firebaseUser.providerData.length < 2 &&
-						firebaseUser.providerData.filter(
-							userInfo => userInfo.providerId === "password"
-						).length > 0
-					) {
-						throw new Error(`There is no such user in db!`);
-					} else {
-						// we initialize token for ability to create record(interceptor needs to add token to auth header)
-						this.appStateService.token = await firebaseUser.getIdToken();
-						return await this.userService
-							.add(
-								new User(
-									firebaseUser.uid,
-									firebaseUser.displayName,
-									firebaseUser.photoURL
-								)
-							)
-							.toPromise()
-							.then((user: User) => {
-								return user;
-							});
-					}
-				}
-				throw error;
-			});
 	}
 }
