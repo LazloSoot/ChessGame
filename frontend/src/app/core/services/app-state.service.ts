@@ -40,7 +40,6 @@ export class AppStateService {
 		private userService: UserService,
 		private signalRService: SignalRService
 	) {
-		//localStorage.setItem("chess-zm-isRemember", "true");
 		this._isRemember = localStorage.getItem("chess-zm-isRemember") === "true";
 	}
 
@@ -79,7 +78,6 @@ export class AppStateService {
 	private async initializeCurrentUser(
 		firebaseUser: firebase.User
 	): Promise<User> {
-		debugger;
 		// userInfo.providerId === "password" means that user logged in by email and password
 		// i.e we need to take a data like avatarUrl and name from our db
 		if (
@@ -92,11 +90,9 @@ export class AppStateService {
 				.get(firebaseUser.uid)
 				.toPromise()
 				.then(async user => {
-					debugger;
 					if (user) {
 						return user;
 					} else {
-						debugger;
 						throw new Error(`There is no such user in db!`);
 					}
 				})

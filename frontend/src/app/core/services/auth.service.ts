@@ -19,8 +19,7 @@ export class AuthService {
 		this.isRemember = appStateService.isRemember;
 		this.firebaseAuth.auth.onAuthStateChanged(
 			async firebaseUser => {
-				debugger;
-				if(firebaseUser) {// && this.isRemember) {
+				if(firebaseUser) {
 					if(this.isRemember) {
 						await this.appStateService.updateAuthState(
 							firebaseUser,
@@ -74,7 +73,7 @@ export class AuthService {
 			});
 	}
 
-	signInRegular(email: string, password: string) {
+	signInRegular(email: string, password: string, isRemember?: boolean) {
 		return from(
 			this.firebaseAuth.auth.signInWithEmailAndPassword(email, password)
 		)
@@ -112,7 +111,7 @@ export class AuthService {
 			});
 	}
 
-	signIn(authProviderType: AuthProviderType) {
+	signIn(authProviderType: AuthProviderType, isRemember?: boolean) {
 		let authProvider;
 		switch (authProviderType) {
 			case AuthProviderType.Google: {
@@ -131,17 +130,8 @@ export class AuthService {
 				async userCred => {
 					await this.appStateService.updateAuthState(
 						userCred.user,
-						true
+						isRemember
 					)
-					//this.appStateService.token = await userCred.user.getIdToken();
-					//await this.appStateService.updateAuthState(
-					//	this.firebaseAuth.authState,
-					//	await this.initializeCurrentUser(userCred.user),
-					//	false
-					//)
-					//.catch(error => { 
-					//	debugger; 
-					//	throw error; });
 				},
 				error => {
 					debugger;
