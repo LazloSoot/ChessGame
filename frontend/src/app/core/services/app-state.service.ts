@@ -4,6 +4,7 @@ import { Router } from "@angular/router";
 import { User, UserConnection, Group, Hub } from "../models";
 import { SignalRService } from "./signalr.service";
 import { UserService } from "./user.service";
+import * as firebase from "firebase/app";
 
 @Injectable({
 	providedIn: "root"
@@ -39,7 +40,7 @@ export class AppStateService {
 		private userService: UserService,
 		private signalRService: SignalRService
 	) {
-		localStorage.setItem("chess-zm-isRemember", "true");
+		//localStorage.setItem("chess-zm-isRemember", "true");
 		this._isRemember = localStorage.getItem("chess-zm-isRemember") === "true";
 	}
 
@@ -56,6 +57,7 @@ export class AppStateService {
 				Hub.Notification,
 				this.token
 			);
+			debugger;
 			if(isRemember) {
 				localStorage.setItem("chess-zm-isRemember", "true");
 			} else {

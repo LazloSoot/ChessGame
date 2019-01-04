@@ -20,13 +20,17 @@ export class AuthService {
 		this.firebaseAuth.auth.onAuthStateChanged(
 			async firebaseUser => {
 				debugger;
-				await this.appStateService.updateAuthState(
-					firebaseUser
-				)
 				if(firebaseUser) {// && this.isRemember) {
-
+					if(this.isRemember) {
+						await this.appStateService.updateAuthState(
+							firebaseUser,
+							true
+						)
+					}
 				} else {
-					
+					await this.appStateService.updateAuthState(
+						firebaseUser
+					)
 				}
 		});
 	}
@@ -125,7 +129,10 @@ export class AuthService {
 			.toPromise()
 			.then(
 				async userCred => {
-					debugger;
+					await this.appStateService.updateAuthState(
+						userCred.user,
+						true
+					)
 					//this.appStateService.token = await userCred.user.getIdToken();
 					//await this.appStateService.updateAuthState(
 					//	this.firebaseAuth.authState,
