@@ -18,16 +18,19 @@ namespace Chess.BusinessLogic.Services
         // 3 - правило битого поля, 4 - колич. ходов для правила 50 ходов
         // 5 - номер хода
         private readonly ICurrentUser _currentUserProvider;
+        private readonly IUserService _userService;
         private readonly IChessGame _chessGame;
         public ChessMovesService(
             IMapper mapper, 
             IUnitOfWork unitOfWork, 
             ICurrentUser currentUserProvider,
+            IUserService userService,
             IChessGame chessGame
             )
             : base(mapper, unitOfWork)
         {
             _currentUserProvider = currentUserProvider;
+            _userService = userService;
             _chessGame = chessGame;
         }
 
@@ -41,7 +44,7 @@ namespace Chess.BusinessLogic.Services
             if (gameDbRecord == null || gameDbRecord.Status != DataAccess.Helpers.GameStatus.Going)
                 return null;
 
-            var currentUser = await _currentUserProvider.GetCurrentUserAsync();
+            var currentUser = await _userService.GetByUid(_currentUserProvider.GetCurrentUserUid());
             if (gameDbRecord.Sides.Where(s => s.PlayerId == currentUser.Id).FirstOrDefault() == null)
                 return null;
 
@@ -55,7 +58,7 @@ namespace Chess.BusinessLogic.Services
             {
                 MoveNext = moveRequest.Move,
                 Fen = game.Fen,
-                Player = currentUser,
+                Player = mapper.Map<User>(currentUser),
                 Ply = (gameDbRecord.Moves.Count() + 1) / 2
             };
 

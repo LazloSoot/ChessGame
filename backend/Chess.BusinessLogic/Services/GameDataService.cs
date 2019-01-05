@@ -35,7 +35,7 @@ namespace Chess.BusinessLogic.Services
         }
 
 #warning работает только с приглашением оппонента
-        public async Task<GameDTO> CreateNewGame(GameDTO game)
+        public async Task<GameDTO> CreateNewGameWithFriend(GameDTO game)
         {
             if (uow == null)
                 return null;
@@ -85,6 +85,28 @@ namespace Chess.BusinessLogic.Services
             }
             await _notificationService.InviteUserAsync(opponent.Uid, targetGame.Id);
             return targetGame;
+        }
+
+        public async Task<GameDTO> CreateNewGameVersusAI(GameDTO game)
+        {
+            if (uow == null)
+                return null;
+
+            if (string.IsNullOrWhiteSpace(game.Fen))
+            {
+                game.Fen = ChessGame.DefaultFen;
+            }
+
+            var currentUser = await _userService.GetByUid(_currentUserProvider.GetCurrentUserUid());
+            var currentUserSide = game.Sides.Where(s => s.Player == null || s.PlayerId == currentUser.Id || s.Player.Id == currentUser.Id).First();
+            currentUserSide.Player = currentUser;
+            game.Sides = new List<SideDTO>()
+            {
+                currentUserSide
+            };
+            game.Status = DataAccess.Helpers.GameStatus.Going;
+            
+            return await base.AddAsync(game);
         }
 
         public async Task<GameDTO> JoinToGame(int gameId)

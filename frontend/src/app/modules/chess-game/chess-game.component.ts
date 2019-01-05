@@ -132,6 +132,7 @@ export class ChessGameComponent implements OnInit {
 		dialogRef.componentInstance.onSettingsDefined.subscribe(
 			async (settings: GameSettings) => {
 				if (settings) {
+					//settings.startFen = 'rnbqkbnr/p5pp/1B1P4/3ppK2/1p3p2/R2pB2R/PPP1PPPP/1N1Q2N1 w kq - 0 1';
 					if (settings.options.selectedSide === GameSide.Random) {
 						settings.options.selectedSide = this.getRandomSide();
 					}
@@ -170,7 +171,7 @@ export class ChessGameComponent implements OnInit {
 			closeOnNavigation: true
 		};
 		this.awaitedUserUid.next(settings.options.opponent.uid);
-		let sides: Side[] = [
+		const sides: Side[] = [
 			new Side(settings.options.selectedSide),
 			new Side(
 				settings.options.selectedSide ===
@@ -180,9 +181,9 @@ export class ChessGameComponent implements OnInit {
 				settings.options.opponent
 			)
 		];
-		let newGame = new Game(settings.startFen, sides);
+		const newGame = new Game(settings.startFen, sides);
 		await this.chessGame
-			.createGame(newGame)
+			.createGameWithFriend(newGame)
 			.subscribe(async game => {
 				if (game) {
 					this.gameSettings.gameId = game.id;
@@ -211,7 +212,18 @@ export class ChessGameComponent implements OnInit {
 	}
 
 	private async createGameVersusComputer(settings: GameSettings) {
+		const sides: Side[] = [
+			new Side(settings.options.selectedSide)
+		];
 
+		const newGame = new Game(settings.startFen, sides);
+		await this.chessGame
+			.createGameVersusAI(newGame)
+			.subscribe(async game => {
+				if (game) {
+					this.gameSettings.gameId = game.id;
+				}
+			});
 	}
 
 	private subscribeSignalREvents() {

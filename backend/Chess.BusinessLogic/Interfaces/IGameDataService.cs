@@ -9,7 +9,9 @@ namespace Chess.BusinessLogic.Interfaces
 {
     public interface IGameDataService : ICRUDService<Game, GameDTO>
     {
-        Task<GameDTO> CreateNewGame(GameDTO entity);
+        Task<GameDTO> CreateNewGameWithFriend(GameDTO entity);
+
+        Task<GameDTO> CreateNewGameVersusAI(GameDTO game);
 
         Task<GameDTO> JoinToGame(int gameId);
 

@@ -109,14 +109,18 @@ export class ChessBoardComponent implements OnInit {
 	}
 
 	initLine(lineIndex: number, fenPart: string, baseNum: number) {
-		 
-		console.log("Initing line " + lineIndex);
 		let currentSkipCount: number;
 		for(let x = 0, currentFenX = 0; x < 8; x++) {
 			currentSkipCount = Number(fenPart[currentFenX]);
 			if (currentSkipCount) {
 				currentFenX++;
-				x += currentSkipCount - 1;
+				
+				for (; currentSkipCount > 0; currentSkipCount--) {
+					this._squares[Math.abs(baseNum - (lineIndex * 8 + x))].piece = undefined;
+					x++;
+				}
+				x--;
+				//x += currentSkipCount - 1;
 			}
 			else {
 				let pieceKey: keyof typeof PieceType = fenPart[currentFenX] as keyof typeof PieceType;
@@ -128,12 +132,9 @@ export class ChessBoardComponent implements OnInit {
 				this._squares[Math.abs(baseNum - (lineIndex * 8 + x))].piece = PieceType[pieceKey];
 			}
 		}
-		console.log(this._squares);
 	}
 
 	getChangedLinesIndexes(lines: string[]): number[] {
-		console.log("Checking lines changes");
-		 
 		if(this.previousFen) {
 			const currentLines = this.previousFen.split(' ')[0].split('/');
 			let changedLinesIndexes: number[] = [];
@@ -141,14 +142,10 @@ export class ChessBoardComponent implements OnInit {
 				if(currentLines[i] !== lines[i])
 				{
 					changedLinesIndexes.push(i);
-					console.log("LINE " + i + " changed ");
-					console.log(`was ${currentLines[i]}`);
-					console.log(`is ${lines[i]}`);
 				}
 			}
 			return changedLinesIndexes;
 		} else {
-			console.log("INITIAL FEN");
 			return [0,1,2,3,4,5,6,7];
 		}
 	}
@@ -179,8 +176,8 @@ export class ChessBoardComponent implements OnInit {
 			fenParts[0] = fenLines.join('/');
 			this.previousFen = fenParts.join(' ');
 
-			square.piece = this.selectedSquare.piece;
-			this.selectedSquare.piece = undefined;
+			//square.piece = this.selectedSquare.piece;
+			//this.selectedSquare.piece = undefined;
 		}
 		this.selectedSquare = null;
 	}
