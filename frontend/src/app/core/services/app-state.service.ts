@@ -1,7 +1,7 @@
 import { Injectable } from "@angular/core";
 import { BehaviorSubject, Observable } from "rxjs";
 import { Router } from "@angular/router";
-import { User, UserConnection, Group, Hub } from "../models";
+import { User, UserConnection, Group, Hub, GameSettings } from "../models";
 import { SignalRService } from "./signalr.service";
 import { UserService } from "./user.service";
 import * as firebase from "firebase/app";
@@ -12,6 +12,7 @@ import * as firebase from "firebase/app";
 export class AppStateService {
 	private tokenSubject: BehaviorSubject<string> = new BehaviorSubject<string>("");
 	private currentUserSubject: BehaviorSubject<User> = new BehaviorSubject<User>(null);
+	private currentGameSubject: BehaviorSubject<GameSettings> = new BehaviorSubject<GameSettings>(null); 
 	private _signalRConnection: UserConnection;
 	private _isRemember: boolean;
 
@@ -35,12 +36,33 @@ export class AppStateService {
 		return this.currentUserSubject.value;
 	}
 
+	public get currentGame(): GameSettings {
+		return this.currentGameSubject.value;
+	}
+
+	public set currentGame(value: GameSettings) {
+		this.currentGameSubject.next(value);
+	}
+
+	public getCurrentGameObs(): Observable<GameSettings> {
+		return this.currentGameSubject.asObservable();
+	}
+
 	constructor(
-		private router: Router,
 		private userService: UserService,
 		private signalRService: SignalRService
 	) {
 		this._isRemember = localStorage.getItem("chess-zm-isRemember") === "true";
+		const currentGame = JSON.parse(localStorage.getItem("chess-zm-currentGame"));
+		if(currentGame) {
+			this.currentGameSubject.next(currentGame);
+		}
+		this.currentGameSubject.subscribe((settings) => {
+			if(settings)
+			{
+				localStorage.setItem("chess-zm-currentGame", JSON.stringify(settings));
+			}
+		})
 	}
 
 	async updateAuthState(firebaseUser: firebase.User, isRemember?: boolean): Promise<void> {

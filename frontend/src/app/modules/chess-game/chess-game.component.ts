@@ -57,6 +57,18 @@ export class ChessGameComponent implements OnInit {
 				this.waitingDialog.close();
 			}
 		});
+
+		let currentGame = this.appStateService.currentGame;
+		if(currentGame)
+		{
+			this.chessGame.get(currentGame.gameId)
+			.subscribe((game) => {
+				if(game) {
+					currentGame.startFen = game.fen;
+					this.initializeGame(currentGame);
+				}
+			});
+		}
 	}
 
 	ngOnDestroy() {
@@ -231,6 +243,7 @@ export class ChessGameComponent implements OnInit {
 		this.fen = settings.startFen;
 		this.previousFen = settings.startFen;
 		this.isGameInitialized = true;
+		this.appStateService.currentGame = settings;
 	}
 
 	private subscribeSignalREvents() {
