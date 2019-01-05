@@ -35,8 +35,8 @@ import { BehaviorSubject } from "rxjs";
 export class ChessGameComponent implements OnInit {
 	private gameSettings: GameSettings = new GameSettings();
 	private game: Game;
-	private fen: string =
-		"rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
+	private fen: string;
+	private previousFen: string;
 	private isGameInitialized = false;
 	private waitingDialog: MatDialogRef<WaitingDialogComponent>;
 	private invitationDialog: MatDialogRef<InvitationDialogComponent>;
@@ -65,19 +65,23 @@ export class ChessGameComponent implements OnInit {
 		);
 	}
 
-	onMove(move: Move) {
-		console.log(move);
-		debugger;
-		//let request = new MoveRequest(move.moveNext, this.game.id);
-		//this.movesService.commitMove(request);
-		//.subscribe((move) => {
-		//	if(move) {
-		//		
-		//	}
-		//}, error => {
-		//	this.fen = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
-		//})
-		//
+	async onMove(moveRequest: MoveRequest) {
+		console.log(moveRequest);
+		  
+		this.fen = '';
+		await this.movesService.commitMove(moveRequest)
+		.toPromise()
+		.then((move) => {
+			  
+			if(move) {
+				this.previousFen = this.fen;
+				this.fen = move.fenAfterMove;
+			}
+		}, error => {
+			  
+			this.fen = this.previousFen;
+		})
+		
 	}
 
 	private getRandomSide() {
@@ -147,6 +151,8 @@ export class ChessGameComponent implements OnInit {
 					}
 					this.gameSettings = settings;
 					this.chessGame.initializeGame(settings);
+					this.fen = settings.startFen;
+					this.previousFen = settings.startFen;
 					this.isGameInitialized = true;
 				} else {
 					throw new Error("Game settings is invlid!ERROR")
@@ -187,7 +193,7 @@ export class ChessGameComponent implements OnInit {
 					this.waitingDialog.afterClosed()
 						.subscribe(
 							(isCanceled) => {
-								debugger;
+								  
 								if (isCanceled) {
 									this.appStateService.signalRConnection
 										.send(
@@ -234,7 +240,7 @@ export class ChessGameComponent implements OnInit {
 		this.appStateService.signalRConnection.on(
 			ClientEvent.InvocationDismissed,
 			byUserWithUid => {
-				debugger;
+				  
 				if (
 					this.awaitedUserUid.value &&
 					byUserWithUid &&
