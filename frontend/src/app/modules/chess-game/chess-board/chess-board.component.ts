@@ -15,8 +15,12 @@ export class ChessBoardComponent implements OnInit {
 	private baseBoardPath: BehaviorSubject<string> = new BehaviorSubject<string>(null);
 	private basePiecePath: BehaviorSubject<string> = new BehaviorSubject<string>(null);
 	private bgColor = "#813A0D";
-	private squares: Square[];
+	private _squares: Square[];
 	private selectedSquare: Square;
+
+	get squares(): Square[] {
+		return this._squares;
+	}
 
 	constructor() 
 	{
@@ -28,9 +32,7 @@ export class ChessBoardComponent implements OnInit {
 	ngOnDestroy() {
 	}
 
-	getSquaresCount() {
-		return this.squares;
-	}
+
 
 	ngOnChanges(changes: SimpleChange) {
 		for (let propName in changes) {
@@ -66,7 +68,7 @@ export class ChessBoardComponent implements OnInit {
 			correspondingCharCode = 104;
 		}
 
-		this.squares = Array(64).fill({}).map((square, i) => {
+		this._squares = Array(64).fill({}).map((square, i) => {
 			currentIndex = i % 8;
 			square = {
 				name: String.fromCharCode(correspondingCharCode - currentIndex * increment) + currentRow,
@@ -78,16 +80,6 @@ export class ChessBoardComponent implements OnInit {
 			return square;
 		}
 		);
-	}
-
-	getSquareImgUrlExpression(square: Square) {
-		let pieceUrl = (square.piece) ? `url(${this.getPiecePath(square.piece)}),` : '';
-		let squareUrl = `url(${this.baseBoardPath.value}/${square.name}.png)`
-		return `${pieceUrl}${squareUrl}`;
-	}
-
-	getPiecePath(piece: PieceType) {
-		return this.basePiecePath.value + '/' + piece;
 	}
 
 	initBoard(fen: string) {
@@ -120,7 +112,7 @@ export class ChessBoardComponent implements OnInit {
 						return;
 					}
 					currentFenX++;
-					this.squares[Math.abs(baseNum - (y * 8 + x))].piece = PieceType[pieceKey];
+					this._squares[Math.abs(baseNum - (y * 8 + x))].piece = PieceType[pieceKey];
 				}
 			}
 		}
@@ -138,7 +130,7 @@ export class ChessBoardComponent implements OnInit {
 					return;
 				}
 
-			let move = Object.keys(PieceType).find(key => PieceType[key] === this.selectedSquare.piece)[0]
+			const move = Object.keys(PieceType).find(key => PieceType[key] === this.selectedSquare.piece)[0]
 			+ this.selectedSquare.name + square.name;
 			this.move.emit(new Move(move));
 
@@ -146,6 +138,16 @@ export class ChessBoardComponent implements OnInit {
 			this.selectedSquare.piece = undefined;
 		}
 		this.selectedSquare = null;
+	}
+
+	getSquareImgUrlExpression(square: Square) {
+		const pieceUrl = (square.piece) ? `url(${this.getPiecePath(square.piece)}),` : '';
+		const squareUrl = `url(${this.baseBoardPath.value}/${square.name}.png)`
+		return `${pieceUrl}${squareUrl}`;
+	}
+
+	getPiecePath(piece: PieceType) {
+		return this.basePiecePath.value + '/' + piece;
 	}
 
 	private getPieceBasePath(): string {

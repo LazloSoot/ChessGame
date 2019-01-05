@@ -1,6 +1,7 @@
 <p>
 	chess-game works!
 </p>
+<button mat-button (click)="openNewGameDialog();">New game</button>
 <app-chess-board 
 	*ngIf="isGameInitialized;else boardPlaceholder"
 	[gameSettings]="gameSettings" 
