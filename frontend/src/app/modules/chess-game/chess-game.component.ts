@@ -105,11 +105,9 @@ export class ChessGameComponent implements OnInit {
 									OpponentType.Player,
 									game.sides.find(s => s.player.uid !== selectedSide.player.uid).player
 								);
-								this.gameSettings = new GameSettings(new StyleOptions(), gameOptions, game.fen);
-								this.gameSettings.gameId = game.id;
-								this.fen = game.fen;
-								this.chessGame.initializeGame(this.gameSettings);
-								this.isGameInitialized = true;
+								let settings = new GameSettings(new StyleOptions(), gameOptions, game.fen);
+								settings.gameId = game.id;
+								this.initializeGame(settings);
 							} else {
 								throw new Error("User has not joined to game.ERROR")
 							}
@@ -136,27 +134,25 @@ export class ChessGameComponent implements OnInit {
 					if (settings.options.selectedSide === GameSide.Random) {
 						settings.options.selectedSide = this.getRandomSide();
 					}
+					let gameId: number;
 					switch (settings.options.opponentType) {
 						case (OpponentType.Player): {
-							await this.createGameVersusRandPlayer(settings);
+							gameId = await this.createGameVersusRandPlayer(settings);
 							break;
 						}
 						case (OpponentType.Friend): {
-							await this.createGameWithFriend(settings);
+							gameId = await this.createGameWithFriend(settings);
 							break;
 						}
 						default: {
-							await this.createGameVersusComputer(settings);
+							gameId = await this.createGameVersusComputer(settings);
 							break;
 						}
 					}
-					this.gameSettings = settings;
-					this.chessGame.initializeGame(settings);
-					this.fen = settings.startFen;
-					this.previousFen = settings.startFen;
-					this.isGameInitialized = true;
+					settings.gameId = gameId;
+					this.initializeGame(settings);
 				} else {
-					throw new Error("Game settings is invlid!ERROR")
+					//throw new Error("Game settings is invlid!ERROR")
 				}
 			}
 		);
@@ -165,7 +161,7 @@ export class ChessGameComponent implements OnInit {
 		});
 	}
 
-	private async createGameWithFriend(settings: GameSettings) {
+	private async createGameWithFriend(settings: GameSettings): Promise<number> {
 		const config: MatDialogConfig = {
 			disableClose: true,
 			closeOnNavigation: true
@@ -182,9 +178,10 @@ export class ChessGameComponent implements OnInit {
 			)
 		];
 		const newGame = new Game(settings.startFen, sides);
-		await this.chessGame
+		return await this.chessGame
 			.createGameWithFriend(newGame)
-			.subscribe(async game => {
+			.toPromise()
+			.then(async game => {
 				if (game) {
 					this.gameSettings.gameId = game.id;
 					this.waitingDialog = this.dialog.open(
@@ -202,28 +199,38 @@ export class ChessGameComponent implements OnInit {
 											`${Group.User}${this.awaitedUserUid.value}`);
 									this.awaitedUserUid.next(null);
 								}
-							})
+							});
+							return game.id;
 				}
 			});
 	}
 
-	private async createGameVersusRandPlayer(settings: GameSettings) {
-
+	private async createGameVersusRandPlayer(settings: GameSettings): Promise<number>  {
+		return null;
 	}
 
-	private async createGameVersusComputer(settings: GameSettings) {
+	private async createGameVersusComputer(settings: GameSettings): Promise<number>  {
 		const sides: Side[] = [
 			new Side(settings.options.selectedSide)
 		];
 
 		const newGame = new Game(settings.startFen, sides);
-		await this.chessGame
+		return await this.chessGame
 			.createGameVersusAI(newGame)
-			.subscribe(async game => {
+			.toPromise()
+			.then(game => {
 				if (game) {
-					this.gameSettings.gameId = game.id;
+					return game.id;
 				}
 			});
+	}
+
+	private initializeGame(settings: GameSettings) {
+		this.gameSettings = settings;
+		this.chessGame.initializeGame(settings);
+		this.fen = settings.startFen;
+		this.previousFen = settings.startFen;
+		this.isGameInitialized = true;
 	}
 
 	private subscribeSignalREvents() {

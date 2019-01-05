@@ -33,8 +33,6 @@ export class ChessBoardComponent implements OnInit {
 	ngOnDestroy() {
 	}
 
-
-
 	ngOnChanges(changes: SimpleChange) {
 		for (let propName in changes) {
 			if(propName === 'fen')
@@ -151,6 +149,7 @@ export class ChessBoardComponent implements OnInit {
 	}
 
 	selectSquare(square: Square) {
+		console.log("GAMEID  " + this.gameSettings.gameId);
 		if (!this.selectedSquare) {
 			if (square.piece) {
 				this.selectedSquare = square;

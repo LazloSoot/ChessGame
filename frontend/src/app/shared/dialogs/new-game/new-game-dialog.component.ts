@@ -127,7 +127,7 @@ export class NewGameDialogComponent implements OnInit {
 		}
 	}
 
-	resetFilterInput() {
+	resetSearchInput() {
 		this.isSearchMode = false;
 		this.users = [];
 	}
