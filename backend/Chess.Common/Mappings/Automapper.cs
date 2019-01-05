@@ -16,10 +16,8 @@ namespace Chess.Common.Mappings
                 .ForMember(p => p.Moves, opt => opt.MapFrom(po => po.Moves.ToList()))
                 .ForMember(p => p.Sides, opt => opt.MapFrom(po => po.Sides.ToList()));
 
-                cfg.CreateMap<Move, MoveDTO>()
-                .ForMember(p => p.FenBeforeMove, opt => opt.MapFrom(po => po.Fen));
-                cfg.CreateMap<MoveDTO, Move>()
-                .ForMember(p => p.Fen, opt => opt.MapFrom(po => po.FenBeforeMove));
+                cfg.CreateMap<Move, MoveDTO>();
+                cfg.CreateMap<MoveDTO, Move>();
 
                 cfg.CreateMap<User, UserDTO>();
                 cfg.CreateMap<UserDTO, User>();

@@ -1,5 +1,5 @@
 import { Component, OnInit, Input, Output, SimpleChange, EventEmitter, OnDestroy } from '@angular/core';
-import { PieceType, BoardTextureType, Square, Move, GameSettings, GameSide } from '../../../core';
+import { PieceType, BoardTextureType, Square, Move, GameSettings, GameSide, MoveRequest } from '../../../core';
 import { BehaviorSubject } from 'rxjs';
 
 @Component({
@@ -11,12 +11,17 @@ export class ChessBoardComponent implements OnInit {
 	@Input() gameSettings: GameSettings;// = new GameSettings();
 	@Input() fen: string = 'rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1';
 	@Output() error: EventEmitter<Error> = new EventEmitter<Error>(null);
-	@Output() move: EventEmitter<Move> = new EventEmitter<Move>(null);
+	@Output() moveRequest: EventEmitter<MoveRequest> = new EventEmitter<MoveRequest>(null);
+	private previousFen: string;
 	private baseBoardPath: BehaviorSubject<string> = new BehaviorSubject<string>(null);
 	private basePiecePath: BehaviorSubject<string> = new BehaviorSubject<string>(null);
 	private bgColor = "#813A0D";
-	private squares: Square[];
+	private _squares: Square[];
 	private selectedSquare: Square;
+
+	get squares(): Square[] {
+		return this._squares;
+	}
 
 	constructor() 
 	{
@@ -28,13 +33,13 @@ export class ChessBoardComponent implements OnInit {
 	ngOnDestroy() {
 	}
 
-	getSquaresCount() {
-		return this.squares;
-	}
+
 
 	ngOnChanges(changes: SimpleChange) {
 		for (let propName in changes) {
-			if(propName === 'fen') {
+			if(propName === 'fen')
+			 
+			if(propName === 'fen' && changes[propName].currentValue) {
 				this.initBoard(changes[propName].currentValue);
 			}
 			if (propName === 'gameSettings') {
@@ -66,7 +71,7 @@ export class ChessBoardComponent implements OnInit {
 			correspondingCharCode = 104;
 		}
 
-		this.squares = Array(64).fill({}).map((square, i) => {
+		this._squares = Array(64).fill({}).map((square, i) => {
 			currentIndex = i % 8;
 			square = {
 				name: String.fromCharCode(correspondingCharCode - currentIndex * increment) + currentRow,
@@ -80,25 +85,14 @@ export class ChessBoardComponent implements OnInit {
 		);
 	}
 
-	getSquareImgUrlExpression(square: Square) {
-		let pieceUrl = (square.piece) ? `url(${this.getPiecePath(square.piece)}),` : '';
-		let squareUrl = `url(${this.baseBoardPath.value}/${square.name}.png)`
-		return `${pieceUrl}${squareUrl}`;
-	}
-
-	getPiecePath(piece: PieceType) {
-		return this.basePiecePath.value + '/' + piece;
-	}
-
 	initBoard(fen: string) {
-		let parts = fen.split(' ');
+		const parts = fen.split(' ');
 		if (parts.length < 6) {
 			this.error.emit(new SyntaxError("Fen is not valid!"));
 			return;
 		}
 
-		let lines = parts[0].split('/');
-		let currentSkipCount: number;
+		const lines = parts[0].split('/');
 		let baseNum;
 		if(this.gameSettings.options.selectedSide === GameSide.White) {
 			baseNum = 0;
@@ -106,23 +100,53 @@ export class ChessBoardComponent implements OnInit {
 		else {
 			baseNum = 63;
 		}
-		for (let y = 0; y < 8; y++) {
-			for (let x = 0, currentFenX = 0; x < 8; x++) {
-				currentSkipCount = Number(lines[y][currentFenX]);
-				if (currentSkipCount) {
-					currentFenX++;
-					x += currentSkipCount - 1;
+		const changedLinesIndexes = this.getChangedLinesIndexes(lines);
+		for (let y = 0, currentIndex = 0; y < changedLinesIndexes.length; y++) {
+			currentIndex = changedLinesIndexes[y];
+			this.initLine(currentIndex, lines[currentIndex], baseNum);
+		}
+		this.previousFen = this.fen;
+	}
+
+	initLine(lineIndex: number, fenPart: string, baseNum: number) {
+		let currentSkipCount: number;
+		for(let x = 0, currentFenX = 0; x < 8; x++) {
+			currentSkipCount = Number(fenPart[currentFenX]);
+			if (currentSkipCount) {
+				currentFenX++;
+				
+				for (; currentSkipCount > 0; currentSkipCount--) {
+					this._squares[Math.abs(baseNum - (lineIndex * 8 + x))].piece = undefined;
+					x++;
 				}
-				else {
-					let pieceKey: keyof typeof PieceType = lines[y][currentFenX] as keyof typeof PieceType;
-					if (!pieceKey) {
-						this.error.emit(new SyntaxError(`Fen is not valid! '${lines[y][currentFenX]}' is not a valid piece notation. `));
-						return;
-					}
-					currentFenX++;
-					this.squares[Math.abs(baseNum - (y * 8 + x))].piece = PieceType[pieceKey];
+				x--;
+				//x += currentSkipCount - 1;
+			}
+			else {
+				let pieceKey: keyof typeof PieceType = fenPart[currentFenX] as keyof typeof PieceType;
+				if (!pieceKey) {
+					this.error.emit(new SyntaxError(`Fen is not valid! '${fenPart[currentFenX]}' is not a valid piece notation. `));
+					return;
+				}
+				currentFenX++;
+				this._squares[Math.abs(baseNum - (lineIndex * 8 + x))].piece = PieceType[pieceKey];
+			}
+		}
+	}
+
+	getChangedLinesIndexes(lines: string[]): number[] {
+		if(this.previousFen) {
+			const currentLines = this.previousFen.split(' ')[0].split('/');
+			let changedLinesIndexes: number[] = [];
+			for(let i = 0; i < currentLines.length; i++) {
+				if(currentLines[i] !== lines[i])
+				{
+					changedLinesIndexes.push(i);
 				}
 			}
+			return changedLinesIndexes;
+		} else {
+			return [0,1,2,3,4,5,6,7];
 		}
 	}
 
@@ -138,14 +162,34 @@ export class ChessBoardComponent implements OnInit {
 					return;
 				}
 
-			let move = Object.keys(PieceType).find(key => PieceType[key] === this.selectedSquare.piece)[0]
+			const move = Object.keys(PieceType).find(key => PieceType[key] === this.selectedSquare.piece)[0]
 			+ this.selectedSquare.name + square.name;
-			this.move.emit(new Move(move));
+			this.moveRequest.emit(new MoveRequest(move, this.gameSettings.gameId));
 
-			square.piece = this.selectedSquare.piece;
-			this.selectedSquare.piece = undefined;
+			let fenParts = this.fen.split(' ');
+			let fenLines = fenParts[0].split('/');
+			debugger;
+			let i = Math.abs(8 - Number(this.selectedSquare.name[1]));
+			fenLines[i] = '-';
+			i = Math.abs(8 - Number(square.name[1]));
+			fenLines[i] = '-';
+			fenParts[0] = fenLines.join('/');
+			this.previousFen = fenParts.join(' ');
+
+			//square.piece = this.selectedSquare.piece;
+			//this.selectedSquare.piece = undefined;
 		}
 		this.selectedSquare = null;
+	}
+
+	getSquareImgUrlExpression(square: Square) {
+		const pieceUrl = (square.piece) ? `url(${this.getPiecePath(square.piece)}),` : '';
+		const squareUrl = `url(${this.baseBoardPath.value}/${square.name}.png)`
+		return `${pieceUrl}${squareUrl}`;
+	}
+
+	getPiecePath(piece: PieceType) {
+		return this.basePiecePath.value + '/' + piece;
 	}
 
 	private getPieceBasePath(): string {

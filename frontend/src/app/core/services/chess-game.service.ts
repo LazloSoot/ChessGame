@@ -34,8 +34,16 @@ export class ChessGameService {
 		return this.httpService.sendRequest(RequestMethod.Get, this._apiUrl, id);
 	}
 
-	public createGame(game: Game): Observable<Game> {
+	public createGameWithFriend(game: Game): Observable<Game> {
 		return this.httpService.sendRequest(RequestMethod.Post, this._apiUrl, undefined, game);
+	}
+
+	public createGameVersusAI(game: Game): Observable<Game> {
+		return this.httpService.sendRequest(RequestMethod.Post, `${this._apiUrl}/ai`, undefined, game);
+	}
+
+	public createGameVersusRandPlayer(game: Game): Observable<Game> {
+		return this.httpService.sendRequest(RequestMethod.Post, `${this._apiUrl}/player`, undefined, game);
 	}
 
 	public joinGame(gameId: number): Observable<Game> {

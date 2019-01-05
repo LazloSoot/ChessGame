@@ -6,7 +6,7 @@ namespace Chess.BusinessLogic.Interfaces
 {
     public interface IChessMovesService : ICRUDService<Move, MoveDTO>
     {
-        Task<MoveDTO> Move(MoveRequest moveRequest);
+        Task<MoveDTO> Move(MoveRequest move);
 
         Task Resign();
     }

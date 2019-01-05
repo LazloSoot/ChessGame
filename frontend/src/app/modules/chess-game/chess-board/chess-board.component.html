@@ -7,7 +7,7 @@
 		<div class="chess-board__wrapper">
 				<div class="chess-board__board chess-board__board--top"
 				[ngStyle]="{'background-image': 'url('+ baseBoardPath.value + '/border_top.png )'}"></div>
-			<div *ngFor="let square of getSquaresCount()" [ngStyle]="{'background-image':  getSquareImgUrlExpression(square) }"
+			<div *ngFor="let square of squares" [ngStyle]="{'background-image':  getSquareImgUrlExpression(square) }"
 			 class="square" (click)="selectSquare(square)">{{square.name}}
 			<!--<div *ngIf="square.piece" class="piece" [ngStyle]="{'background-image': 'url('+ getPiecePath(square.piece) + ')'}"></div>
 			--></div>

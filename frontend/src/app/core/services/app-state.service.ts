@@ -55,7 +55,6 @@ export class AppStateService {
 				Hub.Notification,
 				this.token
 			);
-			debugger;
 			if(isRemember) {
 				localStorage.setItem("chess-zm-isRemember", "true");
 			} else {
