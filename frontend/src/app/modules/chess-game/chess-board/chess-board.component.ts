@@ -150,6 +150,7 @@ export class ChessBoardComponent implements OnInit {
 
 	selectSquare(square: Square) {
 		console.log("GAMEID  " + this.gameSettings.gameId);
+		debugger;
 		if (!this.selectedSquare) {
 			if (square.piece) {
 				this.selectedSquare = square;
@@ -158,6 +159,7 @@ export class ChessBoardComponent implements OnInit {
 		} else if (this.selectedSquare) {
 			if (this.selectedSquare.name == square.name)
 				{
+					this.selectedSquare = null;
 					return;
 				}
 
@@ -183,12 +185,17 @@ export class ChessBoardComponent implements OnInit {
 
 	getSquareImgUrlExpression(square: Square) {
 		const pieceUrl = (square.piece) ? `url(${this.getPiecePath(square.piece)}),` : '';
+		const selectedMask = (this.selectedSquare && (square.name === this.selectedSquare.name)) ? `url(${this.getSquareSelectionMaskUrl()}),` : '';
 		const squareUrl = `url(${this.baseBoardPath.value}/${square.name}.png)`
-		return `${pieceUrl}${squareUrl}`;
+		return `${pieceUrl}${selectedMask}${squareUrl}`;
 	}
 
 	getPiecePath(piece: PieceType) {
 		return this.basePiecePath.value + '/' + piece;
+	}
+
+	private getSquareSelectionMaskUrl(): string {
+		return `${imgsUrl}/Effects/SelectedSquare/full.png`;
 	}
 
 	private getPieceBasePath(): string {
