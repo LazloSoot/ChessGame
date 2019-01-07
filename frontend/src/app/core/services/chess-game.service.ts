@@ -1,5 +1,5 @@
 import { Injectable } from "@angular/core";
-import { GameSettings, User, GameOptions, Side, MoveRequest, Move, PieceType, GameSide, OpponentType } from "../models";
+import { GameSettings, User, GameOptions, Side, MoveRequest, Move, PieceType, GameSide, OpponentType, SquareCoord } from "../models";
 import { HttpService, RequestMethod } from "./http.service";
 import { Observable } from "rxjs";
 import { Game } from "../models/chess/game";
@@ -56,6 +56,10 @@ export class ChessGameService {
 
 	public commitMove(moveRequest: MoveRequest): Observable<Move> {
 		return this.moveService.commitMove(moveRequest);
+	}
+
+	public GetAllValidMovesForFigureAt(squareName: string): Observable<string[]> {
+		return this.httpService.sendRequest(RequestMethod.Get, `${this._apiUrl}/${this._gameSettings.gameId}/moves/available`, squareName);
 	}
 
 	public canISelectPiece(piece: PieceType): boolean {

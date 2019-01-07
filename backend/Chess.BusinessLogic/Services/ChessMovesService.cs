@@ -76,10 +76,26 @@ namespace Chess.BusinessLogic.Services
             throw new NotImplementedException();
         }
 
-        public async Task<IEnumerable<string>> GetAllValidMovesForFigureAt(int gameId, SquareDTO targetSquare)
+        public async Task<IEnumerable<string>> GetAllValidMovesForFigureAt(int gameId, string squareName)
         {
             if (uow == null)
                 return null;
+
+            if (squareName.Length != 2)
+                return null;
+
+            int x, y;
+            if (squareName[0] >= 'a' &&
+                squareName[0] <= 'h' &&
+                squareName[1] >= '1' &&
+                squareName[1] <= '8')
+            {
+                x = squareName[0] - 'a';
+                y = squareName[1] - '1';
+            } else
+            {
+                return null;
+            }
 
             var targetGame = await uow.GetRepository<Game>().GetByIdAsync(gameId);
 #warning кинуть исключение (игры нет)
@@ -87,7 +103,7 @@ namespace Chess.BusinessLogic.Services
                 return null;
 
             var chessGame = _chessGame.InitGame(targetGame.Fen);
-            return chessGame.GetAllValidMovesForFigureAt(targetSquare.X, targetSquare.Y);
+            return chessGame.GetAllValidMovesForFigureAt(x,y);
         }
     }
 }

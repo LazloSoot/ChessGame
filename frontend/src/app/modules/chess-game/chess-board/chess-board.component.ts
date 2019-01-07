@@ -1,5 +1,5 @@
 import { Component, OnInit, Input, Output, SimpleChange, EventEmitter, OnDestroy } from '@angular/core';
-import { PieceType, BoardTextureType, Square, Move, GameSettings, GameSide, MoveRequest, MovesService, ChessGameService } from '../../../core';
+import { PieceType, BoardTextureType, Square, Move, GameSettings, GameSide, MoveRequest, MovesService, ChessGameService, SquareCoord } from '../../../core';
 import { BehaviorSubject } from 'rxjs';
 
 @Component({
@@ -18,6 +18,7 @@ export class ChessBoardComponent implements OnInit {
 	private bgColor = "#813A0D";
 	private _squares: Square[];
 	private selectedSquare: Square;
+	private availableMoves: string[] =[];
 
 	get squares(): Square[] {
 		return this._squares;
@@ -151,12 +152,15 @@ export class ChessBoardComponent implements OnInit {
 		if (!this.selectedSquare) {
 			if (square.piece && this.chessGameService.canISelectPiece(square.piece)) {
 				this.selectedSquare = square;
+				this.chessGameService.GetAllValidMovesForFigureAt(square.name)
+				.subscribe((availableMoves) => this.highlightMoves(this.selectedSquare, availableMoves), error => {});
 			}
 			return;
 		} else {
 			if (this.selectedSquare.name == square.name)
 				{
 					this.selectedSquare = null;
+					this.availableMoves = [];
 					return;
 				}
 
@@ -187,6 +191,7 @@ export class ChessBoardComponent implements OnInit {
 		.then((move) => {
 			if(move) {
 				this.initBoard(move.fenAfterMove);
+				this.availableMoves = [];
 				this.moveRequest.emit(move);
 			}
 		}, error => {
@@ -194,11 +199,28 @@ export class ChessBoardComponent implements OnInit {
 		});
 	}
 
+	highlightMoves(targetSquare: Square, availableMoves: string[]) {
+		if(this.selectedSquare === targetSquare)
+		{
+			this.availableMoves = availableMoves;
+		} else {
+			this.availableMoves = [];
+		}
+	}
+
 	getSquareImgUrlExpression(square: Square) {
 		const pieceUrl = (square.piece) ? `url(${this.getPiecePath(square.piece)}),` : '';
-		const selectedMask = (this.selectedSquare && (square.name === this.selectedSquare.name)) ? `url(${this.getSquareSelectionMaskUrl()}),` : '';
 		const squareUrl = `url(${this.baseBoardPath.value}/${square.name}.png)`
-		return `${pieceUrl}${selectedMask}${squareUrl}`;
+		return `${pieceUrl}${this.getSquareMask(square)}${squareUrl}`;
+	}
+
+	getSquareMask(square: Square): string {
+		if(this.availableMoves.find(m => m === square.name))
+		{
+			return (square.piece) ? `url(${this.getAvailableKillMaskUrl()}),` : `url(${this.getAvailableMoveMaskUrl()}),`;
+		} else {
+			return (this.selectedSquare && (square.name === this.selectedSquare.name)) ? `url(${this.getSquareSelectionMaskUrl()}),` : '';
+		}
 	}
 
 	getPiecePath(piece: PieceType) {
@@ -207,6 +229,14 @@ export class ChessBoardComponent implements OnInit {
 
 	private getSquareSelectionMaskUrl(): string {
 		return `${imgsUrl}/Effects/SelectedSquare/triangle_in.png`;
+	}
+
+	private getAvailableMoveMaskUrl(): string {
+		return `${imgsUrl}/Effects/SelectedSquare/full_green.png`;
+	}
+
+	private getAvailableKillMaskUrl(): string {
+		return `${imgsUrl}/Effects/SelectedSquare/full_red.png`;
 	}
 
 	private getPieceBasePath(): string {

@@ -9,7 +9,7 @@ namespace Chess.BusinessLogic.Interfaces
     {
         Task<MoveDTO> Move(MoveRequest move);
 
-        Task<IEnumerable<string>> GetAllValidMovesForFigureAt(int gameId, SquareDTO targetSquare);
+        Task<IEnumerable<string>> GetAllValidMovesForFigureAt(int gameId, string squareName);
 
         Task Resign();
     }
