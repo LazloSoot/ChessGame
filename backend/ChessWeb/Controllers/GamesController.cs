@@ -14,10 +14,12 @@ namespace ChessWeb.Controllers
     public class GamesController : ControllerBase
     {
         private readonly IGameDataService _service;
+        private readonly IChessMovesService _chessMovesService;
 
-        public GamesController(IGameDataService service)
+        public GamesController(IGameDataService service, IChessMovesService chessMovesService)
         {
             _service = service;
+            _chessMovesService = chessMovesService;
         }
 
         // GET: Games
@@ -36,6 +38,15 @@ namespace ChessWeb.Controllers
             var game = await _service.GetByIdAsync(id);
             return game == null ? NotFound($"Game with id = {id} not found!") as IActionResult
                 : Ok(game);
+        }
+
+        // GET: Games/{gameId}/moves
+        [HttpGet("{gameId}/moves")]
+        public async Task<IActionResult> GetAllValidMovesForFigureAt(int gameId, [FromBody]SquareDTO targetSquare)
+        {
+            var moves = await _chessMovesService.GetAllValidMovesForFigureAt(gameId, targetSquare);
+            return moves == null ? NotFound($"No moves available for figure at [{targetSquare.X},{targetSquare.Y}].") as IActionResult
+                : Ok(moves);
         }
 
         // POST: Games

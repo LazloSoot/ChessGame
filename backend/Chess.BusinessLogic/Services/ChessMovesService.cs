@@ -7,6 +7,7 @@ using System;
 using System.Threading.Tasks;
 using System.Linq;
 using Chess.Common.Interfaces;
+using System.Collections.Generic;
 
 namespace Chess.BusinessLogic.Services
 {
@@ -70,13 +71,23 @@ namespace Chess.BusinessLogic.Services
             return committedMove;
         }
 
-        
-
         public async Task Resign()
         {
             throw new NotImplementedException();
         }
-        
 
+        public async Task<IEnumerable<string>> GetAllValidMovesForFigureAt(int gameId, SquareDTO targetSquare)
+        {
+            if (uow == null)
+                return null;
+
+            var targetGame = await uow.GetRepository<Game>().GetByIdAsync(gameId);
+#warning кинуть исключение (игры нет)
+            if (targetGame == null)
+                return null;
+
+            var chessGame = _chessGame.InitGame(targetGame.Fen);
+            return chessGame.GetAllValidMovesForFigureAt(targetSquare.X, targetSquare.Y);
+        }
     }
 }
