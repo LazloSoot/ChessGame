@@ -35,8 +35,6 @@ import { BehaviorSubject } from "rxjs";
 export class ChessGameComponent implements OnInit {
 	private gameSettings: GameSettings = new GameSettings();
 	private game: Game;
-	private fen: string;
-	private previousFen: string;
 	private isGameInitialized = false;
 	private waitingDialog: MatDialogRef<WaitingDialogComponent>;
 	private invitationDialog: MatDialogRef<InvitationDialogComponent>;
@@ -44,8 +42,7 @@ export class ChessGameComponent implements OnInit {
 	constructor(
 		private dialog: MatDialog,
 		private chessGame: ChessGameService,
-		private appStateService: AppStateService,
-		private movesService: MovesService
+		private appStateService: AppStateService
 	) {}
 
 	ngOnInit() {
@@ -78,21 +75,21 @@ export class ChessGameComponent implements OnInit {
 	}
 
 	async onMove(moveRequest: MoveRequest) {
-		console.log(moveRequest);
-		  
-		this.fen = '';
-		await this.movesService.commitMove(moveRequest)
-		.toPromise()
-		.then((move) => {
-			  
-			if(move) {
-				this.previousFen = this.fen;
-				this.fen = move.fenAfterMove;
-			}
-		}, error => {
-			  
-			this.fen = this.previousFen;
-		})
+	//	console.log(moveRequest);
+	//	  
+	//	this.fen = '';
+	//	await this.movesService.commitMove(moveRequest)
+	//	.toPromise()
+	//	.then((move) => {
+	//		  
+	//		if(move) {
+	//			this.previousFen = this.fen;
+	//			this.fen = move.fenAfterMove;
+	//		}
+	//	}, error => {
+	//		  
+	//		this.fen = this.previousFen;
+	//	})
 		
 	}
 
@@ -239,9 +236,6 @@ export class ChessGameComponent implements OnInit {
 
 	private initializeGame(settings: GameSettings) {
 		this.gameSettings = settings;
-		this.chessGame.initializeGame(settings);
-		this.fen = settings.startFen;
-		this.previousFen = settings.startFen;
 		this.isGameInitialized = true;
 		this.appStateService.currentGame = settings;
 	}
@@ -264,7 +258,6 @@ export class ChessGameComponent implements OnInit {
 					.subscribe((game) => {
 						this.game = game;
 						this.gameSettings.startFen = game.fen;
-						this.fen = game.fen;
 					})
 				}
 			}

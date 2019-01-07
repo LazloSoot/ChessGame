@@ -40,12 +40,12 @@ namespace ChessWeb.Controllers
                 : Ok(game);
         }
 
-        // GET: Games/{gameId}/moves
-        [HttpGet("{gameId}/moves")]
-        public async Task<IActionResult> GetAllValidMovesForFigureAt(int gameId, [FromBody]SquareDTO targetSquare)
+        // GET: Games/{gameId}/moves/available/{squareName}
+        [HttpGet("{gameId}/moves/available/{squareName}")]
+        public async Task<IActionResult> GetAllValidMovesForFigureAt(int gameId, string squareName)
         {
-            var moves = await _chessMovesService.GetAllValidMovesForFigureAt(gameId, targetSquare);
-            return moves == null ? NotFound($"No moves available for figure at [{targetSquare.X},{targetSquare.Y}].") as IActionResult
+            var moves = await _chessMovesService.GetAllValidMovesForFigureAt(gameId, squareName);
+            return moves == null ? NotFound($"No moves available for figure at {squareName}") as IActionResult
                 : Ok(moves);
         }
 

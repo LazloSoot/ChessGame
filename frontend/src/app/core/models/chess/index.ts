@@ -6,3 +6,4 @@ export * from './game';
 export * from './gameStatus';
 export * from './side';
 export * from './moveRequest';
+export * from './squareCoord';
