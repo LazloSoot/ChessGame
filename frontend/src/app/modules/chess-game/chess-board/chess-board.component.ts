@@ -19,6 +19,7 @@ export class ChessBoardComponent implements OnInit {
 	private _squares: Square[];
 	private selectedSquare: Square;
 	private availableMoves: string[] =[];
+	private isWaiting: boolean = false;
 
 	get squares(): Square[] {
 		return this._squares;
