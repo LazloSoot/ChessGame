@@ -1,0 +1,1 @@
+export * from './spinner-rect/spinner-rect.component';

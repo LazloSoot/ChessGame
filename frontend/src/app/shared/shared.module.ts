@@ -10,6 +10,7 @@ import { ForgotPasswordDialogComponent } from './dialogs/forgot-password-dialog/
 import { NewGameDialogComponent } from './dialogs/new-game/new-game-dialog.component';
 import { InvitationDialogComponent } from './dialogs/invitation-dialog/invitation-dialog.component';
 import { WaitingDialogComponent } from './dialogs/waiting-dialog/waiting-dialog.component';
+import { SpinnerRectComponent } from './layout/spinners/spinner-rect/spinner-rect.component';
 
 @NgModule({
   imports: [
@@ -20,7 +21,8 @@ import { WaitingDialogComponent } from './dialogs/waiting-dialog/waiting-dialog.
   
   exports: [
     MaterialModule,
-    FormsModule
+    FormsModule,
+    SpinnerRectComponent
   ],
 
   declarations: [
@@ -31,6 +33,7 @@ import { WaitingDialogComponent } from './dialogs/waiting-dialog/waiting-dialog.
     NewGameDialogComponent,
     InvitationDialogComponent,
     WaitingDialogComponent,
+    SpinnerRectComponent,
     ],
     
   entryComponents: [
