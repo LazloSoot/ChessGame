@@ -9,6 +9,8 @@
         [StringValue("invocationDismissed")]
         InvocationDismissed,
         [StringValue("invocationCanceled")]
-        InvocationCanceled
+        InvocationCanceled,
+        [StringValue("moveCommitted")]
+        MoveCommitted
     }
 }
