@@ -8,6 +8,7 @@ using System.Threading.Tasks;
 using System.Linq;
 using Chess.Common.Interfaces;
 using System.Collections.Generic;
+using Chess.BusinessLogic.Interfaces.SignalR;
 
 namespace Chess.BusinessLogic.Services
 {
@@ -21,18 +22,22 @@ namespace Chess.BusinessLogic.Services
         private readonly ICurrentUser _currentUserProvider;
         private readonly IUserService _userService;
         private readonly IChessGame _chessGame;
+        private readonly ISignalRChessService _signalRChessService;
+
         public ChessMovesService(
             IMapper mapper, 
             IUnitOfWork unitOfWork, 
             ICurrentUser currentUserProvider,
             IUserService userService,
-            IChessGame chessGame
+            IChessGame chessGame,
+            ISignalRChessService signalRChessService
             )
             : base(mapper, unitOfWork)
         {
             _currentUserProvider = currentUserProvider;
             _userService = userService;
             _chessGame = chessGame;
+            _signalRChessService = signalRChessService;
         }
 
         public async Task<MoveDTO> Move(MoveRequest moveRequest)
@@ -68,6 +73,7 @@ namespace Chess.BusinessLogic.Services
             await uow.SaveAsync();
             var committedMove = mapper.Map<MoveDTO>(move);
             committedMove.FenAfterMove = gameAfterMove.Fen;
+            await _signalRChessService.CommitMove(gameDbRecord.Id);
             return committedMove;
         }
 

@@ -1,5 +1,5 @@
 export enum Group {
     Common,
-    User = "user"
-
+    User = "user",
+    Game = "game"
 }
