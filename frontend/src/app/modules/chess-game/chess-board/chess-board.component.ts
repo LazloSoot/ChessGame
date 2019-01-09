@@ -11,7 +11,7 @@ export class ChessBoardComponent implements OnInit {
 	@Input() gameSettings: GameSettings;
 	@Output() error: EventEmitter<Error> = new EventEmitter<Error>(null);
 	@Output() moveRequest: EventEmitter<Move> = new EventEmitter<Move>(null);
-	private fen: string = 'rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1';
+	private fen: string;// = 'rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1';
 	private previousFen: string;
 	private baseBoardPath: BehaviorSubject<string> = new BehaviorSubject<string>(null);
 	private basePiecePath: BehaviorSubject<string> = new BehaviorSubject<string>(null);
@@ -104,6 +104,15 @@ export class ChessBoardComponent implements OnInit {
 		}
 		this.previousFen = this.fen;
 		this.fen = fen;
+
+		if(parts[1].trim().toUpperCase() === 'W' && this.gameSettings.options.selectedSide === GameSide.White)
+		{
+			this.isWaiting = false;
+		}
+		else 
+		{
+			this.isWaiting = true;
+		}
 	}
 
 	initLine(lineIndex: number, fenPart: string, baseNum: number) {
@@ -134,7 +143,8 @@ export class ChessBoardComponent implements OnInit {
 	}
 
 	getChangedLinesIndexes(lines: string[]): number[] {
-		const currentLines = this.fen.split(' ')[0].split('/');
+		if(this.fen) {
+			const currentLines = this.fen.split(' ')[0].split('/');
 			let changedLinesIndexes: number[] = [];
 			for(let i = 0; i < currentLines.length; i++) {
 				if(currentLines[i] !== lines[i])
@@ -146,6 +156,9 @@ export class ChessBoardComponent implements OnInit {
 				}
 			}
 			return changedLinesIndexes;
+		} else {
+			return [0,1,2,3,4,5,6,7];
+		}
 	}
 
 	async selectSquare(square: Square) {
