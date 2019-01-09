@@ -3,6 +3,8 @@
     public enum HubGroup
     {
         [StringValue("user")]
-        User
+        User,
+        [StringValue("game")]
+        Game
     }
 }

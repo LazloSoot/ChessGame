@@ -1,5 +1,5 @@
 import { Component, OnInit, Input, Output, SimpleChange, EventEmitter, OnDestroy } from '@angular/core';
-import { PieceType, BoardTextureType, Square, Move, GameSettings, GameSide, MoveRequest, MovesService, ChessGameService, SquareCoord } from '../../../core';
+import { PieceType, BoardTextureType, Square, Move, GameSettings, GameSide, MoveRequest, MovesService, ChessGameService, SquareCoord, AppStateService, ClientEvent, SignalRService, UserConnection, Group, Hub, Game } from '../../../core';
 import { BehaviorSubject } from 'rxjs';
 
 @Component({
@@ -11,7 +11,8 @@ export class ChessBoardComponent implements OnInit {
 	@Input() gameSettings: GameSettings;
 	@Output() error: EventEmitter<Error> = new EventEmitter<Error>(null);
 	@Output() moveRequest: EventEmitter<Move> = new EventEmitter<Move>(null);
-	private fen: string = 'rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1';
+	private _signalRConnection: UserConnection;
+	private fen: string;// = 'rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1';
 	private previousFen: string;
 	private baseBoardPath: BehaviorSubject<string> = new BehaviorSubject<string>(null);
 	private basePiecePath: BehaviorSubject<string> = new BehaviorSubject<string>(null);
@@ -19,12 +20,15 @@ export class ChessBoardComponent implements OnInit {
 	private _squares: Square[];
 	private selectedSquare: Square;
 	private availableMoves: string[] =[];
+	private isWaiting: boolean = false;
 
 	get squares(): Square[] {
 		return this._squares;
 	}
 
 	constructor(
+		public signalRService: SignalRService,
+		public appStateService: AppStateService,
 		public chessGameService: ChessGameService
 	) { }
 
@@ -47,6 +51,16 @@ export class ChessBoardComponent implements OnInit {
 					this.bgColor = colors[colorKey];
 				}
 				this.chessGameService.initializeGame(this.gameSettings);
+				if(changes[propName].previousValue && this._signalRConnection) {
+					this._signalRConnection.offAll();
+					this._signalRConnection.leaveGroup(`${Group.Game}${changes[propName].previousValue.gameId}`);
+				}
+				this._signalRConnection = this.signalRService.connect(
+					`${Group.Game}${this.gameSettings.gameId}`,
+					Hub.ChessGame,
+					this.appStateService.token
+				);
+				this.subscribeSignalREvents();
 			}
 		}
 
@@ -103,6 +117,14 @@ export class ChessBoardComponent implements OnInit {
 		}
 		this.previousFen = this.fen;
 		this.fen = fen;
+		const currentTurnSide = parts[1].trim().toUpperCase();
+		if ((currentTurnSide === 'W' && this.gameSettings.options.selectedSide === GameSide.White) ||
+			currentTurnSide === 'B' && this.gameSettings.options.selectedSide === GameSide.Black) {
+			this.isWaiting = false;
+		}
+		else {
+			this.isWaiting = true;
+		}
 	}
 
 	initLine(lineIndex: number, fenPart: string, baseNum: number) {
@@ -133,7 +155,9 @@ export class ChessBoardComponent implements OnInit {
 	}
 
 	getChangedLinesIndexes(lines: string[]): number[] {
-		const currentLines = this.fen.split(' ')[0].split('/');
+		if(this.fen) {
+			const currentLines = this.fen.split(' ')[0].split('/');
+
 			let changedLinesIndexes: number[] = [];
 			for(let i = 0; i < currentLines.length; i++) {
 				if(currentLines[i] !== lines[i])
@@ -145,6 +169,9 @@ export class ChessBoardComponent implements OnInit {
 				}
 			}
 			return changedLinesIndexes;
+			} else {
+			return [0,1,2,3,4,5,6,7];
+		}
 	}
 
 	async selectSquare(square: Square) {
@@ -242,6 +269,23 @@ export class ChessBoardComponent implements OnInit {
 	private getPieceBasePath(): string {
 		return `${imgsUrl}${this.gameSettings.style.piecesStyle}` +
 			((this.gameSettings.style.boardColor == BoardTextureType.Wood) ? '/Wood' : '/Stone')
+	}
+
+	private subscribeSignalREvents() {
+		this._signalRConnection.on(
+			ClientEvent.MoveCommitted, 
+			async () => {
+				debugger;
+				await this.chessGameService.get(this.gameSettings.gameId)
+				.toPromise()
+				.then((game: Game) => {
+					if(game) {
+						debugger;
+						this.initBoard(game.fen);
+					}
+				})
+			}
+		);
 	}
 }
 

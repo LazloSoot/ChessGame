@@ -2,5 +2,6 @@ export enum ClientEvent {
     InvocationReceived = 'invocationReceived',
     InvocationAccepted = 'invocationAccepted',
     InvocationDismissed = 'invocationDismissed',
-    InvocationCanceled = 'invocationCanceled'
+    InvocationCanceled = 'invocationCanceled',
+    MoveCommitted = 'moveCommitted'
 }
