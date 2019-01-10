@@ -65,7 +65,7 @@ namespace Chess.BusinessLogic.Services
                 MoveNext = moveRequest.Move,
                 Fen = game.Fen,
                 Player = mapper.Map<User>(currentUser),
-                Ply = (gameDbRecord.Moves.Count() + 1) / 2
+                Ply = ((gameDbRecord.Moves.Count() + 1) % 2 == 0) ? 2 : 1
             };
 
 
