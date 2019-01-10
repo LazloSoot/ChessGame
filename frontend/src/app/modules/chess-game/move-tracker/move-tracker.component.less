@@ -1,3 +1,7 @@
+.container {
+    height: 100%;
+}
+
 .opponent {
     min-height: 35px; 
     background-color: #D0D2D7;
@@ -12,4 +16,26 @@ ul {
     list-style: none;
     margin: 0;
     padding: 0;
+}
+
+.move {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 7px;
+}
+
+.move-index {
+    font-size: 14px;
+    margin-right: 10px;
+}
+
+.ply-container,
+.ply-list {
+    display: flex;
+    justify-content: space-between;
+}
+
+.ply-list {
+    width: 160px;
 }

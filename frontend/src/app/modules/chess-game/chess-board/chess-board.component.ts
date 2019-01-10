@@ -275,12 +275,10 @@ export class ChessBoardComponent implements OnInit {
 		this._signalRConnection.on(
 			ClientEvent.MoveCommitted, 
 			async () => {
-				debugger;
 				await this.chessGameService.get(this.gameSettings.gameId)
 				.toPromise()
 				.then((game: Game) => {
 					if(game) {
-						debugger;
 						this.initBoard(game.fen);
 					}
 				})

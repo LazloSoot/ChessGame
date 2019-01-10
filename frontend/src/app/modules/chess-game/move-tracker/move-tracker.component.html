@@ -7,11 +7,21 @@
 	<mat-card class="moves-container">
 		<ul class="moves">
 			<li class="move" *ngFor="let move of fullMoves; let i = index;">
-				<span>{{i + 1}}</span>
+        <span class="move-index">{{i + 1}} : </span>
+        <div class="ply-container">
 				<mat-chip-list>
-					<mat-chip>{{move.ply.moveNext}}</mat-chip>
-					<mat-chip *ngIf="move.ply2">{{move.ply2.moveNext}}</mat-chip>
-				</mat-chip-list>
+          <div class="ply-list">
+              <div>
+                  <mat-chip>{{move.ply.moveNext}}</mat-chip>
+              </div>
+              <div>
+                  <mat-chip *ngIf="move.ply2">{{move.ply2.moveNext}}</mat-chip>
+              </div>
+          </div>
+              
+              
+        </mat-chip-list>
+      </div>
 			</li>
 		</ul>
 	</mat-card>

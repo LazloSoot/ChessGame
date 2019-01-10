@@ -77,6 +77,8 @@ export class ChessGameComponent implements OnInit {
 	}
 
 	async onMove(move: Move) {
+		debugger;
+		this.commitedMoves = this.commitedMoves.concat(move);
 	//	console.log(moveRequest);
 	//	  
 	//	this.fen = '';
