@@ -1,0 +1,18 @@
+<div class="container">
+	<mat-card class="opponent">
+		<mat-card-content>
+			Opponent placeholder
+		</mat-card-content>
+	</mat-card>
+	<mat-card class="moves-container">
+		<ul class="moves">
+			<li class="move" *ngFor="let move of fullMoves; let i = index;">
+				<span>{{i + 1}}</span>
+				<mat-chip-list>
+					<mat-chip>{{move.ply.moveNext}}</mat-chip>
+					<mat-chip *ngIf="move.ply2">{{move.ply2.moveNext}}</mat-chip>
+				</mat-chip-list>
+			</li>
+		</ul>
+	</mat-card>
+</div>

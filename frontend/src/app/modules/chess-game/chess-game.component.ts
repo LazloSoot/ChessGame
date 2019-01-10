@@ -35,6 +35,7 @@ import { BehaviorSubject } from "rxjs";
 export class ChessGameComponent implements OnInit {
 	private gameSettings: GameSettings = new GameSettings();
 	private game: Game;
+	private commitedMoves: Move[];
 	private isGameInitialized = false;
 	private waitingDialog: MatDialogRef<WaitingDialogComponent>;
 	private invitationDialog: MatDialogRef<InvitationDialogComponent>;
@@ -62,6 +63,7 @@ export class ChessGameComponent implements OnInit {
 			.subscribe((game) => {
 				if(game) {
 					currentGame.startFen = game.fen;
+					this.commitedMoves = game.moves;
 					this.initializeGame(currentGame);
 				}
 			});
@@ -74,7 +76,7 @@ export class ChessGameComponent implements OnInit {
 		);
 	}
 
-	async onMove(moveRequest: MoveRequest) {
+	async onMove(move: Move) {
 	//	console.log(moveRequest);
 	//	  
 	//	this.fen = '';

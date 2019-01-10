@@ -72,6 +72,7 @@ namespace Chess.BusinessLogic.Services
             gameDbRecord.Moves.Add(move);
             await uow.SaveAsync();
             var committedMove = mapper.Map<MoveDTO>(move);
+            committedMove.MoveNext = moveRequest.Move;
             committedMove.FenAfterMove = gameAfterMove.Fen;
             await _signalRChessService.CommitMove(gameDbRecord.Id);
             return committedMove;
