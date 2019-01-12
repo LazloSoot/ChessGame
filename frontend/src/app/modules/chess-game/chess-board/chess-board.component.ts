@@ -21,6 +21,7 @@ export class ChessBoardComponent implements OnInit {
 	private selectedSquare: Square;
 	private availableMoves: string[] =[];
 	private isWaiting: boolean = false;
+	private lastMove: LastMove;
 
 	get squares(): Square[] {
 		return this._squares;
@@ -219,6 +220,8 @@ export class ChessBoardComponent implements OnInit {
 			if(move) {
 				this.initBoard(move.fenAfterMove);
 				this.availableMoves = [];
+				this.lastMove = new LastMove(move.moveNext.slice(1,3), move.moveNext.slice(3,5));
+				debugger;
 				this.moveRequest.emit(move);
 			}
 		}, error => {
@@ -242,6 +245,13 @@ export class ChessBoardComponent implements OnInit {
 	}
 
 	getSquareMask(square: Square): string {
+		if(this.lastMove) {
+			if(square.name === this.lastMove.to) {
+				return `url(${this.getLastMoveToMaskUrl()}),`;
+			} else if(square.name === this.lastMove.from) {
+				return `url(${this.getLastMoveFromMaskUrl()}),`;
+			}
+		}
 		if(this.availableMoves.find(m => m === square.name))
 		{
 			return (square.piece) ? `url(${this.getAvailableKillMaskUrl()}),` : `url(${this.getAvailableMoveMaskUrl()}),`;
@@ -264,6 +274,14 @@ export class ChessBoardComponent implements OnInit {
 
 	private getAvailableKillMaskUrl(): string {
 		return `${imgsUrl}/Effects/SelectedSquare/full_red.png`;
+	}
+
+	private getLastMoveFromMaskUrl(): string {
+		return `${imgsUrl}/Effects/SelectedSquare/full_blue.png`;
+	}
+
+	private getLastMoveToMaskUrl(): string {
+		return `${imgsUrl}/Effects/SelectedSquare/full_blue-bright.png`;
 	}
 
 	private getPieceBasePath(): string {
@@ -294,4 +312,8 @@ const colors =
 	"StoneBlack": "#181818",
 	"StoneBlue": "#43849D",
 	"StoneGrey": "#535352"
+}
+
+export class LastMove {
+	constructor(public from:string, public to: string) { }
 }
