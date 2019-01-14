@@ -6,8 +6,9 @@ export class Move {
     game?: Game;
     player?: User;
     ply?: number;
-    fenBeforeMove?: string;
+    fen?: number;
+    moveNext?: string;
     fenAfterMove?: string;
-    constructor(public moveNext: string)
+    constructor()
     {}
 }

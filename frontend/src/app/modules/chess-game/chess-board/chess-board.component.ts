@@ -1,5 +1,5 @@
 import { Component, OnInit, Input, Output, SimpleChange, EventEmitter, OnDestroy } from '@angular/core';
-import { PieceType, BoardTextureType, Square, Move, GameSettings, GameSide } from '../../../core';
+import { PieceType, BoardTextureType, Square, Move, GameSettings, GameSide, MoveRequest, MovesService, ChessGameService, SquareCoord, AppStateService, ClientEvent, SignalRService, UserConnection, Group, Hub, Game } from '../../../core';
 import { BehaviorSubject } from 'rxjs';
 
 @Component({
@@ -8,19 +8,30 @@ import { BehaviorSubject } from 'rxjs';
 	styleUrls: ['./chess-board.component.less']
 })
 export class ChessBoardComponent implements OnInit {
-	@Input() gameSettings: GameSettings;// = new GameSettings();
-	@Input() fen: string = 'rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1';
+	@Input() gameSettings: GameSettings;
 	@Output() error: EventEmitter<Error> = new EventEmitter<Error>(null);
-	@Output() move: EventEmitter<Move> = new EventEmitter<Move>(null);
+	@Output() moveRequest: EventEmitter<Move> = new EventEmitter<Move>(null);
+	private _signalRConnection: UserConnection;
+	private fen: string;// = 'rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1';
+	private previousFen: string;
 	private baseBoardPath: BehaviorSubject<string> = new BehaviorSubject<string>(null);
 	private basePiecePath: BehaviorSubject<string> = new BehaviorSubject<string>(null);
 	private bgColor = "#813A0D";
-	private squares: Square[];
+	private _squares: Square[];
 	private selectedSquare: Square;
+	private availableMoves: string[] =[];
+	private isWaiting: boolean = false;
+	private lastMove: LastMove;
 
-	constructor() 
-	{
+	get squares(): Square[] {
+		return this._squares;
 	}
+
+	constructor(
+		public signalRService: SignalRService,
+		public appStateService: AppStateService,
+		public chessGameService: ChessGameService
+	) { }
 
 	ngOnInit() {
 	}
@@ -28,24 +39,29 @@ export class ChessBoardComponent implements OnInit {
 	ngOnDestroy() {
 	}
 
-	getSquaresCount() {
-		return this.squares;
-	}
-
 	ngOnChanges(changes: SimpleChange) {
 		for (let propName in changes) {
-			if(propName === 'fen') {
-				this.initBoard(changes[propName].currentValue);
-			}
 			if (propName === 'gameSettings') {
 				this.initSquares();
 				this.initBoard(this.gameSettings.startFen);
+				this.previousFen = this.gameSettings.startFen;
 				this.baseBoardPath.next(imgsUrl + this.gameSettings.style.boardColor);
 				this.basePiecePath.next(this.getPieceBasePath());
 				let colorKey = Object.keys(BoardTextureType).find(key => BoardTextureType[key] === this.gameSettings.style.boardColor);
 				if (colorKey && colors[colorKey]) {
 					this.bgColor = colors[colorKey];
 				}
+				this.chessGameService.initializeGame(this.gameSettings);
+				if(changes[propName].previousValue && this._signalRConnection) {
+					this._signalRConnection.offAll();
+					this._signalRConnection.leaveGroup(`${Group.Game}${changes[propName].previousValue.gameId}`);
+				}
+				this._signalRConnection = this.signalRService.connect(
+					`${Group.Game}${this.gameSettings.gameId}`,
+					Hub.ChessGame,
+					this.appStateService.token
+				);
+				this.subscribeSignalREvents();
 			}
 		}
 
@@ -66,7 +82,7 @@ export class ChessBoardComponent implements OnInit {
 			correspondingCharCode = 104;
 		}
 
-		this.squares = Array(64).fill({}).map((square, i) => {
+		this._squares = Array(64).fill({}).map((square, i) => {
 			currentIndex = i % 8;
 			square = {
 				name: String.fromCharCode(correspondingCharCode - currentIndex * increment) + currentRow,
@@ -80,25 +96,14 @@ export class ChessBoardComponent implements OnInit {
 		);
 	}
 
-	getSquareImgUrlExpression(square: Square) {
-		let pieceUrl = (square.piece) ? `url(${this.getPiecePath(square.piece)}),` : '';
-		let squareUrl = `url(${this.baseBoardPath.value}/${square.name}.png)`
-		return `${pieceUrl}${squareUrl}`;
-	}
-
-	getPiecePath(piece: PieceType) {
-		return this.basePiecePath.value + '/' + piece;
-	}
-
 	initBoard(fen: string) {
-		let parts = fen.split(' ');
+		const parts = fen.split(' ');
 		if (parts.length < 6) {
 			this.error.emit(new SyntaxError("Fen is not valid!"));
 			return;
 		}
 
-		let lines = parts[0].split('/');
-		let currentSkipCount: number;
+		const lines = parts[0].split('/');
 		let baseNum;
 		if(this.gameSettings.options.selectedSide === GameSide.White) {
 			baseNum = 0;
@@ -106,51 +111,201 @@ export class ChessBoardComponent implements OnInit {
 		else {
 			baseNum = 63;
 		}
-		for (let y = 0; y < 8; y++) {
-			for (let x = 0, currentFenX = 0; x < 8; x++) {
-				currentSkipCount = Number(lines[y][currentFenX]);
-				if (currentSkipCount) {
-					currentFenX++;
-					x += currentSkipCount - 1;
+		const changedLinesIndexes = this.getChangedLinesIndexes(lines);
+		for (let y = 0, currentIndex = 0; y < changedLinesIndexes.length; y++) {
+			currentIndex = changedLinesIndexes[y];
+			this.initLine(currentIndex, lines[currentIndex], baseNum);
+		}
+		this.previousFen = this.fen;
+		this.fen = fen;
+		const currentTurnSide = parts[1].trim().toUpperCase();
+		if ((currentTurnSide === 'W' && this.gameSettings.options.selectedSide === GameSide.White) ||
+			currentTurnSide === 'B' && this.gameSettings.options.selectedSide === GameSide.Black) {
+			this.isWaiting = false;
+		}
+		else {
+			this.isWaiting = true;
+		}
+	}
+
+	initLine(lineIndex: number, fenPart: string, baseNum: number) {
+		console.log("Line " + lineIndex + " initing");
+		let currentSkipCount: number;
+		for(let x = 0, currentFenX = 0; x < 8; x++) {
+			currentSkipCount = Number(fenPart[currentFenX]);
+			if (currentSkipCount) {
+				currentFenX++;
+				
+				for (; currentSkipCount > 0; currentSkipCount--) {
+					this._squares[Math.abs(baseNum - (lineIndex * 8 + x))].piece = undefined;
+					x++;
 				}
-				else {
-					let pieceKey: keyof typeof PieceType = lines[y][currentFenX] as keyof typeof PieceType;
-					if (!pieceKey) {
-						this.error.emit(new SyntaxError(`Fen is not valid! '${lines[y][currentFenX]}' is not a valid piece notation. `));
-						return;
-					}
-					currentFenX++;
-					this.squares[Math.abs(baseNum - (y * 8 + x))].piece = PieceType[pieceKey];
+				x--;
+				//x += currentSkipCount - 1;
+			}
+			else {
+				let pieceKey: keyof typeof PieceType = fenPart[currentFenX] as keyof typeof PieceType;
+				if (!pieceKey) {
+					this.error.emit(new SyntaxError(`Fen is not valid! '${fenPart[currentFenX]}' is not a valid piece notation. `));
+					return;
 				}
+				currentFenX++;
+				this._squares[Math.abs(baseNum - (lineIndex * 8 + x))].piece = PieceType[pieceKey];
 			}
 		}
 	}
 
-	selectSquare(square: Square) {
+	getChangedLinesIndexes(lines: string[]): number[] {
+		if(this.fen) {
+			const currentLines = this.fen.split(' ')[0].split('/');
+
+			let changedLinesIndexes: number[] = [];
+			for(let i = 0; i < currentLines.length; i++) {
+				if(currentLines[i] !== lines[i])
+				{
+					// console.log("Line " + i + " changed");
+					// console.log("Was " + currentLines[i]);
+					// console.log("Is " + lines[i]);
+					changedLinesIndexes.push(i);
+				}
+			}
+			return changedLinesIndexes;
+			} else {
+			return [0,1,2,3,4,5,6,7];
+		}
+	}
+
+	async selectSquare(square: Square) {
+		console.log("GAMEID  " + this.gameSettings.gameId);
 		if (!this.selectedSquare) {
-			if (square.piece) {
+			if (square.piece && this.chessGameService.canISelectPiece(square.piece)) {
 				this.selectedSquare = square;
+				this.chessGameService.GetAllValidMovesForFigureAt(square.name)
+				.subscribe((availableMoves) => this.highlightMoves(this.selectedSquare, availableMoves), error => {});
 			}
 			return;
-		} else if (this.selectedSquare) {
+		} else {
 			if (this.selectedSquare.name == square.name)
 				{
+					this.selectedSquare = null;
+					this.availableMoves = [];
 					return;
 				}
 
-			let move = Object.keys(PieceType).find(key => PieceType[key] === this.selectedSquare.piece)[0]
+			const move = Object.keys(PieceType).find(key => PieceType[key] === this.selectedSquare.piece)[0]
 			+ this.selectedSquare.name + square.name;
-			this.move.emit(new Move(move));
+			//this.moveRequest.emit(new MoveRequest(move, this.gameSettings.gameId));
 
-			square.piece = this.selectedSquare.piece;
-			this.selectedSquare.piece = undefined;
+			// let fenParts = this.fen.split(' ');
+			// let fenLines = fenParts[0].split('/');
+			// debugger;
+			// let i = Math.abs(8 - Number(this.selectedSquare.name[1]));
+			// fenLines[i] = '-';
+			// i = Math.abs(8 - Number(square.name[1]));
+			// fenLines[i] = '-';
+			// fenParts[0] = fenLines.join('/');
+			// this.previousFen = fenParts.join(' ');
+
+			await this.tryMove(new MoveRequest(move, this.gameSettings.gameId));
+			//square.piece = this.selectedSquare.piece;
+			//this.selectedSquare.piece = undefined;
 		}
 		this.selectedSquare = null;
+	}
+
+	async tryMove(moveRequest: MoveRequest) {
+		await this.chessGameService.commitMove(moveRequest)
+		.toPromise()
+		.then((move) => {
+			if(move) {
+				this.initBoard(move.fenAfterMove);
+				this.availableMoves = [];
+				this.lastMove = new LastMove(move.moveNext.slice(1,3), move.moveNext.slice(3,5));
+				this.moveRequest.emit(move);
+			}
+		}, error => {
+
+		});
+	}
+
+	highlightMoves(targetSquare: Square, availableMoves: string[]) {
+		if(this.selectedSquare === targetSquare)
+		{
+			this.availableMoves = availableMoves;
+		} else {
+			this.availableMoves = [];
+		}
+	}
+
+	getSquareImgUrlExpression(square: Square) {
+		const pieceUrl = (square.piece) ? `url(${this.getPiecePath(square.piece)}),` : '';
+		const squareUrl = `url(${this.baseBoardPath.value}/${square.name}.png)`
+		return `${pieceUrl}${this.getSquareMask(square)}${squareUrl}`;
+	}
+
+	getSquareMask(square: Square): string {
+		if(this.lastMove) {
+			if(square.name === this.lastMove.to) {
+				return `url(${this.getLastMoveToMaskUrl()}),`;
+			} else if(square.name === this.lastMove.from) {
+				return `url(${this.getLastMoveFromMaskUrl()}),`;
+			}
+		}
+		if(this.availableMoves.find(m => m === square.name))
+		{
+			return (square.piece) ? `url(${this.getAvailableKillMaskUrl()}),` : `url(${this.getAvailableMoveMaskUrl()}),`;
+		} else {
+			return (this.selectedSquare && (square.name === this.selectedSquare.name)) ? `url(${this.getSquareSelectionMaskUrl()}),` : '';
+		}
+	}
+
+	getPiecePath(piece: PieceType) {
+		return this.basePiecePath.value + '/' + piece;
+	}
+
+	private getSquareSelectionMaskUrl(): string {
+		return `${imgsUrl}/Effects/SelectedSquare/triangle_in.png`;
+	}
+
+	private getAvailableMoveMaskUrl(): string {
+		return `${imgsUrl}/Effects/SelectedSquare/full_green.png`;
+	}
+
+	private getAvailableKillMaskUrl(): string {
+		return `${imgsUrl}/Effects/SelectedSquare/full_red.png`;
+	}
+
+	private getLastMoveFromMaskUrl(): string {
+		return `${imgsUrl}/Effects/SelectedSquare/full_blue.png`;
+	}
+
+	private getLastMoveToMaskUrl(): string {
+		return `${imgsUrl}/Effects/SelectedSquare/full_blue-bright.png`;
 	}
 
 	private getPieceBasePath(): string {
 		return `${imgsUrl}${this.gameSettings.style.piecesStyle}` +
 			((this.gameSettings.style.boardColor == BoardTextureType.Wood) ? '/Wood' : '/Stone')
+	}
+
+	private subscribeSignalREvents() {
+		this._signalRConnection.on(
+			ClientEvent.MoveCommitted, 
+			async () => {
+				await this.chessGameService.get(this.gameSettings.gameId)
+				.toPromise()
+				.then((game: Game) => {
+					if(game) {
+						if (this.fen !== game.fen) {
+							const lastMove = game.moves.sort((a, b) => b.id - a.id)[0];
+							this.lastMove = new LastMove(lastMove.moveNext.slice(1, 3), lastMove.moveNext.slice(3, 5));
+							this.moveRequest.emit(lastMove);
+							this.initBoard(game.fen);
+						}
+					}
+				})
+			}
+		);
 	}
 }
 
@@ -161,4 +316,8 @@ const colors =
 	"StoneBlack": "#181818",
 	"StoneBlue": "#43849D",
 	"StoneGrey": "#535352"
+}
+
+export class LastMove {
+	constructor(public from:string, public to: string) { }
 }

@@ -10,8 +10,8 @@ namespace Chess.DataAccess.Entities
         public int? GameId { get; set; }
         public virtual User Player { get; set; }
         public int? PlayerId { get; set; }
-        public int Ply { get; set; }
-        public string Fen { get; set; } // номер полухода (ход * 2 - 1)
+        public int Ply { get; set; } // номер полухода (ход * 2 - 1)
+        public string Fen { get; set; } 
         public string MoveNext { get; set; }
     }
 }

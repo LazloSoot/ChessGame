@@ -18,17 +18,24 @@ namespace Chess.BusinessLogic.Services
     public class GameDataService : CRUDService<Game, GameDTO>, IGameDataService
     {
         private readonly ICurrentUser _currentUserProvider;
+        private readonly IUserService _userService;
         private readonly ISignalRNotificationService _notificationService;
-        public GameDataService(IMapper mapper, IUnitOfWork unitOfWork, ICurrentUser currentUserProvider,
-            ISignalRNotificationService notificationService)
+        public GameDataService(
+            IMapper mapper, 
+            IUnitOfWork unitOfWork, 
+            ICurrentUser currentUserProvider,
+            IUserService userService,
+            ISignalRNotificationService notificationService
+            )
             : base(mapper, unitOfWork)
         {
             _currentUserProvider = currentUserProvider;
             _notificationService = notificationService;
+            _userService = userService;
         }
 
 #warning работает только с приглашением оппонента
-        public async Task<GameDTO> CreateNewGame(GameDTO game)
+        public async Task<GameDTO> CreateNewGameWithFriend(GameDTO game)
         {
             if (uow == null)
                 return null;
@@ -47,8 +54,8 @@ namespace Chess.BusinessLogic.Services
             var sides = game.Sides.ToList();
             var currentUserSide = sides.Where(s => s.Player == null).First();
             var opponent = sides.Where(s => s.Player != null).First().Player;
-            var currentUser = await _currentUserProvider.GetCurrentUserAsync();
-            currentUserSide.Player = mapper.Map<UserDTO>(currentUser);
+            var currentUser = await _userService.GetByUid(_currentUserProvider.GetCurrentUserUid());
+            currentUserSide.Player = currentUser;
             game.Sides = new List<SideDTO>()
             {
                 currentUserSide
@@ -78,6 +85,28 @@ namespace Chess.BusinessLogic.Services
             }
             await _notificationService.InviteUserAsync(opponent.Uid, targetGame.Id);
             return targetGame;
+        }
+
+        public async Task<GameDTO> CreateNewGameVersusAI(GameDTO game)
+        {
+            if (uow == null)
+                return null;
+
+            if (string.IsNullOrWhiteSpace(game.Fen))
+            {
+                game.Fen = ChessGame.DefaultFen;
+            }
+
+            var currentUser = await _userService.GetByUid(_currentUserProvider.GetCurrentUserUid());
+            var currentUserSide = game.Sides.Where(s => s.Player == null || s.PlayerId == currentUser.Id || s.Player.Id == currentUser.Id).First();
+            currentUserSide.Player = currentUser;
+            game.Sides = new List<SideDTO>()
+            {
+                currentUserSide
+            };
+            game.Status = DataAccess.Helpers.GameStatus.Going;
+            
+            return await base.AddAsync(game);
         }
 
         public async Task<GameDTO> JoinToGame(int gameId)

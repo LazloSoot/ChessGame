@@ -14,10 +14,12 @@ namespace ChessWeb.Controllers
     public class GamesController : ControllerBase
     {
         private readonly IGameDataService _service;
+        private readonly IChessMovesService _chessMovesService;
 
-        public GamesController(IGameDataService service)
+        public GamesController(IGameDataService service, IChessMovesService chessMovesService)
         {
             _service = service;
+            _chessMovesService = chessMovesService;
         }
 
         // GET: Games
@@ -38,13 +40,47 @@ namespace ChessWeb.Controllers
                 : Ok(game);
         }
 
+        // GET: Games/{gameId}/moves/available/{squareName}
+        [HttpGet("{gameId}/moves/available/{squareName}")]
+        public async Task<IActionResult> GetAllValidMovesForFigureAt(int gameId, string squareName)
+        {
+            var moves = await _chessMovesService.GetAllValidMovesForFigureAt(gameId, squareName);
+            return moves == null ? NotFound($"No moves available for figure at {squareName}") as IActionResult
+                : Ok(moves);
+        }
+
         // POST: Games
-        public async Task<IActionResult> CreateNewGame([FromBody]GameDTO game)
+        [HttpPost(Name ="CreateGameWithFriend")]
+        public async Task<IActionResult> CreateGameWithFriend([FromBody]GameDTO game)
         {
             if (!ModelState.IsValid)
                 return BadRequest() as IActionResult;
 
-            var entity = await _service.CreateNewGame(game);
+            var entity = await _service.CreateNewGameWithFriend(game);
+            return entity == null ? StatusCode(409) as IActionResult
+                : Ok(entity);
+        }
+
+        // POST: Games/AI
+        [HttpPost("ai", Name = "CreateGameVersusAI")]
+        public async Task<IActionResult> CreateGameVersusAI([FromBody]GameDTO game)
+        {
+            if (!ModelState.IsValid)
+                return BadRequest() as IActionResult;
+
+            var entity = await _service.CreateNewGameVersusAI(game);
+            return entity == null ? StatusCode(409) as IActionResult
+                : Ok(entity);
+        }
+
+        // POST: Games/player
+        [HttpPost("player", Name = "CreateGameVersusRandPlayer")]
+        public async Task<IActionResult> CreateGameVersusRandPlayer([FromBody]GameDTO game)
+        {
+            if (!ModelState.IsValid)
+                return BadRequest() as IActionResult;
+
+            var entity = await _service.CreateNewGameWithFriend(game);
             return entity == null ? StatusCode(409) as IActionResult
                 : Ok(entity);
         }
