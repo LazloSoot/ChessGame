@@ -221,7 +221,6 @@ export class ChessBoardComponent implements OnInit {
 				this.initBoard(move.fenAfterMove);
 				this.availableMoves = [];
 				this.lastMove = new LastMove(move.moveNext.slice(1,3), move.moveNext.slice(3,5));
-				debugger;
 				this.moveRequest.emit(move);
 			}
 		}, error => {
@@ -297,7 +296,12 @@ export class ChessBoardComponent implements OnInit {
 				.toPromise()
 				.then((game: Game) => {
 					if(game) {
-						this.initBoard(game.fen);
+						if (this.fen !== game.fen) {
+							const lastMove = game.moves.sort((a, b) => b.id - a.id)[0];
+							this.lastMove = new LastMove(lastMove.moveNext.slice(1, 3), lastMove.moveNext.slice(3, 5));
+							this.moveRequest.emit(lastMove);
+							this.initBoard(game.fen);
+						}
 					}
 				})
 			}
