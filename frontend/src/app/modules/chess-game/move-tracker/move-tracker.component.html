@@ -1,0 +1,31 @@
+<div class="container">
+	<mat-card class="opponent__card">
+		<a *ngIf="opponent" routerLinkActive="active" [routerLink]="['/']">
+			<mat-card-header>
+                <div mat-card-avatar class="opponent__avatar"
+                [ngStyle]="{'background-image':'url(' + getOpponentAvatarUrl() + ')'}"></div>
+				<mat-card-title>{{opponent.name}}</mat-card-title>
+				<mat-card-subtitle>User</mat-card-subtitle>
+			</mat-card-header>
+		</a>
+	</mat-card>
+	<mat-card class="moves-container">
+		<ul class="moves">
+			<li class="move" *ngFor="let move of fullMoves; let i = index;">
+				<span class="move-index">{{i + 1}} : </span>
+				<div class="ply-container">
+					<mat-chip-list>
+						<div class="ply-list">
+							<div>
+								<mat-chip>{{move.ply.moveNext}}</mat-chip>
+							</div>
+							<div>
+								<mat-chip *ngIf="move.ply2">{{move.ply2.moveNext}}</mat-chip>
+							</div>
+						</div>
+					</mat-chip-list>
+				</div>
+			</li>
+		</ul>
+	</mat-card>
+</div>
