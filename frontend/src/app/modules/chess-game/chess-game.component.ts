@@ -15,7 +15,8 @@ import {
 	GameOptions,
 	MovesService,
 	MoveRequest,
-	OpponentType
+	OpponentType,
+	User
 } from "../../core";
 import { MatDialog, MatDialogConfig, MatDialogRef } from "@angular/material";
 import {
@@ -34,8 +35,8 @@ import { BehaviorSubject } from "rxjs";
 })
 export class ChessGameComponent implements OnInit {
 	private gameSettings: GameSettings = new GameSettings();
-	private game: Game;
 	private commitedMoves: Move[];
+	private opponent: User;
 	private isGameInitialized = false;
 	private waitingDialog: MatDialogRef<WaitingDialogComponent>;
 	private invitationDialog: MatDialogRef<InvitationDialogComponent>;
@@ -64,6 +65,12 @@ export class ChessGameComponent implements OnInit {
 				if(game) {
 					currentGame.startFen = game.fen;
 					this.commitedMoves = game.moves;
+					const currentUid = this.appStateService.getCurrentUser().uid;
+					const players = game.sides.filter(s => s.player.uid !== currentUid);
+					if(players && players.length > 0 && players[0].player)
+					{
+					this.opponent = players[0].player
+					}
 					this.initializeGame(currentGame);
 				}
 			});
@@ -77,24 +84,7 @@ export class ChessGameComponent implements OnInit {
 	}
 
 	async onMove(move: Move) {
-		debugger;
 		this.commitedMoves = this.commitedMoves.concat(move);
-	//	console.log(moveRequest);
-	//	  
-	//	this.fen = '';
-	//	await this.movesService.commitMove(moveRequest)
-	//	.toPromise()
-	//	.then((move) => {
-	//		  
-	//		if(move) {
-	//			this.previousFen = this.fen;
-	//			this.fen = move.fenAfterMove;
-	//		}
-	//	}, error => {
-	//		  
-	//		this.fen = this.previousFen;
-	//	})
-		
 	}
 
 	private getRandomSide() {
@@ -120,6 +110,11 @@ export class ChessGameComponent implements OnInit {
 								);
 								let settings = new GameSettings(new StyleOptions(), gameOptions, game.fen);
 								settings.gameId = game.id;
+								const currentUid = this.appStateService.getCurrentUser().uid;
+								const players = game.sides.filter(s => s.player.uid !== currentUid);
+								if (players && players.length > 0 && players[0].player) {
+									this.opponent = players[0].player
+								}
 								this.initializeGame(settings);
 							} else {
 								throw new Error("User has not joined to game.ERROR")
@@ -260,7 +255,8 @@ export class ChessGameComponent implements OnInit {
 					// вывод инфо о начале игры
 					this.chessGame.get(gameId)
 					.subscribe((game) => {
-						this.game = game;
+						const currentUid = this.appStateService.getCurrentUser().uid;
+						this.opponent = game.sides.filter(s => s.player.uid !== currentUid)[0].player;
 						this.gameSettings.startFen = game.fen;
 					})
 				}

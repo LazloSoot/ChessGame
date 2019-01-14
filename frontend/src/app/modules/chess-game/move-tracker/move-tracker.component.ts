@@ -1,5 +1,5 @@
 import { Component, OnInit, Input, SimpleChange } from '@angular/core';
-import { Move } from '../../../core';
+import { Move,User } from '../../../core';
 
 @Component({
   selector: 'app-move-tracker',
@@ -8,6 +8,7 @@ import { Move } from '../../../core';
 })
 export class MoveTrackerComponent implements OnInit {
   @Input() moves: Move[];
+  @Input() opponent: User;
   public fullMoves: FullMove[];
   constructor() { }
 
@@ -34,6 +35,10 @@ export class MoveTrackerComponent implements OnInit {
     if(this.moves) {
       return new Array(Math.round(this.moves.length / 2));
     }
+  }
+
+  getOpponentAvatarUrl() {
+    return (this.opponent.avatarUrl) ? this.opponent.avatarUrl : '../../../../assets/images/anonAvatar.png' ;
   }
 }
 
