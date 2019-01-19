@@ -54,6 +54,7 @@ export class UserConnection {
                     this.joinGroupAttemptsСount = maxJoinAttemptsСount;
                 } else {
                     console.log(`Connection is on reconnecting state`);
+                    this.reconnect();
                     setTimeout(() => {
                         this.joinGroupAttemptsСount--;
                         this.joinGroup(groupName);

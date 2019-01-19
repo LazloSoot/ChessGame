@@ -1,6 +1,6 @@
 import { Component, OnInit, Input, Output, SimpleChange, EventEmitter, OnDestroy } from '@angular/core';
 import { PieceType, BoardTextureType, Square, Move, GameSettings, GameSide, MoveRequest, MovesService, ChessGameService, SquareCoord, AppStateService, ClientEvent, SignalRService, UserConnection, Group, Hub, Game } from '../../../core';
-import { BehaviorSubject } from 'rxjs';
+import { BehaviorSubject, timer } from 'rxjs';
 
 @Component({
 	selector: 'app-chess-board',
@@ -42,6 +42,9 @@ export class ChessBoardComponent implements OnInit {
 	ngOnChanges(changes: SimpleChange) {
 		for (let propName in changes) {
 			if (propName === 'gameSettings') {
+				this.previousFen = "";
+				this.fen = "";
+				this.lastMove = null;
 				this.initSquares();
 				this.initBoard(this.gameSettings.startFen);
 				this.previousFen = this.gameSettings.startFen;
@@ -52,16 +55,38 @@ export class ChessBoardComponent implements OnInit {
 					this.bgColor = colors[colorKey];
 				}
 				this.chessGameService.initializeGame(this.gameSettings);
+				let signalRPipelinePromise: Promise<void>;
 				if(changes[propName].previousValue && this._signalRConnection) {
-					this._signalRConnection.offAll();
-					this._signalRConnection.leaveGroup(`${Group.Game}${changes[propName].previousValue.gameId}`);
+					signalRPipelinePromise = new Promise((resolve, reject) => {
+						setTimeout(() => {
+							this._signalRConnection.offAll();
+							this._signalRConnection.leaveGroup(`${Group.Game}${changes[propName].previousValue.gameId}`);
+						resolve();
+						}, 100);
+					});
+				} else {
+					signalRPipelinePromise = new Promise((resolve, reject) => {
+						setTimeout(() => {
+							resolve();
+						  }, 100);
+					});
 				}
-				this._signalRConnection = this.signalRService.connect(
-					`${Group.Game}${this.gameSettings.gameId}`,
-					Hub.ChessGame,
-					this.appStateService.token
-				);
-				this.subscribeSignalREvents();
+
+				signalRPipelinePromise.then(() => {
+					this._signalRConnection = this.signalRService.connect(
+						`${Group.Game}${this.gameSettings.gameId}`,
+						Hub.ChessGame,
+						this.appStateService.token
+					);
+					this.subscribeSignalREvents();
+				},
+				e => {
+					debugger;
+				});
+
+				signalRPipelinePromise.catch((e) => {
+					debugger;
+				});
 			}
 		}
 

@@ -115,6 +115,7 @@ export class ChessGameComponent implements OnInit {
 								if (players && players.length > 0 && players[0].player) {
 									this.opponent = players[0].player
 								}
+								this.commitedMoves = [];
 								this.initializeGame(settings);
 							} else {
 								throw new Error("User has not joined to game.ERROR")
@@ -158,6 +159,7 @@ export class ChessGameComponent implements OnInit {
 						}
 					}
 					settings.gameId = gameId;
+					this.commitedMoves = [];
 					this.initializeGame(settings);
 				} else {
 					//throw new Error("Game settings is invlid!ERROR")

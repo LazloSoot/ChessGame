@@ -22,7 +22,6 @@ export class MoveTrackerComponent implements OnInit {
           this.fullMoves = [];
           return;
         }
-        debugger;
         this.fullMoves = [].concat.apply([],
           this.moves.map((move, index, moves) => {
             return index % 2 ? [] : new FullMove(moves[index], moves[index + 1])
