@@ -2,6 +2,7 @@
 using Chess.BL.Moves;
 using Chess.BL.Moves.Helpers;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text;
 
 namespace Chess.BL.Figures
@@ -11,6 +12,8 @@ namespace Chess.BL.Figures
         private Figure[,] figures;
 
         public string Fen { get; private set; }
+        public string WhiteCastlingFenPart { get; set; }
+        public string BlackCastlingFenPart { get; set; }
         public Color MoveColor { get; set; }
         public int MoveNumber { get; set; }
 
@@ -35,16 +38,53 @@ namespace Chess.BL.Figures
         public Board Move(MovingFigure mf)
         {
             var nextBoardState = new Board(Fen);
+            
             nextBoardState.SetFigureAt(mf.From, Figure.None);
             nextBoardState.SetFigureAt(mf.To, mf.Promotion == Figure.None ? mf.Figure : mf.Promotion);
 
             if (MoveColor == Color.Black)
-                nextBoardState.MoveNumber = this.MoveNumber + 1;
+                nextBoardState.MoveNumber = MoveNumber + 1;
 
             nextBoardState.MoveColor = MoveColor.FlipColor();
+            nextBoardState.UpdateCastlingData(mf);
             nextBoardState.GenerateNextFen();
             return nextBoardState;
 
+        }
+
+        public void UpdateCastlingData(MovingFigure mf)
+        {
+            var targetColor = mf.Figure.GetColor();
+            var currentCastlingFenPart = (targetColor == Color.White) ? WhiteCastlingFenPart : BlackCastlingFenPart;
+            if (string.IsNullOrWhiteSpace(currentCastlingFenPart))
+                return;
+
+            switch (mf.Figure)
+            {
+
+                case (Figure.BlackRook):
+                    {
+                        break;
+                    }
+                case (Figure.WhiteRook):
+                    {
+                        break;
+                    }
+                case (Figure.WhiteKing):
+                    {
+                        WhiteCastlingFenPart = string.Empty;
+                        break;
+                    }
+                case (Figure.BlackKing):
+                    {
+                        BlackCastlingFenPart = string.Empty;
+                        break;
+                    }
+            }
+        }
+        public Board Castle(bool isToKingSide)
+        {
+            return null;
         }
 
         public IEnumerable<FigureOnSquare> YieldFigures()
@@ -105,8 +145,9 @@ namespace Chess.BL.Figures
             {
                 figuresBldr.Replace(eight.Substring(0, i), i.ToString());
             }
-
-            this.Fen = figuresBldr.Append($" {(char)MoveColor} - - 0 {MoveNumber}").ToString();
+            //  "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1"
+            var castlingFenPart = (string.IsNullOrEmpty(WhiteCastlingFenPart) && string.IsNullOrEmpty(BlackCastlingFenPart)) ? "-" : $"{WhiteCastlingFenPart}{BlackCastlingFenPart}";
+            Fen = figuresBldr.Append($" {(char)MoveColor} {castlingFenPart} - 0 {MoveNumber}").ToString();
         }
 
         private void InitFiguresPosition()
@@ -114,6 +155,10 @@ namespace Chess.BL.Figures
             string[] parts = Fen.Split();
             if (parts.Length < 6)
                 return;
+            var castlingFenPart = parts[2];
+            WhiteCastlingFenPart = new string(castlingFenPart.Where(c => char.IsUpper(c)).ToArray());
+            BlackCastlingFenPart = new string(castlingFenPart.Where(c => char.IsLower(c)).ToArray());
+
             InitFigures(parts[0]);
             MoveColor = string.Equals("b", parts[1].Trim().ToLower()) ? Color.Black : Color.White;
             MoveNumber = int.Parse(parts[5]);

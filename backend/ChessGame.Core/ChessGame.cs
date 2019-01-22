@@ -46,7 +46,7 @@ namespace Chess.BL
             currentMove = new Move(board);
             return this;
         }
-        public IChessGame Move(string move) // Pe2e4  Pe7e8Q
+        public IChessGame Move(string move) // Pe2e4  Pe7e8Q k0-0-0
         {
             var movingFigure = new MovingFigure(move);
             if (!currentMove.CanMove(movingFigure))
@@ -61,12 +61,16 @@ namespace Chess.BL
             if (nextBoard.IsCheckAfterMove(movingFigure))
             {
                 Check?.Invoke(nextChessPosition, null);
-                var a = ComputeAllMoves();
-                var b = nextChessPosition.ComputeAllMoves();
                 if (nextChessPosition.ComputeAllMoves().Count < 1)
                     Mate?.Invoke(nextChessPosition, null);
             }
             return nextChessPosition;
+        }
+
+        public IChessGame Castle(bool isToKingSide)
+        {
+            var nextBoard = board.Castle(isToKingSide);
+            return new ChessGame(nextBoard);
         }
 
         public char GetFigureAt(int x, int y)

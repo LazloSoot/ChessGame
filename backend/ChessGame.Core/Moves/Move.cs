@@ -39,7 +39,7 @@ namespace Chess.BL.Moves
                 case Figure.WhiteKing:
                 case Figure.BlackKing:
                     {
-                        return movingFigure.AbsDeltaX <= 1 && movingFigure.AbsDeltaY <= 1;
+                        return CanKingMove();
                     }
                 case Figure.WhiteQueen:
                 case Figure.BlackQueen:
@@ -75,6 +75,30 @@ namespace Chess.BL.Moves
             return false;
         }
 
+        private bool CanKingMove()
+        {
+            return CanKingGo() ||
+                CanKingCastle();
+
+            bool CanKingGo()
+            {
+                return movingFigure.AbsDeltaX <= 1 && movingFigure.AbsDeltaY <= 1;
+            }
+            bool CanKingCastle()
+            {
+                var currentCastrlingFenPart = ((movingFigure.Figure.GetColor() == Helpers.Color.White) ? board.WhiteCastlingFenPart : board.BlackCastlingFenPart).ToLower();
+                return CanKingCastleKingSide() || CanKingCastleQueenSide();
+
+                bool CanKingCastleKingSide()
+                {
+                    return currentCastrlingFenPart.Contains('k') && (movingFigure.AbsDeltaX == 2 && movingFigure.DeltaY == 0);
+                }
+                bool CanKingCastleQueenSide()
+                {
+                    return currentCastrlingFenPart.Contains('q') && (movingFigure.AbsDeltaX == 2 && movingFigure.DeltaY == 0);
+                }
+            }
+        }
         private bool CanPawnMove()
         {
             int stepY = movingFigure.Figure.GetColor() == Helpers.Color.White ? 1 : -1;
@@ -82,7 +106,6 @@ namespace Chess.BL.Moves
                 CanPawnGo() ||
                 CanPawnJump() ||
                 CanPawnAttack();
-
 
             bool CanPawnGo()
             {
