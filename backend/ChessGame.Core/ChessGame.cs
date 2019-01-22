@@ -48,6 +48,11 @@ namespace Chess.BL
         }
         public IChessGame Move(string move) // Pe2e4  Pe7e8Q k0-0-0
         {
+            if(move.Contains('0'))
+            {
+                return Castle(move);
+            }
+
             var movingFigure = new MovingFigure(move);
             if (!currentMove.CanMove(movingFigure))
                 return this;
@@ -67,12 +72,42 @@ namespace Chess.BL
             return nextChessPosition;
         }
 
-        public IChessGame Castle(bool isToKingSide)
+        public IChessGame Castle(string move)
         {
-            var nextBoard = board.Castle(isToKingSide);
+            var king = (Figure)move[0];
+            var rookFigure = (king == Figure.BlackKing) ? Figure.BlackRook : Figure.WhiteRook;
+            var y = (king == Figure.BlackKing) ? 7 : 0;
+            var stepX = (move.Split('-').Length == 3) ? -1 : 1;
+            MovingFigure mf;
+            FigureOnSquare rook;
+            if(stepX == -1) // additional check required for rook
+            {
+                rook = new FigureOnSquare(rookFigure, new Square(0, y));
+                mf = new MovingFigure(rook, new Square(1, y));
+                if (!currentMove.CanMove(mf))
+                    return this;
+            } else
+            {
+                rook = new FigureOnSquare(rookFigure, new Square(7, y));
+            }
+            var firstKingDestSquare = new Square(4 + stepX, y);
+            mf = new MovingFigure(new FigureOnSquare(king, new Square(4, y)), firstKingDestSquare);
+            if (!currentMove.CanMove(mf))
+                return this;
+            if (board.IsCheckAfterMove(mf))
+                return this;
+
+            var finalKingDestSquare = new Square(firstKingDestSquare.X + stepX, y);
+            mf = new MovingFigure(new FigureOnSquare(king, firstKingDestSquare), finalKingDestSquare);
+            if (!currentMove.CanMove(mf))
+                return this;
+            if (board.IsCheckAfterMove(mf))
+                return this;
+
+            var nextBoard = board.Castle(new MovingFigure(new FigureOnSquare(king, new Square(4, y)), finalKingDestSquare), new MovingFigure(rook, firstKingDestSquare));
             return new ChessGame(nextBoard);
         }
-
+        
         public char GetFigureAt(int x, int y)
         {
             var targetSquare = new Square(x, y);
