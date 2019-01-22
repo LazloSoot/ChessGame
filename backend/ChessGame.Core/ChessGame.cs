@@ -78,8 +78,13 @@ namespace Chess.BL
             var rookFigure = (king == Figure.BlackKing) ? Figure.BlackRook : Figure.WhiteRook;
             var y = (king == Figure.BlackKing) ? 7 : 0;
             var stepX = (move.Split('-').Length == 3) ? -1 : 1;
+            if (!CanKingCastle(stepX > 0, king.GetColor()))
+            {
+                return this;
+            }
             MovingFigure mf;
             FigureOnSquare rook;
+
             if(stepX == -1) // additional check required for rook
             {
                 rook = new FigureOnSquare(rookFigure, new Square(0, y));
@@ -107,7 +112,7 @@ namespace Chess.BL
             var nextBoard = board.Castle(new MovingFigure(new FigureOnSquare(king, new Square(4, y)), finalKingDestSquare), new MovingFigure(rook, firstKingDestSquare));
             return new ChessGame(nextBoard);
         }
-        
+
         public char GetFigureAt(int x, int y)
         {
             var targetSquare = new Square(x, y);
@@ -156,6 +161,12 @@ namespace Chess.BL
             }
 
             return allMoves;
+        }
+    
+        private bool CanKingCastle(bool isKingside, Moves.Helpers.Color color)
+        {
+            var currentCastrlingFenPart = ((color == Moves.Helpers.Color.White) ? board.WhiteCastlingFenPart : board.BlackCastlingFenPart).ToLower();
+            return (isKingside) ? currentCastrlingFenPart.Contains('k') : currentCastrlingFenPart.Contains('q');
         }
 
         public bool Equals(IChessGame other)
