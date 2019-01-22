@@ -49,9 +49,25 @@ namespace Chess.BL.Figures
             nextBoardState.UpdateCastlingData(mf);
             nextBoardState.GenerateNextFen();
             return nextBoardState;
-
         }
 
+        public Board Castle(MovingFigure king, MovingFigure rook)
+        {
+            var nextBoardState = new Board(Fen);
+
+            nextBoardState.SetFigureAt(king.From, Figure.None);
+            nextBoardState.SetFigureAt(king.To, king.Figure);
+            nextBoardState.SetFigureAt(rook.From, Figure.None);
+            nextBoardState.SetFigureAt(rook.To, rook.Figure);
+
+            if (MoveColor == Color.Black)
+                nextBoardState.MoveNumber = MoveNumber + 1;
+
+            nextBoardState.MoveColor = MoveColor.FlipColor();
+            nextBoardState.UpdateCastlingData(king);
+            nextBoardState.GenerateNextFen();
+            return nextBoardState;
+        }
         public void UpdateCastlingData(MovingFigure mf)
         {
             var targetColor = mf.Figure.GetColor();
@@ -61,13 +77,29 @@ namespace Chess.BL.Figures
 
             switch (mf.Figure)
             {
-
                 case (Figure.BlackRook):
                     {
+                        if(mf.From.X == 7)
+                        {
+                            BlackCastlingFenPart = (BlackCastlingFenPart.Contains('q')) ? "q" : "";
+                        } else 
+                        if(mf.From.X == 0)
+                        {
+                            BlackCastlingFenPart = (BlackCastlingFenPart.Contains('k')) ? "k" : "";
+                        }
                         break;
                     }
                 case (Figure.WhiteRook):
                     {
+                        if (mf.From.X == 7)
+                        {
+                            WhiteCastlingFenPart = (WhiteCastlingFenPart.Contains('Q')) ? "Q" : "";
+                        }
+                        else
+                        if (mf.From.X == 0)
+                        {
+                            WhiteCastlingFenPart = (WhiteCastlingFenPart.Contains('K')) ? "K" : "";
+                        }
                         break;
                     }
                 case (Figure.WhiteKing):
