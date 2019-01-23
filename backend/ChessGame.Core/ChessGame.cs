@@ -50,6 +50,8 @@ namespace Chess.BL
         public IChessGame Move(string move) // Pe2e4  Pe7e8Q
         {
             var movingFigure = new MovingFigure(move);
+            if (board.GetFigureAt(movingFigure.From) == Figure.None)
+                return this;
             if((movingFigure.Figure == Figure.BlackKing || movingFigure.Figure == Figure.WhiteKing)
                 && (movingFigure.AbsDeltaX == 2 && movingFigure.AbsDeltaY == 0)) // its castling
             {
