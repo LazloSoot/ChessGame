@@ -22,6 +22,20 @@ export class MoveTrackerComponent implements OnInit {
           this.fullMoves = [];
           return;
         }
+        
+        let castlingMoveIndex = this.moves.findIndex(m => m.moveNext === "Ke1g1");
+        if (castlingMoveIndex > -1)
+          this.moves[castlingMoveIndex].moveNext = "0-0";
+        castlingMoveIndex = this.moves.findIndex(m => m.moveNext === "Ke8g8");
+        if (castlingMoveIndex > -1)
+          this.moves[castlingMoveIndex].moveNext = "0-0";
+        castlingMoveIndex = this.moves.findIndex(m => m.moveNext === "Ke1c1");
+        if (castlingMoveIndex > -1)
+          this.moves[castlingMoveIndex].moveNext = "0-0-0";
+        castlingMoveIndex = this.moves.findIndex(m => m.moveNext === "Ke8c8");
+        if (castlingMoveIndex > -1)
+          this.moves[castlingMoveIndex].moveNext = "0-0-0";
+
         this.fullMoves = [].concat.apply([],
           this.moves.map((move, index, moves) => {
             return index % 2 ? [] : new FullMove(moves[index], moves[index + 1])
