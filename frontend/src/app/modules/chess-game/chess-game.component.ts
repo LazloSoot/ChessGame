@@ -143,6 +143,7 @@ export class ChessGameComponent implements OnInit {
 					if (settings.options.selectedSide === GameSide.Random) {
 						settings.options.selectedSide = this.getRandomSide();
 					}
+					
 					let gameId: number;
 					switch (settings.options.opponentType) {
 						case (OpponentType.Player): {

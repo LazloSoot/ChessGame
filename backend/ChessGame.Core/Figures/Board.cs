@@ -68,7 +68,7 @@ namespace Chess.BL.Figures
             nextBoardState.GenerateNextFen();
             return nextBoardState;
         }
-        public void UpdateCastlingData(MovingFigure mf)
+        private void UpdateCastlingData(MovingFigure mf)
         {
             var targetColor = mf.Figure.GetColor();
             var currentCastlingFenPart = (targetColor == Color.White) ? WhiteCastlingFenPart : BlackCastlingFenPart;
@@ -114,9 +114,14 @@ namespace Chess.BL.Figures
                     }
             }
         }
-        public Board Castle(bool isToKingSide)
+
+        internal Board GetBoardAfterFirstKingCastlingMove(MovingFigure king)
         {
-            return null;
+            var nextBoardState = new Board(Fen);
+            nextBoardState.SetFigureAt(king.From, Figure.None);
+            nextBoardState.SetFigureAt(king.To, king.Figure);
+            nextBoardState.GenerateNextFen();
+            return nextBoardState;
         }
 
         public IEnumerable<FigureOnSquare> YieldFigures()

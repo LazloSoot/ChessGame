@@ -1,6 +1,7 @@
 ﻿using Chess.BL.Figures;
 using Chess.BL.Figures.Helpers;
 using Chess.BL.Moves;
+using Chess.BL.Moves.Helpers;
 using Chess.Common.Interfaces;
 using System;
 using System.Collections.Generic;
@@ -46,24 +47,25 @@ namespace Chess.BL
             currentMove = new Move(board);
             return this;
         }
-        public IChessGame Move(string move) // Pe2e4  Pe7e8Q k0-0-0
+        public IChessGame Move(string move) // Pe2e4  Pe7e8Q
         {
-            if(move.Contains('0'))
+            var movingFigure = new MovingFigure(move);
+            if((movingFigure.Figure == Figure.BlackKing || movingFigure.Figure == Figure.WhiteKing)
+                && (movingFigure.AbsDeltaX == 2 && movingFigure.AbsDeltaY == 0)) // its castling
             {
-                var targetColor = ((Figure)move[0]).GetColor();
+                var targetColor = movingFigure.Figure.GetColor();
                 if (targetColor != board.MoveColor)
                     return this;
-                var isToKingside = move.Split('-').Length == 2;
-                if(CanKingCastle(isToKingside))
+                var isToKingside = movingFigure.SignX > 0;
+                if (CanKingCastle(isToKingside))
                 {
                     return Castle(isToKingside);
-                } else
+                }
+                else
                 {
                     return this;
                 }
             }
-
-            var movingFigure = new MovingFigure(move);
             if (!currentMove.CanMove(movingFigure))
                 return this;
             if (board.IsCheckAfterMove(movingFigure))
@@ -107,10 +109,13 @@ namespace Chess.BL
 
         private bool CanKingCastle(bool isToKingside)
         {
+            board.MoveColor = board.MoveColor.FlipColor();
             if (board.IsCheckTo())
             {
+                board.MoveColor = board.MoveColor.FlipColor();
                 return false;
             }
+            board.MoveColor = board.MoveColor.FlipColor();
             var isWhiteSide = board.MoveColor == Moves.Helpers.Color.White;
             var king = (isWhiteSide) ? Figure.WhiteKing : Figure.BlackKing;
             var rookFigure = (isWhiteSide) ? Figure.WhiteRook : Figure.BlackRook;
@@ -121,18 +126,23 @@ namespace Chess.BL
                 return false;
             }
             MovingFigure mf;
-            FigureOnSquare rook;
 
-            if (stepX == -1) // additional check required for rook
+            if (stepX == -1)
             {
-                rook = new FigureOnSquare(rookFigure, new Square(0, y));
-                mf = new MovingFigure(rook, new Square(1, y));
-                if (!currentMove.CanMove(mf))
+                if (board.GetFigureAt(1, y) != Figure.None ||
+                    board.GetFigureAt(2, y) != Figure.None ||
+                    board.GetFigureAt(3, y) != Figure.None)
+                {
                     return false;
+                }
             }
             else
             {
-                rook = new FigureOnSquare(rookFigure, new Square(7, y));
+                if(board.GetFigureAt(6, y) != Figure.None ||
+                    board.GetFigureAt(5, y) != Figure.None)
+                {
+                    return false;
+                }
             }
             var firstKingDestSquare = new Square(4 + stepX, y);
             mf = new MovingFigure(new FigureOnSquare(king, new Square(4, y)), firstKingDestSquare);
@@ -141,11 +151,13 @@ namespace Chess.BL
             if (board.IsCheckAfterMove(mf))
                 return false;
 
+            var boardAfterFirstMove = board.GetBoardAfterFirstKingCastlingMove(mf);
+            var moveAfterFirstKingMove = new Move(boardAfterFirstMove);
             var finalKingDestSquare = new Square(firstKingDestSquare.X + stepX, y);
             mf = new MovingFigure(new FigureOnSquare(king, firstKingDestSquare), finalKingDestSquare);
-            if (!currentMove.CanMove(mf))
+            if (!moveAfterFirstKingMove.CanMove(mf))
                 return false;
-            if (board.IsCheckAfterMove(mf))
+            if (boardAfterFirstMove.IsCheckAfterMove(mf))
                 return false;
 
             return true;
@@ -181,16 +193,13 @@ namespace Chess.BL
 
             if(targetFigure == Figure.BlackKing || targetFigure == Figure.WhiteKing)
             {
-                if(!board.IsCheckTo())
+                if (CanKingCastle(true))
                 {
-                    if(CanKingCastle(true))
-                    {
-                        validMoves.Add("0-0");
-                    }
-                    if(CanKingCastle(false))
-                    {
-                        validMoves.Add("0-0-0");
-                    }
+                    validMoves.Add($"g{y + 1}");
+                }
+                if (CanKingCastle(false))
+                {
+                    validMoves.Add($"c{y + 1}");
                 }
             }
 
