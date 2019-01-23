@@ -232,6 +232,7 @@ export class ChessBoardComponent implements OnInit {
 			// this.previousFen = fenParts.join(' ');
 
 			await this.tryMove(new MoveRequest(move, this.gameSettings.gameId));
+			this.availableMoves = [];
 			//square.piece = this.selectedSquare.piece;
 			//this.selectedSquare.piece = undefined;
 		}
