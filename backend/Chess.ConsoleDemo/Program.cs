@@ -8,7 +8,7 @@ namespace Chess.ConsoleDemo
     {
         static void Main(string[] args)
         {
-            var chess = new ChessGame().InitGame("r3k2r/p2pp2p/8/8/8/8/P2PP2P/R2QK2R w KQkq - 0 1");
+            var chess = new ChessGame().InitGame("rnb1kbnr/pppppppp/4q3/8/8/8/PPPP1PPP/RNBQK2R w KQkq - 0 1");
             ChessGame.Check += Chess_Check;
             ChessGame.Mate += Chess_Mate;
             while (true)

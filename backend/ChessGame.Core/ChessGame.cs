@@ -50,7 +50,17 @@ namespace Chess.BL
         {
             if(move.Contains('0'))
             {
-                return Castle(move);
+                var targetColor = ((Figure)move[0]).GetColor();
+                if (targetColor != board.MoveColor)
+                    return this;
+                var isToKingside = move.Split('-').Length == 2;
+                if(CanKingCastle(isToKingside))
+                {
+                    return Castle(isToKingside);
+                } else
+                {
+                    return this;
+                }
             }
 
             var movingFigure = new MovingFigure(move);
@@ -72,45 +82,73 @@ namespace Chess.BL
             return nextChessPosition;
         }
 
-        public IChessGame Castle(string move)
+        public IChessGame Castle(bool isToKingside)
         {
-            var king = (Figure)move[0];
-            var rookFigure = (king == Figure.BlackKing) ? Figure.BlackRook : Figure.WhiteRook;
-            var y = (king == Figure.BlackKing) ? 7 : 0;
-            var stepX = (move.Split('-').Length == 3) ? -1 : 1;
-            if (!CanKingCastle(stepX > 0, king.GetColor()))
+            var isWhiteSide = board.MoveColor == Moves.Helpers.Color.White;
+            var king = (isWhiteSide) ? Figure.WhiteKing : Figure.BlackKing;
+            var rookFigure = (isWhiteSide) ? Figure.WhiteRook : Figure.BlackRook;
+            var y = (isWhiteSide) ? 0 : 7;
+            var stepX = (isToKingside) ? 1 : -1;
+            FigureOnSquare rook;
+
+            if(stepX == -1)
             {
-                return this;
+                rook = new FigureOnSquare(rookFigure, new Square(0, y));
+            } else
+            {
+                rook = new FigureOnSquare(rookFigure, new Square(7, y));
+            }
+            var firstKingDestSquare = new Square(4 + stepX, y);
+            var finalKingDestSquare = new Square(firstKingDestSquare.X + stepX, y);
+
+            var nextBoard = board.Castle(new MovingFigure(new FigureOnSquare(king, new Square(4, y)), finalKingDestSquare), new MovingFigure(rook, firstKingDestSquare));
+            return new ChessGame(nextBoard);
+        }
+
+        private bool CanKingCastle(bool isToKingside)
+        {
+            if (board.IsCheckTo())
+            {
+                return false;
+            }
+            var isWhiteSide = board.MoveColor == Moves.Helpers.Color.White;
+            var king = (isWhiteSide) ? Figure.WhiteKing : Figure.BlackKing;
+            var rookFigure = (isWhiteSide) ? Figure.WhiteRook : Figure.BlackRook;
+            var y = (isWhiteSide) ? 0 : 7;
+            var stepX = (isToKingside) ? 1 : -1;
+            if (!IsCastlingPossible(stepX > 0, king.GetColor()))
+            {
+                return false;
             }
             MovingFigure mf;
             FigureOnSquare rook;
 
-            if(stepX == -1) // additional check required for rook
+            if (stepX == -1) // additional check required for rook
             {
                 rook = new FigureOnSquare(rookFigure, new Square(0, y));
                 mf = new MovingFigure(rook, new Square(1, y));
                 if (!currentMove.CanMove(mf))
-                    return this;
-            } else
+                    return false;
+            }
+            else
             {
                 rook = new FigureOnSquare(rookFigure, new Square(7, y));
             }
             var firstKingDestSquare = new Square(4 + stepX, y);
             mf = new MovingFigure(new FigureOnSquare(king, new Square(4, y)), firstKingDestSquare);
             if (!currentMove.CanMove(mf))
-                return this;
+                return false;
             if (board.IsCheckAfterMove(mf))
-                return this;
+                return false;
 
             var finalKingDestSquare = new Square(firstKingDestSquare.X + stepX, y);
             mf = new MovingFigure(new FigureOnSquare(king, firstKingDestSquare), finalKingDestSquare);
             if (!currentMove.CanMove(mf))
-                return this;
+                return false;
             if (board.IsCheckAfterMove(mf))
-                return this;
+                return false;
 
-            var nextBoard = board.Castle(new MovingFigure(new FigureOnSquare(king, new Square(4, y)), finalKingDestSquare), new MovingFigure(rook, firstKingDestSquare));
-            return new ChessGame(nextBoard);
+            return true;
         }
 
         public char GetFigureAt(int x, int y)
@@ -128,7 +166,7 @@ namespace Chess.BL
                 return validMoves;
 
             var targetFigure = board.GetFigureAt(targetSquare);
-            if (targetFigure == Figure.None)
+            if (targetFigure == Figure.None || targetFigure.GetColor() != board.MoveColor)
                 return validMoves;
 
             var figureOnSquare = new FigureOnSquare(targetFigure, targetSquare);
@@ -139,6 +177,21 @@ namespace Chess.BL
                 if (currentMove.CanMove(movingFigure) &&
                     !board.IsCheckAfterMove(movingFigure))
                     validMoves.Add(((char)('a' + squareTo.X)).ToString() + (squareTo.Y + 1));
+            }
+
+            if(targetFigure == Figure.BlackKing || targetFigure == Figure.WhiteKing)
+            {
+                if(!board.IsCheckTo())
+                {
+                    if(CanKingCastle(true))
+                    {
+                        validMoves.Add("0-0");
+                    }
+                    if(CanKingCastle(false))
+                    {
+                        validMoves.Add("0-0-0");
+                    }
+                }
             }
 
             return validMoves;
@@ -163,7 +216,7 @@ namespace Chess.BL
             return allMoves;
         }
     
-        private bool CanKingCastle(bool isKingside, Moves.Helpers.Color color)
+        private bool IsCastlingPossible(bool isKingside, Moves.Helpers.Color color)
         {
             var currentCastrlingFenPart = ((color == Moves.Helpers.Color.White) ? board.WhiteCastlingFenPart : board.BlackCastlingFenPart).ToLower();
             return (isKingside) ? currentCastrlingFenPart.Contains('k') : currentCastrlingFenPart.Contains('q');
