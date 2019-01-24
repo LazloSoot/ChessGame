@@ -1,7 +1,7 @@
 import { Injectable } from "@angular/core";
 import { GameSettings, User, GameOptions, Side, MoveRequest, Move, PieceType, GameSide, OpponentType, SquareCoord } from "../models";
 import { HttpService, RequestMethod } from "./http.service";
-import { Observable } from "rxjs";
+import { Observable, BehaviorSubject } from "rxjs";
 import { Game } from "../models/chess/game";
 import { MovesService } from "./moves.service";
 
@@ -12,6 +12,15 @@ export class ChessGameService {
 	private _apiUrl: string = "/games";
 	private _gameSettings: GameSettings;
 	private fen: string;
+	private _isMyTurn: BehaviorSubject<boolean> = new BehaviorSubject<boolean>(null);
+	public get isMyTurnObs(): Observable<boolean> {
+		return this._isMyTurn.asObservable();
+	}
+
+	public set isMyTurn(value: boolean) {
+		this,this._isMyTurn.next(value);
+	}
+
 	constructor(
 		private httpService: HttpService,
 		private moveService: MovesService
@@ -23,6 +32,9 @@ export class ChessGameService {
 		this._gameSettings = settings;
 		if (this.isFenValid(settings.startFen)) {
 			this.fen = settings.startFen;
+			const currentTurn = this.fen.split(' ')[1].trim().toLowerCase();
+			this._isMyTurn.next((currentTurn === "w" && settings.options.selectedSide === GameSide.White)
+				|| (currentTurn === "b" && settings.options.selectedSide === GameSide.Black));
 		} else {
 			throw new Error("Fen is not valid!");
 		}
@@ -68,10 +80,14 @@ export class ChessGameService {
 				return true;
 			}
 			default: {
-				const pieceName = piece.split('.')[0];
-				return ((this._gameSettings.options.selectedSide === GameSide.White) && (pieceName[pieceName.length - 1] === 'W')) ||
-					((this._gameSettings.options.selectedSide === GameSide.Black) && (pieceName[pieceName.length - 1] === 'B'));
+				return (this._isMyTurn.value && this.isItMyPiece(piece));
 			}
 		}
+	}
+
+	private isItMyPiece(piece: PieceType): boolean {
+		const pieceName = piece.split('.')[0];
+		return ((this._gameSettings.options.selectedSide === GameSide.White) && (pieceName[pieceName.length - 1] === 'W')) 
+		|| ((this._gameSettings.options.selectedSide === GameSide.Black) && (pieceName[pieceName.length - 1] === 'B'));
 	}
 }

@@ -1,5 +1,5 @@
 import { Component, OnInit, Input, SimpleChange } from '@angular/core';
-import { Move,User } from '../../../core';
+import { Move,User, ChessGameService } from '../../../core';
 
 @Component({
   selector: 'app-move-tracker',
@@ -9,10 +9,16 @@ import { Move,User } from '../../../core';
 export class MoveTrackerComponent implements OnInit {
   @Input() moves: Move[];
   @Input() opponent: User;
+  private isOpponentTurn: boolean;
   public fullMoves: FullMove[];
-  constructor() { }
+  constructor(
+    private chessGameService: ChessGameService
+  ) { }
 
   ngOnInit() {
+    this.chessGameService.isMyTurnObs.subscribe(isMyTurn => {
+      this.isOpponentTurn = !isMyTurn;
+    });
   }
 
   ngOnChanges(changes: SimpleChange) {
@@ -26,13 +32,13 @@ export class MoveTrackerComponent implements OnInit {
         let castlingMoveIndex = this.moves.findIndex(m => m.moveNext === "Ke1g1");
         if (castlingMoveIndex > -1)
           this.moves[castlingMoveIndex].moveNext = "0-0";
-        castlingMoveIndex = this.moves.findIndex(m => m.moveNext === "Ke8g8");
+        castlingMoveIndex = this.moves.findIndex(m => m.moveNext === "ke8g8");
         if (castlingMoveIndex > -1)
           this.moves[castlingMoveIndex].moveNext = "0-0";
         castlingMoveIndex = this.moves.findIndex(m => m.moveNext === "Ke1c1");
         if (castlingMoveIndex > -1)
           this.moves[castlingMoveIndex].moveNext = "0-0-0";
-        castlingMoveIndex = this.moves.findIndex(m => m.moveNext === "Ke8c8");
+        castlingMoveIndex = this.moves.findIndex(m => m.moveNext === "ke8c8");
         if (castlingMoveIndex > -1)
           this.moves[castlingMoveIndex].moveNext = "0-0-0";
 

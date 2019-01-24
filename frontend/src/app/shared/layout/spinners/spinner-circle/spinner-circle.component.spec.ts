@@ -1,19 +1,20 @@
-import { ChessBoardComponent } from './chess-board.component';
 import { async, ComponentFixture, TestBed } from '@angular/core/testing';
 
-describe('ChessBoardComponent', () => {
-  let component: ChessBoardComponent;
-  let fixture: ComponentFixture<ChessBoardComponent>;
+import { SpinnerCircleComponent } from './spinner-circle.component';
+
+describe('SpinnerCircleComponent', () => {
+  let component: SpinnerCircleComponent;
+  let fixture: ComponentFixture<SpinnerCircleComponent>;
 
   beforeEach(async(() => {
     TestBed.configureTestingModule({
-      declarations: [ ChessBoardComponent ]
+      declarations: [ SpinnerCircleComponent ]
     })
     .compileComponents();
   }));
 
   beforeEach(() => {
-    fixture = TestBed.createComponent(ChessBoardComponent);
+    fixture = TestBed.createComponent(SpinnerCircleComponent);
     component = fixture.componentInstance;
     fixture.detectChanges();
   });
