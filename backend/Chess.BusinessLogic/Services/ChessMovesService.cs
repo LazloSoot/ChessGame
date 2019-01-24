@@ -65,13 +65,14 @@ namespace Chess.BusinessLogic.Services
                 MoveNext = moveRequest.Move,
                 Fen = game.Fen,
                 Player = mapper.Map<User>(currentUser),
-                Ply = (gameDbRecord.Moves.Count() + 1) / 2
+                Ply = ((gameDbRecord.Moves.Count() + 1) % 2 == 0) ? 2 : 1
             };
 
 
             gameDbRecord.Moves.Add(move);
             await uow.SaveAsync();
             var committedMove = mapper.Map<MoveDTO>(move);
+            committedMove.MoveNext = moveRequest.Move;
             committedMove.FenAfterMove = gameAfterMove.Fen;
             await _signalRChessService.CommitMove(gameDbRecord.Id);
             return committedMove;

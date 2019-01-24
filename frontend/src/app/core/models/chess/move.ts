@@ -7,6 +7,7 @@ export class Move {
     player?: User;
     ply?: number;
     fen?: number;
+    moveNext?: string;
     fenAfterMove?: string;
     constructor()
     {}
