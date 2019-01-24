@@ -9,6 +9,7 @@ import { Move,User } from '../../../core';
 export class MoveTrackerComponent implements OnInit {
   @Input() moves: Move[];
   @Input() opponent: User;
+  @Input() isOpponentTurn: boolean;
   public fullMoves: FullMove[];
   constructor() { }
 

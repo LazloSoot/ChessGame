@@ -3,7 +3,11 @@
 		<a *ngIf="opponent" routerLinkActive="active" [routerLink]="['/']">
 			<mat-card-header>
                 <div mat-card-avatar class="opponent__avatar"
-                [ngStyle]="{'background-image':'url(' + getOpponentAvatarUrl() + ')'}"></div>
+				[ngStyle]="{'background-image':'url(' + getOpponentAvatarUrl() + ')'}">
+				<div *ngIf="isOpponentTurn" class="spinner-overlay">
+					<app-spinner-rect></app-spinner-rect>
+				</div>
+			</div>
 				<mat-card-title>{{opponent.name}}</mat-card-title>
 				<mat-card-subtitle>User</mat-card-subtitle>
 			</mat-card-header>

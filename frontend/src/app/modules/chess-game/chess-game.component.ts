@@ -1,4 +1,4 @@
-import { Component, OnInit, OnDestroy } from "@angular/core";
+import { Component, OnInit, OnDestroy, ChangeDetectorRef, ChangeDetectionStrategy } from "@angular/core";
 import {
 	ClientEvent,
 	Move,
@@ -31,17 +31,20 @@ import { BehaviorSubject } from "rxjs";
 @Component({
 	selector: "app-chess-game",
 	templateUrl: "./chess-game.component.html",
-	styleUrls: ["./chess-game.component.less"]
+	styleUrls: ["./chess-game.component.less"],
+	changeDetection: ChangeDetectionStrategy.Default
 })
 export class ChessGameComponent implements OnInit {
 	private gameSettings: GameSettings = new GameSettings();
 	private commitedMoves: Move[];
 	private opponent: User;
 	private isGameInitialized = false;
+	private isOpponentTurn: boolean = false;
 	private waitingDialog: MatDialogRef<WaitingDialogComponent>;
 	private invitationDialog: MatDialogRef<InvitationDialogComponent>;
 	private awaitedUserUid: BehaviorSubject<string> = new BehaviorSubject<string>(null);
 	constructor(
+		private cdRef:ChangeDetectorRef,
 		private dialog: MatDialog,
 		private chessGame: ChessGameService,
 		private appStateService: AppStateService
@@ -70,11 +73,17 @@ export class ChessGameComponent implements OnInit {
 					if(players && players.length > 0 && players[0].player)
 					{
 					this.opponent = players[0].player
+					} else {
+						this.opponent = AIOpponent;
 					}
 					this.initializeGame(currentGame);
 				}
 			});
 		}
+	}
+
+	ngAfterViewInit() {
+		this.cdRef.detectChanges();
 	}
 
 	ngOnDestroy() {
@@ -290,4 +299,12 @@ export class ChessGameComponent implements OnInit {
 		);
 	}
 
+	
+	toggleTurn(opponentTurn: boolean) {
+		this.isOpponentTurn = opponentTurn;
+		this.cdRef.detectChanges();
+	}
+
 }
+
+const AIOpponent: User = new User("", "Bob", "../../../assets/images/AIavatar.png");
