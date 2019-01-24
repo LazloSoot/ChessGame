@@ -39,7 +39,6 @@ export class ChessGameComponent implements OnInit {
 	private commitedMoves: Move[];
 	private opponent: User;
 	private isGameInitialized = false;
-	private isOpponentTurn: boolean = false;
 	private waitingDialog: MatDialogRef<WaitingDialogComponent>;
 	private invitationDialog: MatDialogRef<InvitationDialogComponent>;
 	private awaitedUserUid: BehaviorSubject<string> = new BehaviorSubject<string>(null);
@@ -299,11 +298,6 @@ export class ChessGameComponent implements OnInit {
 		);
 	}
 
-	
-	toggleTurn(opponentTurn: boolean) {
-		this.isOpponentTurn = opponentTurn;
-		this.cdRef.detectChanges();
-	}
 
 }
 

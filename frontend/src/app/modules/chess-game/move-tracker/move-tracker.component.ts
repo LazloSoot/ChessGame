@@ -1,5 +1,5 @@
 import { Component, OnInit, Input, SimpleChange } from '@angular/core';
-import { Move,User } from '../../../core';
+import { Move,User, ChessGameService } from '../../../core';
 
 @Component({
   selector: 'app-move-tracker',
@@ -9,11 +9,16 @@ import { Move,User } from '../../../core';
 export class MoveTrackerComponent implements OnInit {
   @Input() moves: Move[];
   @Input() opponent: User;
-  @Input() isOpponentTurn: boolean;
+  private isOpponentTurn: boolean;
   public fullMoves: FullMove[];
-  constructor() { }
+  constructor(
+    private chessGameService: ChessGameService
+  ) { }
 
   ngOnInit() {
+    this.chessGameService.isMyTurnObs.subscribe(isMyTurn => {
+      this.isOpponentTurn = !isMyTurn;
+    });
   }
 
   ngOnChanges(changes: SimpleChange) {

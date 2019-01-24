@@ -5,7 +5,6 @@
 		*ngIf="isGameInitialized;else boardPlaceholder"
 		[gameSettings]="gameSettings" 
 		(moveRequest)="onMove($event)"
-		(opponentTurn)="toggleTurn($event)"
 		>
 	</app-chess-board>
 	<ng-template #boardPlaceholder>
@@ -15,7 +14,6 @@
 	<app-move-tracker
 		[moves]="commitedMoves"
 		[opponent]="opponent"
-		[isOpponentTurn]="isOpponentTurn"
 		>
 	</app-move-tracker>
 </div>

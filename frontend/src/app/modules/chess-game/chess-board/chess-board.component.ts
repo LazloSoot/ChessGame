@@ -11,7 +11,6 @@ export class ChessBoardComponent implements OnInit {
 	@Input() gameSettings: GameSettings;
 	@Output() error: EventEmitter<Error> = new EventEmitter<Error>(null);
 	@Output() moveRequest: EventEmitter<Move> = new EventEmitter<Move>(null);
-	@Output() opponentTurn: EventEmitter<boolean> = new EventEmitter(false);
 	private _signalRConnection: UserConnection;
 	private fen: string;// = 'rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1';
 	private previousFen: string;
@@ -143,13 +142,13 @@ export class ChessBoardComponent implements OnInit {
 		}
 		this.previousFen = this.fen;
 		this.fen = fen;
-		const currentTurnSide = parts[1].trim().toUpperCase();
-		if ((currentTurnSide === 'W' && this.gameSettings.options.selectedSide === GameSide.White) ||
-			currentTurnSide === 'B' && this.gameSettings.options.selectedSide === GameSide.Black) {
-			this.opponentTurn.emit(false);
+		const currentTurnSide = parts[1].trim().toLowerCase();
+		if ((currentTurnSide === 'w' && this.gameSettings.options.selectedSide === GameSide.White) ||
+			currentTurnSide === 'b' && this.gameSettings.options.selectedSide === GameSide.Black) {
+			this.chessGameService.isMyTurn = true;
 		}
 		else {
-			this.opponentTurn.emit(true);
+			this.chessGameService.isMyTurn = false;
 		}
 	}
 
@@ -199,7 +198,6 @@ export class ChessBoardComponent implements OnInit {
 	}
 
 	async selectSquare(square: Square) {
-		debugger;
 		console.log("GAMEID  " + this.gameSettings.gameId);
 		if (!this.selectedSquare) {
 			if (square.piece && this.chessGameService.canISelectPiece(square.piece)) {
