@@ -42,6 +42,7 @@ export class ChessGameComponent implements OnInit {
 	private waitingDialog: MatDialogRef<WaitingDialogComponent>;
 	private invitationDialog: MatDialogRef<InvitationDialogComponent>;
 	private awaitedUserUid: BehaviorSubject<string> = new BehaviorSubject<string>(null);
+	private newGameId: number;
 	constructor(
 		private cdRef:ChangeDetectorRef,
 		private dialog: MatDialog,
@@ -55,7 +56,7 @@ export class ChessGameComponent implements OnInit {
 		this.awaitedUserUid.subscribe((value) => {
 			if(!value && this.waitingDialog)
 			{
-				this.waitingDialog.close();
+				this.waitingDialog.close(true);
 			}
 		});
 
@@ -167,6 +168,10 @@ export class ChessGameComponent implements OnInit {
 							break;
 						}
 					}
+					if(gameId < 0)
+					{
+						return;
+					}
 					settings.gameId = gameId;
 					this.commitedMoves = [];
 					this.initializeGame(settings);
@@ -202,24 +207,28 @@ export class ChessGameComponent implements OnInit {
 			.toPromise()
 			.then(async game => {
 				if (game) {
-					this.gameSettings.gameId = game.id;
+					config.data = settings.options.opponent;
+					this.newGameId = game.id;
 					this.waitingDialog = this.dialog.open(
 						WaitingDialogComponent,
 						config
 					);
-					this.waitingDialog.afterClosed()
-						.subscribe(
+					return await this.waitingDialog.afterClosed()
+						.toPromise()
+						.then(
 							(isCanceled) => {
-								  
 								if (isCanceled) {
 									this.appStateService.signalRConnection
 										.send(
 											ServerAction.CancelInvocation,
 											`${Group.User}${this.awaitedUserUid.value}`);
 									this.awaitedUserUid.next(null);
+									return -1;
+								} else {
+									this.gameSettings.gameId = game.id;
+									return game.id;
 								}
 							});
-							return game.id;
 				}
 			});
 	}
@@ -260,8 +269,11 @@ export class ChessGameComponent implements OnInit {
 		this.appStateService.signalRConnection.on(
 			ClientEvent.InvocationAccepted,
 			(gameId) => {
-				if(gameId && this.gameSettings && this.gameSettings.gameId === gameId)
+				if(gameId && this.newGameId && this.newGameId === gameId)
 				{
+					this.newGameId = undefined;
+					this.waitingDialog.close();
+					this.waitingDialog = null;
 					this.awaitedUserUid.next(null);
 					// вывод инфо о начале игры
 					this.chessGame.get(gameId)
@@ -276,7 +288,6 @@ export class ChessGameComponent implements OnInit {
 		this.appStateService.signalRConnection.on(
 			ClientEvent.InvocationDismissed,
 			byUserWithUid => {
-				  
 				if (
 					this.awaitedUserUid.value &&
 					byUserWithUid &&

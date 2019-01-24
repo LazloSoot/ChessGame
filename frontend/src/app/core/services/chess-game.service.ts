@@ -80,11 +80,14 @@ export class ChessGameService {
 				return true;
 			}
 			default: {
-				const pieceName = piece.split('.')[0];
-				return ( this._isMyTurn.value &&
-					(this._gameSettings.options.selectedSide === GameSide.White) && (pieceName[pieceName.length - 1] === 'W')) ||
-					((this._gameSettings.options.selectedSide === GameSide.Black) && (pieceName[pieceName.length - 1] === 'B'));
+				return (this._isMyTurn.value && this.isItMyPiece(piece));
 			}
 		}
+	}
+
+	private isItMyPiece(piece: PieceType): boolean {
+		const pieceName = piece.split('.')[0];
+		return ((this._gameSettings.options.selectedSide === GameSide.White) && (pieceName[pieceName.length - 1] === 'W')) 
+		|| ((this._gameSettings.options.selectedSide === GameSide.Black) && (pieceName[pieceName.length - 1] === 'B'));
 	}
 }

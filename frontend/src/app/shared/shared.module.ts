@@ -11,6 +11,7 @@ import { NewGameDialogComponent } from './dialogs/new-game/new-game-dialog.compo
 import { InvitationDialogComponent } from './dialogs/invitation-dialog/invitation-dialog.component';
 import { WaitingDialogComponent } from './dialogs/waiting-dialog/waiting-dialog.component';
 import { SpinnerRectComponent } from './layout/spinners/spinner-rect/spinner-rect.component';
+import { SpinnerCircleComponent } from './layout/spinners/spinner-circle/spinner-circle.component';
 
 @NgModule({
   imports: [
@@ -34,6 +35,7 @@ import { SpinnerRectComponent } from './layout/spinners/spinner-rect/spinner-rec
     InvitationDialogComponent,
     WaitingDialogComponent,
     SpinnerRectComponent,
+    SpinnerCircleComponent,
     ],
     
   entryComponents: [
