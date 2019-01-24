@@ -1,6 +1,6 @@
 import { Component, OnInit, Input, Output, SimpleChange, EventEmitter, OnDestroy } from '@angular/core';
-import { PieceType, BoardTextureType, Square, Move, GameSettings, GameSide, MoveRequest, MovesService, ChessGameService, SquareCoord, AppStateService, ClientEvent, SignalRService, UserConnection, Group, Hub, Game } from '../../../core';
-import { BehaviorSubject } from 'rxjs';
+import { PieceType, BoardTextureType, Square, Move, GameSettings, GameSide, MoveRequest, MovesService, ChessGameService, SquareCoord, AppStateService, ClientEvent, SignalRService, UserConnection, Group, Hub, Game, Side } from '../../../core';
+import { BehaviorSubject, timer } from 'rxjs';
 
 @Component({
 	selector: 'app-chess-board',
@@ -20,7 +20,6 @@ export class ChessBoardComponent implements OnInit {
 	private _squares: Square[];
 	private selectedSquare: Square;
 	private availableMoves: string[] =[];
-	private isWaiting: boolean = false;
 	private lastMove: LastMove;
 
 	get squares(): Square[] {
@@ -42,6 +41,9 @@ export class ChessBoardComponent implements OnInit {
 	ngOnChanges(changes: SimpleChange) {
 		for (let propName in changes) {
 			if (propName === 'gameSettings') {
+				this.previousFen = "";
+				this.fen = "";
+				this.lastMove = null;
 				this.initSquares();
 				this.initBoard(this.gameSettings.startFen);
 				this.previousFen = this.gameSettings.startFen;
@@ -52,16 +54,38 @@ export class ChessBoardComponent implements OnInit {
 					this.bgColor = colors[colorKey];
 				}
 				this.chessGameService.initializeGame(this.gameSettings);
+				let signalRPipelinePromise: Promise<void>;
 				if(changes[propName].previousValue && this._signalRConnection) {
-					this._signalRConnection.offAll();
-					this._signalRConnection.leaveGroup(`${Group.Game}${changes[propName].previousValue.gameId}`);
+					signalRPipelinePromise = new Promise((resolve, reject) => {
+						setTimeout(() => {
+							this._signalRConnection.offAll();
+							this._signalRConnection.leaveGroup(`${Group.Game}${changes[propName].previousValue.gameId}`);
+						resolve();
+						}, 100);
+					});
+				} else {
+					signalRPipelinePromise = new Promise((resolve, reject) => {
+						setTimeout(() => {
+							resolve();
+						  }, 100);
+					});
 				}
-				this._signalRConnection = this.signalRService.connect(
-					`${Group.Game}${this.gameSettings.gameId}`,
-					Hub.ChessGame,
-					this.appStateService.token
-				);
-				this.subscribeSignalREvents();
+
+				signalRPipelinePromise.then(() => {
+					this._signalRConnection = this.signalRService.connect(
+						`${Group.Game}${this.gameSettings.gameId}`,
+						Hub.ChessGame,
+						this.appStateService.token
+					);
+					this.subscribeSignalREvents();
+				},
+				e => {
+					debugger;
+				});
+
+				signalRPipelinePromise.catch((e) => {
+					debugger;
+				});
 			}
 		}
 
@@ -118,13 +142,13 @@ export class ChessBoardComponent implements OnInit {
 		}
 		this.previousFen = this.fen;
 		this.fen = fen;
-		const currentTurnSide = parts[1].trim().toUpperCase();
-		if ((currentTurnSide === 'W' && this.gameSettings.options.selectedSide === GameSide.White) ||
-			currentTurnSide === 'B' && this.gameSettings.options.selectedSide === GameSide.Black) {
-			this.isWaiting = false;
+		const currentTurnSide = parts[1].trim().toLowerCase();
+		if ((currentTurnSide === 'w' && this.gameSettings.options.selectedSide === GameSide.White) ||
+			currentTurnSide === 'b' && this.gameSettings.options.selectedSide === GameSide.Black) {
+			this.chessGameService.isMyTurn = true;
 		}
 		else {
-			this.isWaiting = true;
+			this.chessGameService.isMyTurn = false;
 		}
 	}
 
@@ -156,13 +180,11 @@ export class ChessBoardComponent implements OnInit {
 	}
 
 	getChangedLinesIndexes(lines: string[]): number[] {
-		if(this.fen) {
+		if (this.fen) {
 			const currentLines = this.fen.split(' ')[0].split('/');
-
 			let changedLinesIndexes: number[] = [];
-			for(let i = 0; i < currentLines.length; i++) {
-				if(currentLines[i] !== lines[i])
-				{
+			for (let i = 0; i < currentLines.length; i++) {
+				if (currentLines[i] !== lines[i]) {
 					// console.log("Line " + i + " changed");
 					// console.log("Was " + currentLines[i]);
 					// console.log("Is " + lines[i]);
@@ -170,8 +192,8 @@ export class ChessBoardComponent implements OnInit {
 				}
 			}
 			return changedLinesIndexes;
-			} else {
-			return [0,1,2,3,4,5,6,7];
+		} else {
+			return [0, 1, 2, 3, 4, 5, 6, 7];
 		}
 	}
 
@@ -207,6 +229,7 @@ export class ChessBoardComponent implements OnInit {
 			// this.previousFen = fenParts.join(' ');
 
 			await this.tryMove(new MoveRequest(move, this.gameSettings.gameId));
+			this.availableMoves = [];
 			//square.piece = this.selectedSquare.piece;
 			//this.selectedSquare.piece = undefined;
 		}

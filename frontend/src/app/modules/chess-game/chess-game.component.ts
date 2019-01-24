@@ -1,4 +1,4 @@
-import { Component, OnInit, OnDestroy } from "@angular/core";
+import { Component, OnInit, OnDestroy, ChangeDetectorRef, ChangeDetectionStrategy, NgZone } from "@angular/core";
 import {
 	ClientEvent,
 	Move,
@@ -31,7 +31,8 @@ import { BehaviorSubject } from "rxjs";
 @Component({
 	selector: "app-chess-game",
 	templateUrl: "./chess-game.component.html",
-	styleUrls: ["./chess-game.component.less"]
+	styleUrls: ["./chess-game.component.less"],
+	changeDetection: ChangeDetectionStrategy.Default
 })
 export class ChessGameComponent implements OnInit {
 	private gameSettings: GameSettings = new GameSettings();
@@ -41,10 +42,13 @@ export class ChessGameComponent implements OnInit {
 	private waitingDialog: MatDialogRef<WaitingDialogComponent>;
 	private invitationDialog: MatDialogRef<InvitationDialogComponent>;
 	private awaitedUserUid: BehaviorSubject<string> = new BehaviorSubject<string>(null);
+	private newGameId: number;
 	constructor(
+		private cdRef:ChangeDetectorRef,
 		private dialog: MatDialog,
 		private chessGame: ChessGameService,
-		private appStateService: AppStateService
+		private appStateService: AppStateService,
+		private zone : NgZone
 	) {}
 
 	ngOnInit() {
@@ -53,7 +57,7 @@ export class ChessGameComponent implements OnInit {
 		this.awaitedUserUid.subscribe((value) => {
 			if(!value && this.waitingDialog)
 			{
-				this.waitingDialog.close();
+				this.waitingDialog.close(true);
 			}
 		});
 
@@ -70,11 +74,17 @@ export class ChessGameComponent implements OnInit {
 					if(players && players.length > 0 && players[0].player)
 					{
 					this.opponent = players[0].player
+					} else {
+						this.opponent = AIOpponent;
 					}
 					this.initializeGame(currentGame);
 				}
 			});
 		}
+	}
+
+	ngAfterViewInit() {
+		this.cdRef.detectChanges();
 	}
 
 	ngOnDestroy() {
@@ -94,9 +104,12 @@ export class ChessGameComponent implements OnInit {
 	}
 
 	private handleInvocation(invocation: Invocation) {
-		this.invitationDialog = this.dialog.open(InvitationDialogComponent, {
-			data: invocation
-		});
+		this.zone.run(() => {
+			this.invitationDialog = this.dialog.open(InvitationDialogComponent, {
+				data: invocation
+			});
+			});
+		
 		this.invitationDialog.afterClosed().subscribe(result => {
 			if (result) {
 						this.chessGame.joinGame(invocation.gameId).subscribe(game => {
@@ -115,6 +128,7 @@ export class ChessGameComponent implements OnInit {
 								if (players && players.length > 0 && players[0].player) {
 									this.opponent = players[0].player
 								}
+								this.commitedMoves = [];
 								this.initializeGame(settings);
 							} else {
 								throw new Error("User has not joined to game.ERROR")
@@ -142,6 +156,7 @@ export class ChessGameComponent implements OnInit {
 					if (settings.options.selectedSide === GameSide.Random) {
 						settings.options.selectedSide = this.getRandomSide();
 					}
+					
 					let gameId: number;
 					switch (settings.options.opponentType) {
 						case (OpponentType.Player): {
@@ -157,7 +172,12 @@ export class ChessGameComponent implements OnInit {
 							break;
 						}
 					}
+					if(gameId < 0)
+					{
+						return;
+					}
 					settings.gameId = gameId;
+					this.commitedMoves = [];
 					this.initializeGame(settings);
 				} else {
 					//throw new Error("Game settings is invlid!ERROR")
@@ -191,24 +211,28 @@ export class ChessGameComponent implements OnInit {
 			.toPromise()
 			.then(async game => {
 				if (game) {
-					this.gameSettings.gameId = game.id;
+					config.data = settings.options.opponent;
+					this.newGameId = game.id;
 					this.waitingDialog = this.dialog.open(
 						WaitingDialogComponent,
 						config
 					);
-					this.waitingDialog.afterClosed()
-						.subscribe(
+					return await this.waitingDialog.afterClosed()
+						.toPromise()
+						.then(
 							(isCanceled) => {
-								  
 								if (isCanceled) {
 									this.appStateService.signalRConnection
 										.send(
 											ServerAction.CancelInvocation,
 											`${Group.User}${this.awaitedUserUid.value}`);
 									this.awaitedUserUid.next(null);
+									return -1;
+								} else {
+									this.gameSettings.gameId = game.id;
+									return game.id;
 								}
 							});
-							return game.id;
 				}
 			});
 	}
@@ -249,8 +273,11 @@ export class ChessGameComponent implements OnInit {
 		this.appStateService.signalRConnection.on(
 			ClientEvent.InvocationAccepted,
 			(gameId) => {
-				if(gameId && this.gameSettings && this.gameSettings.gameId === gameId)
+				if(gameId && this.newGameId && this.newGameId === gameId)
 				{
+					this.newGameId = undefined;
+					this.waitingDialog.close();
+					this.waitingDialog = null;
 					this.awaitedUserUid.next(null);
 					// вывод инфо о начале игры
 					this.chessGame.get(gameId)
@@ -265,7 +292,6 @@ export class ChessGameComponent implements OnInit {
 		this.appStateService.signalRConnection.on(
 			ClientEvent.InvocationDismissed,
 			byUserWithUid => {
-				  
 				if (
 					this.awaitedUserUid.value &&
 					byUserWithUid &&
@@ -287,4 +313,7 @@ export class ChessGameComponent implements OnInit {
 		);
 	}
 
+
 }
+
+const AIOpponent: User = new User("", "Bob", "../../../assets/images/AIavatar.png");
