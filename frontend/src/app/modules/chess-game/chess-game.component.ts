@@ -1,4 +1,4 @@
-import { Component, OnInit, OnDestroy, ChangeDetectorRef, ChangeDetectionStrategy } from "@angular/core";
+import { Component, OnInit, OnDestroy, ChangeDetectorRef, ChangeDetectionStrategy, NgZone } from "@angular/core";
 import {
 	ClientEvent,
 	Move,
@@ -47,7 +47,8 @@ export class ChessGameComponent implements OnInit {
 		private cdRef:ChangeDetectorRef,
 		private dialog: MatDialog,
 		private chessGame: ChessGameService,
-		private appStateService: AppStateService
+		private appStateService: AppStateService,
+		private zone : NgZone
 	) {}
 
 	ngOnInit() {
@@ -103,9 +104,12 @@ export class ChessGameComponent implements OnInit {
 	}
 
 	private handleInvocation(invocation: Invocation) {
-		this.invitationDialog = this.dialog.open(InvitationDialogComponent, {
-			data: invocation
-		});
+		this.zone.run(() => {
+			this.invitationDialog = this.dialog.open(InvitationDialogComponent, {
+				data: invocation
+			});
+			});
+		
 		this.invitationDialog.afterClosed().subscribe(result => {
 			if (result) {
 						this.chessGame.joinGame(invocation.gameId).subscribe(game => {
