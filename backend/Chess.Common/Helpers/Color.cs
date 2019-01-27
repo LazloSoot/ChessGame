@@ -1,4 +1,4 @@
-﻿namespace Chess.BL.Moves.Helpers
+﻿namespace Chess.Common.Helpers
 {
     public enum Color
     {

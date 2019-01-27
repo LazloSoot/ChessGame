@@ -329,6 +329,20 @@ export class ChessBoardComponent implements OnInit {
 				})
 			}
 		);
+
+		this._signalRConnection.on(ClientEvent.Check, (checkTo) => {
+			debugger;
+			const a: GameSide = checkTo;
+			if(this.gameSettings.options.selectedSide === checkTo) {
+				console.log("CHECK111111111111");
+			}
+		});
+
+		this._signalRConnection.on(ClientEvent.Mate, (mateTo: GameSide) => {
+			if(this.gameSettings.options.selectedSide === mateTo) {
+				console.log("MATE!!!!!!!!!!!!!!!");
+			}
+		})
 	}
 }
 

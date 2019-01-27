@@ -6,7 +6,7 @@ export class GameSettings {
     constructor(
         public style: StyleOptions = new StyleOptions(),
         public options: GameOptions = new GameOptions(),
-        public startFen: string = 'rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1'
+        public startFen: string = 'rnbq1k2/ppppp3/5p2/7Q/8/2rB4/PPPPPPPP/RNB1K1NR w KQkq - 0 1'
     ) {
 
     }
