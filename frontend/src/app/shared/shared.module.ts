@@ -12,6 +12,7 @@ import { InvitationDialogComponent } from './dialogs/invitation-dialog/invitatio
 import { WaitingDialogComponent } from './dialogs/waiting-dialog/waiting-dialog.component';
 import { SpinnerRectComponent } from './layout/spinners/spinner-rect/spinner-rect.component';
 import { SpinnerCircleComponent } from './layout/spinners/spinner-circle/spinner-circle.component';
+import { CheckmateDialogComponent } from './dialogs/checkmate-dialog/checkmate-dialog.component';
 
 @NgModule({
   imports: [
@@ -36,6 +37,7 @@ import { SpinnerCircleComponent } from './layout/spinners/spinner-circle/spinner
     WaitingDialogComponent,
     SpinnerRectComponent,
     SpinnerCircleComponent,
+    CheckmateDialogComponent,
     ],
     
   entryComponents: [
@@ -44,7 +46,8 @@ import { SpinnerCircleComponent } from './layout/spinners/spinner-circle/spinner
     ForgotPasswordDialogComponent,
     NewGameDialogComponent,
     InvitationDialogComponent,
-    WaitingDialogComponent
+    WaitingDialogComponent,
+    CheckmateDialogComponent
   ]
 })
 export class SharedModule { }

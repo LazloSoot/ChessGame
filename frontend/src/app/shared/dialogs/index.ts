@@ -4,3 +4,4 @@ export * from './forgot-password-dialog/forgot-password-dialog.component';
 export * from './new-game/new-game-dialog.component';
 export * from './invitation-dialog/invitation-dialog.component';
 export * from './waiting-dialog/waiting-dialog.component';
+export * from './checkmate-dialog/checkmate-dialog.component';
