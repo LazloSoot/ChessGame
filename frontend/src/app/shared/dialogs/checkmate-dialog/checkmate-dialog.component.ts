@@ -1,4 +1,5 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, Inject } from '@angular/core';
+import { MAT_DIALOG_DATA } from '@angular/material';
 
 @Component({
   selector: 'app-checkmate-dialog',
@@ -6,7 +7,7 @@ import { Component, OnInit } from '@angular/core';
   styleUrls: ['./checkmate-dialog.component.less']
 })
 export class CheckmateDialogComponent implements OnInit {
-
+  @Inject(MAT_DIALOG_DATA) checkMateData;
   constructor() { }
 
   ngOnInit() {

@@ -22,7 +22,8 @@ import { MatDialog, MatDialogConfig, MatDialogRef } from "@angular/material";
 import {
 	NewGameDialogComponent,
 	InvitationDialogComponent,
-	WaitingDialogComponent
+	WaitingDialogComponent,
+	CheckmateDialogComponent
 } from "../../shared";
 import { Game } from "../../core/models/chess/game";
 import { Side } from "../../core/models/chess/side";
@@ -93,8 +94,28 @@ export class ChessGameComponent implements OnInit {
 		);
 	}
 
-	async onMove(move: Move) {
+	onMove(move: Move) {
 		this.commitedMoves = this.commitedMoves.concat(move);
+	}
+
+	onCheck(checkTo: GameSide) {
+
+	}
+
+	onCheckmate(checkmateTo: GameSide) {
+		const config: MatDialogConfig = {
+			disableClose: true,
+			closeOnNavigation: true,
+			data: {
+				isMateToMe: this.gameSettings.options.selectedSide === checkmateTo
+			}
+		};
+		const dialogRef = this.dialog.open(CheckmateDialogComponent, config);
+		dialogRef.afterClosed().subscribe((isStartNewGame: boolean) => {
+			if(isStartNewGame) {
+				this.openNewGameDialog();
+			}
+		});
 	}
 
 	private getRandomSide() {
@@ -148,7 +169,7 @@ export class ChessGameComponent implements OnInit {
 			disableClose: true,
 			closeOnNavigation: true
 		};
-		let dialogRef = this.dialog.open(NewGameDialogComponent, config);
+		const dialogRef = this.dialog.open(NewGameDialogComponent, config);
 		dialogRef.componentInstance.onSettingsDefined.subscribe(
 			async (settings: GameSettings) => {
 				if (settings) {
