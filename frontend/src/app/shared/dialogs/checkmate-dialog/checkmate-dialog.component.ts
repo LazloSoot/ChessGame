@@ -7,8 +7,9 @@ import { MAT_DIALOG_DATA } from '@angular/material';
   styleUrls: ['./checkmate-dialog.component.less']
 })
 export class CheckmateDialogComponent implements OnInit {
-  @Inject(MAT_DIALOG_DATA) checkMateData;
-  constructor() { }
+  constructor(
+    @Inject(MAT_DIALOG_DATA) public checkMateData
+  ) { }
 
   ngOnInit() {
   }

@@ -80,13 +80,13 @@ namespace Chess.BusinessLogic.Services
 
 
             gameDbRecord.Moves.Add(move);
-            await uow.SaveAsync();
             var committedMove = mapper.Map<MoveDTO>(move);
             committedMove.MoveNext = moveRequest.Move;
             committedMove.FenAfterMove = gameAfterMove.Fen;
             await _signalRChessService.CommitMove(gameDbRecord.Id);
             if (game.MateTo != Common.Helpers.Color.None)
             {
+                gameDbRecord.Status = DataAccess.Helpers.GameStatus.Completed;
                 await _signalRChessService.EmitMate(gameDbRecord.Id, game.MateTo);
             }
             else if (game.CheckTo != Common.Helpers.Color.None)
@@ -94,6 +94,8 @@ namespace Chess.BusinessLogic.Services
                 await _signalRChessService.EmitСheck(gameDbRecord.Id, game.CheckTo);
             }
 
+
+            await uow.SaveAsync();
             return committedMove;
         }
 
