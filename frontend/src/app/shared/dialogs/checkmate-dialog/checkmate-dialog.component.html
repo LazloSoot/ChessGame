@@ -1,0 +1,15 @@
+<mat-dialog-content>
+  <div *ngIf="checkMateData.isMateToMe;else win">
+    <h2>You lose.</h2>
+    <div class="checkmate__image"></div>
+  </div>
+  <ng-template #win>
+    <h2>You win.</h2>
+    <p>Congratulations!</p>
+    <div class="checkmate__image"></div>
+  </ng-template>
+</mat-dialog-content>
+<mat-dialog-actions class="actions" align="center">
+    <button mat-stroked-button [mat-dialog-close]="true">New game</button>
+	<button mat-stroked-button mat-dialog-close>Continue</button>
+</mat-dialog-actions>

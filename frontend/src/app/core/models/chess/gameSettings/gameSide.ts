@@ -1,6 +1,5 @@
 export enum GameSide {
-    Random = 0,
+    Random,
     White = 1,
     Black = 2
-    
 }

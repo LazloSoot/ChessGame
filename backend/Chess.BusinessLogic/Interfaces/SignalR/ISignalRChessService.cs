@@ -1,6 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
+﻿using Chess.Common.Helpers;
 using System.Threading.Tasks;
 
 namespace Chess.BusinessLogic.Interfaces.SignalR
@@ -9,5 +7,7 @@ namespace Chess.BusinessLogic.Interfaces.SignalR
     {
 
         Task CommitMove(int gameId);
+        Task EmitMate(int gameId, Color mateTo);
+        Task EmitСheck(int gameId, Color checkTo);
     }
 }

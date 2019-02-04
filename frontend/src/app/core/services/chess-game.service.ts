@@ -4,6 +4,7 @@ import { HttpService, RequestMethod } from "./http.service";
 import { Observable, BehaviorSubject } from "rxjs";
 import { Game } from "../models/chess/game";
 import { MovesService } from "./moves.service";
+import { AppStateService } from "./app-state.service";
 
 @Injectable({
 	providedIn: "root"
@@ -18,7 +19,7 @@ export class ChessGameService {
 	}
 
 	public set isMyTurn(value: boolean) {
-		this,this._isMyTurn.next(value);
+		this._isMyTurn.next(value);
 	}
 
 	constructor(

@@ -15,10 +15,9 @@ namespace Chess.BL
         private Move currentMove;
         public const string DefaultFen = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
         public string Fen { get; private set; }
+        public Chess.Common.Helpers.Color MateTo { get; private set; } = Common.Helpers.Color.None;
+        public Chess.Common.Helpers.Color CheckTo { get; private set; } = Common.Helpers.Color.None;
 
-#warning добавить инфу кто кому что сделал
-        public static event EventHandler Check;
-        public static event EventHandler Mate;
         /// <summary>
         /// Forsyth–Edwards Notation (FEN) is a standard notation for describing a particular board position of a chess game. The purpose of FEN is to provide all the necessary information to restart a game from a particular position.
         /// </summary>
@@ -79,9 +78,12 @@ namespace Chess.BL
 
             if (nextBoard.IsCheckAfterMove(movingFigure))
             {
-                Check?.Invoke(nextChessPosition, null);
+                CheckTo = (Common.Helpers.Color)nextBoard.MoveColor;
                 if (nextChessPosition.ComputeAllMoves().Count < 1)
-                    Mate?.Invoke(nextChessPosition, null);
+                    MateTo = (Common.Helpers.Color)nextBoard.MoveColor;
+            } else
+            {
+                CheckTo = Common.Helpers.Color.None;
             }
             return nextChessPosition;
         }
