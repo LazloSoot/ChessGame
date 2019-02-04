@@ -4,7 +4,10 @@
 		<app-chess-board 
 		*ngIf="isGameInitialized;else boardPlaceholder" 
 		[gameSettings]="gameSettings" 
-		(moveRequest)="onMove($event)">
+		(moveRequest)="onMove($event)"
+		(check)="onCheck($event)"
+		(checkmate)="onCheckmate($event)"
+		>
 		</app-chess-board>
 		<ng-template #boardPlaceholder>
 			<img src="../../../assets/images/Chess/prev.jpg">

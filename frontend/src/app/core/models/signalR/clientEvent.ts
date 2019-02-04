@@ -3,5 +3,7 @@ export enum ClientEvent {
     InvocationAccepted = 'invocationAccepted',
     InvocationDismissed = 'invocationDismissed',
     InvocationCanceled = 'invocationCanceled',
-    MoveCommitted = 'moveCommitted'
+    MoveCommitted = 'moveCommitted',
+    Check = 'check',
+    Mate = 'mate'
 }

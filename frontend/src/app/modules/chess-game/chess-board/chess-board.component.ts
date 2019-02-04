@@ -11,6 +11,8 @@ export class ChessBoardComponent implements OnInit {
 	@Input() gameSettings: GameSettings;
 	@Output() error: EventEmitter<Error> = new EventEmitter<Error>(null);
 	@Output() moveRequest: EventEmitter<Move> = new EventEmitter<Move>(null);
+	@Output() check: EventEmitter<GameSide> = new EventEmitter<GameSide>(null);
+	@Output() checkmate: EventEmitter<GameSide> = new EventEmitter<GameSide>(null);
 	private _signalRConnection: UserConnection;
 	private fen: string;// = 'rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1';
 	private previousFen: string;
@@ -329,6 +331,18 @@ export class ChessBoardComponent implements OnInit {
 				})
 			}
 		);
+
+		this._signalRConnection.on(ClientEvent.Check, (checkTo: GameSide) => {
+			if(this.gameSettings.options.selectedSide === checkTo) {
+				this.check.emit(checkTo);
+				// highlight king square
+			}
+		});
+
+		this._signalRConnection.on(ClientEvent.Mate, (mateTo: GameSide) => {
+			this.checkmate.emit(mateTo);
+				// highlight king square
+		})
 	}
 }
 

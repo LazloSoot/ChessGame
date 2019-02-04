@@ -9,8 +9,8 @@ namespace Chess.ConsoleDemo
         static void Main(string[] args)
         {
             var chess = new ChessGame().InitGame("rnb1kbnr/pppppppp/4q3/8/8/N2Q1B2/PPPP1PPP/R3K2R w KQkq - 0 1");
-            ChessGame.Check += Chess_Check;
-            ChessGame.Mate += Chess_Mate;
+           // ChessGame.Check += Chess_Check;
+           // ChessGame.Mate += Chess_Mate;
             while (true)
             {
                 Console.WriteLine(chess.Fen);

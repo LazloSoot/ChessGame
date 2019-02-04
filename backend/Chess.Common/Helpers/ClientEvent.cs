@@ -11,6 +11,10 @@
         [StringValue("invocationCanceled")]
         InvocationCanceled,
         [StringValue("moveCommitted")]
-        MoveCommitted
+        MoveCommitted,
+        [StringValue("check")]
+        Check,
+        [StringValue("mate")]
+        Mate
     }
 }
