@@ -1,0 +1,17 @@
+<mat-dialog-content>
+	<h2>Waiting for user</h2>
+	<mat-card class="opponent__card">
+		<mat-card-header class="card__header">
+			<div mat-card-avatar class="opponent__avatar" [ngStyle]="{'background-image':'url(' + getOpponentAvatarUrl() + ')'}">
+				<div class="spinner-overlay">
+					<app-spinner-circle></app-spinner-circle>
+				</div>
+			</div>
+			<mat-card-title>{{user.name}}</mat-card-title>
+			<mat-card-subtitle>{{"user"}}</mat-card-subtitle>
+		</mat-card-header>
+	</mat-card>
+</mat-dialog-content>
+<mat-dialog-actions align="center">
+	<button mat-stroked-button [mat-dialog-close]="true">Cancel</button>
+</mat-dialog-actions>

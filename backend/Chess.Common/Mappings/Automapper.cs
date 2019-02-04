@@ -1,6 +1,7 @@
 ﻿using Chess.DataAccess.Entities;
 using Chess.Common.DTOs;
 using AutoMapper;
+using System.Linq;
 
 namespace Chess.Common.Mappings
 {
@@ -11,12 +12,12 @@ namespace Chess.Common.Mappings
             return new MapperConfiguration(cfg =>
             {
                 cfg.CreateMap<Game, GameDTO>();
-                cfg.CreateMap<GameDTO, Game>();
+                cfg.CreateMap<GameDTO, Game>()
+                .ForMember(p => p.Moves, opt => opt.MapFrom(po => po.Moves.ToList()))
+                .ForMember(p => p.Sides, opt => opt.MapFrom(po => po.Sides.ToList()));
 
-                cfg.CreateMap<Move, CommitedMoveDTO>()
-                .ForMember(p => p.FenBeforeMove, opt => opt.MapFrom(po => po.Fen));
-                cfg.CreateMap<CommitedMoveDTO, Move>()
-                .ForMember(p => p.Fen, opt => opt.MapFrom(po => po.FenBeforeMove));
+                cfg.CreateMap<Move, MoveDTO>();
+                cfg.CreateMap<MoveDTO, Move>();
 
                 cfg.CreateMap<User, UserDTO>();
                 cfg.CreateMap<UserDTO, User>();

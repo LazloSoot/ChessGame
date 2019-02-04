@@ -1,23 +1,28 @@
 import { NgModule } from '@angular/core';
 import { Routes, RouterModule, PreloadAllModules } from '@angular/router';
 import { NotFoundComponent } from './shared';
+import { AuthGuard, LandingGuard } from './core';
 
 const routes: Routes = [
   {
     path: '',
-    loadChildren: './modules/landing/landing.module#LandingModule'
+    loadChildren: './modules/landing/landing.module#LandingModule',
+    canActivate: [LandingGuard]
   },
   {
     path: 'play',
-    loadChildren: './modules/chess-game/chess-game.module#ChessGameModule'
+    loadChildren: './modules/chess-game/chess-game.module#ChessGameModule',
+    canActivate: [AuthGuard]
   },
   {
     path: 'puzzles',
-    loadChildren: './modules/puzzles/puzzles.module#PuzzlesModule'
+    loadChildren: './modules/puzzles/puzzles.module#PuzzlesModule',
+    canActivate: [AuthGuard]
   },
   {
     path: 'rules',
-    loadChildren: './modules/rules/rules.module#RulesModule'
+    loadChildren: './modules/rules/rules.module#RulesModule',
+    canActivate: [AuthGuard]
   },
   {
     path: 'profile',
@@ -34,6 +39,7 @@ const routes: Routes = [
     // of the modules (PRs welcome 😉)
     preloadingStrategy: PreloadAllModules
   })],
-  exports: [RouterModule]
+  exports: [RouterModule],
+  providers: [AuthGuard,LandingGuard]
 })
 export class AppRoutingModule { }

@@ -27,12 +27,13 @@ namespace Chess.BL.Figures
             ComputeProps();
         }
 
-        public MovingFigure(string move) // Pe2e4 Pe7e8Q
+        public MovingFigure(string move) // Pe2e4 Pe7e8Q k0-0-0
         {
             Figure = (Figure)move[0];
             From = new Square(move.Substring(1, 2));
             To = new Square(move.Substring(3, 2));
             Promotion = (move.Length > 5) ? (Figure)move[5] : Figure.None;
+            
             ComputeProps();
         }
 

@@ -1,3 +1,23 @@
-<p>
-  chess-game works!
-</p>
+<button mat-button (click)="openNewGameDialog();">New game</button>
+<div class="container">
+	<div class="chess-board-container">
+		<app-chess-board 
+		*ngIf="isGameInitialized;else boardPlaceholder" 
+		[gameSettings]="gameSettings" 
+		(moveRequest)="onMove($event)"
+		(check)="onCheck($event)"
+		(checkmate)="onCheckmate($event)"
+		>
+		</app-chess-board>
+		<ng-template #boardPlaceholder>
+			<img src="../../../assets/images/Chess/prev.jpg">
+		</ng-template>
+	</div>
+
+	<div class="move-tracker-container">
+		<app-move-tracker 
+		[moves]="commitedMoves" 
+		[opponent]="opponent">
+		</app-move-tracker>
+	</div>
+</div>

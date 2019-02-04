@@ -1,6 +1,6 @@
 ﻿namespace Chess.BL.Moves.Helpers
 {
-    enum Color
+    public enum Color
     {
         None,
         White = 'w',

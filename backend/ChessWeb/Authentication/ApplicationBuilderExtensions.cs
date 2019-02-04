@@ -1,6 +1,9 @@
-﻿using Microsoft.AspNetCore.Authentication.JwtBearer;
+﻿using Chess.Common.Helpers;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.IdentityModel.Tokens;
+using System;
 using System.Threading.Tasks;
 
 namespace ChessWeb.Authentication
@@ -35,7 +38,7 @@ namespace ChessWeb.Authentication
 
                             var path = context.HttpContext.Request.Path;
                             if (!string.IsNullOrEmpty(accessToken) &&
-                                (path.StartsWithSegments("/chatHub")))
+                                (path.StartsWithHubsPathSegments()))
                             {
                                 context.Token = accessToken;
                             }
@@ -45,6 +48,21 @@ namespace ChessWeb.Authentication
                 });
 
             return services;
+        }
+
+        private static bool StartsWithHubsPathSegments(this PathString path)
+        {
+            HubType currentHubType;
+            foreach (var name in Enum.GetNames(typeof(HubType)))
+            {
+                currentHubType = (HubType)Enum.Parse(typeof(HubType), name);
+                if (path.StartsWithSegments(currentHubType.GetStringValue()))
+                {
+                    return true;
+                }
+            }
+
+            return false;
         }
     }
 }

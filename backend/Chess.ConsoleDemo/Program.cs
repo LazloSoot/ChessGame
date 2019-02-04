@@ -1,5 +1,6 @@
 ﻿using System;
 using Chess.BL;
+using Chess.Common.Interfaces;
 
 namespace Chess.ConsoleDemo
 {
@@ -7,9 +8,9 @@ namespace Chess.ConsoleDemo
     {
         static void Main(string[] args)
         {
-            ChessGame chess = new ChessGame("rnbqkbnr/pp1111pp/8/8/8/8/PPP1P11P/RNBQKBNR b KQkq - 0 1");
-            ChessGame.Check += Chess_Check;
-            ChessGame.Mate += Chess_Mate;
+            var chess = new ChessGame().InitGame("rnb1kbnr/pppppppp/4q3/8/8/N2Q1B2/PPPP1PPP/R3K2R w KQkq - 0 1");
+           // ChessGame.Check += Chess_Check;
+           // ChessGame.Mate += Chess_Mate;
             while (true)
             {
                 Console.WriteLine(chess.Fen);
@@ -37,7 +38,7 @@ namespace Chess.ConsoleDemo
             Console.ResetColor();
         }
 
-        static string ChessToAscii(ChessGame chess)
+        static string ChessToAscii(IChessGame chess)
         {
             var text = "  +----------------+\n";
             char currentFigure;

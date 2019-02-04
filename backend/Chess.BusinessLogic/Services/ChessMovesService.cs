@@ -3,82 +3,100 @@ using Chess.BusinessLogic.Interfaces;
 using Chess.Common.DTOs;
 using Chess.DataAccess.Entities;
 using Chess.DataAccess.Interfaces;
-using Chess.BL;
 using System;
 using System.Threading.Tasks;
 using System.Linq;
+using Chess.Common.Interfaces;
+using System.Collections.Generic;
+using Chess.BusinessLogic.Interfaces.SignalR;
 
 namespace Chess.BusinessLogic.Services
 {
-    public class ChessMovesService : CRUDService<Move, CommitedMoveDTO> , IChessMovesService
+    public class ChessMovesService : CRUDService<Move, MoveDTO> , IChessMovesService
     {
         //"rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1"
         // 0-позиция фигур                             1 2    3 4 5
         // 0 - позиция фигур,  1 - чей ход, 2 - флаги рокировки
         // 3 - правило битого поля, 4 - колич. ходов для правила 50 ходов
         // 5 - номер хода
+        private readonly ICurrentUser _currentUserProvider;
+        private readonly IUserService _userService;
+        private readonly IChessGame _chessGame;
+        private readonly ISignalRChessService _signalRChessService;
 
-        public ChessMovesService(IMapper mapper, IUnitOfWork unitOfWork)
+        public ChessMovesService(
+            IMapper mapper, 
+            IUnitOfWork unitOfWork, 
+            ICurrentUser currentUserProvider,
+            IUserService userService,
+            IChessGame chessGame,
+            ISignalRChessService signalRChessService
+            )
             : base(mapper, unitOfWork)
         {
-
+            _currentUserProvider = currentUserProvider;
+            _userService = userService;
+            _chessGame = chessGame;
+            _signalRChessService = signalRChessService;
         }
 
-        public async Task<CommitedMoveDTO> Move(MoveDTO moveRequest)
+        public async Task<MoveDTO> Move(MoveRequest moveRequest)
         {
 #warning кинуть разные исключения вместо null
             if (uow == null || string.IsNullOrWhiteSpace(moveRequest.Move) || moveRequest.GameId < 1)
                 return null;
 
-            return await AddAsync(new CommitedMoveDTO()
-            {
-                GameId = moveRequest.GameId,
-                MoveNext = moveRequest.Move
-            });
-        }
-
-        public async Task<CommitedMoveDTO> CommitMove(CommitedMoveDTO move)
-        {
-            var game = await FindGame(move);
-
-            if (game == null || game.Status != DataAccess.Helpers.GameStatus.Going)
+            var gameDbRecord = await uow.GetRepository<Game>().GetByIdAsync(moveRequest.GameId);
+            if (gameDbRecord == null || gameDbRecord.Status != DataAccess.Helpers.GameStatus.Going)
                 return null;
 
-            await FormMoveEntry();
-#warning оповестить signalr
-            var fenAfterMove = CommitMove(move.FenBeforeMove, move.MoveNext);
-            if (!string.IsNullOrEmpty(fenAfterMove))
-            {
-                var committedMove = await base.AddAsync(move);
-                committedMove.FenAfterMove = fenAfterMove;
-                return committedMove;
-            }
-            else
+            var currentUser = await _userService.GetByUid(_currentUserProvider.GetCurrentUserUid());
+            if (gameDbRecord.Sides.Where(s => s.PlayerId == currentUser.Id).FirstOrDefault() == null)
                 return null;
-            
-            async Task FormMoveEntry()
+
+            var game = _chessGame.InitGame(gameDbRecord.Fen);
+            var gameAfterMove = game.Move(moveRequest.Move);
+            if (game.Equals(gameAfterMove))
             {
-#warning получить информацию о current user
-                
-                var gameMoves = await uow.GetRepository<Move>()
-                    .GetAllAsync(m => m.GameId == move.GameId);
-
-                if(gameMoves?.Count() < 1)
+                if (game.MateTo != Common.Helpers.Color.None)
                 {
-                    move.FenBeforeMove = game.Fen;
-                    move.Ply = 1;
+                    await _signalRChessService.EmitMate(gameDbRecord.Id, game.MateTo);
                 }
-                else
+                else if (game.CheckTo != Common.Helpers.Color.None)
                 {
-                    var prevMove = gameMoves.OrderByDescending(m => m.Ply).First();
-                    var currentFen = CommitMove(prevMove.Fen, prevMove.MoveNext);
-                    if (string.IsNullOrWhiteSpace(currentFen))
-                        throw new ArgumentNullException($"Fen of move with id ={prevMove.Id} is corrupted!");
-
-                    move.FenBeforeMove = currentFen;
-                    move.Ply = prevMove.Ply + 1;
+                    await _signalRChessService.EmitСheck(gameDbRecord.Id, game.CheckTo);
                 }
+                return null;
             }
+
+            gameDbRecord.Fen = gameAfterMove.Fen;
+            var move = new Move()
+            {
+                MoveNext = moveRequest.Move,
+                Fen = game.Fen,
+                Player = mapper.Map<User>(currentUser),
+                Ply = ((gameDbRecord.Moves.Count() + 1) % 2 == 0) ? 2 : 1
+            };
+
+
+            gameDbRecord.Moves.Add(move);
+            var committedMove = mapper.Map<MoveDTO>(move);
+            committedMove.MoveNext = moveRequest.Move;
+            committedMove.FenAfterMove = gameAfterMove.Fen;
+            await _signalRChessService.CommitMove(gameDbRecord.Id);
+            if (game.MateTo != Common.Helpers.Color.None)
+            {
+                gameDbRecord.Status = DataAccess.Helpers.GameStatus.Completed;
+                await _signalRChessService.EmitMate(gameDbRecord.Id, game.MateTo);
+            }
+            else if (game.CheckTo != Common.Helpers.Color.None)
+            {
+                await _signalRChessService.EmitСheck(gameDbRecord.Id, game.CheckTo);
+            }
+
+
+            await uow.SaveAsync();
+            return committedMove;
         }
 
         public async Task Resign()
@@ -86,39 +104,34 @@ namespace Chess.BusinessLogic.Services
             throw new NotImplementedException();
         }
 
-        private async Task<Game> FindGame(CommitedMoveDTO move)
+        public async Task<IEnumerable<string>> GetAllValidMovesForFigureAt(int gameId, string squareName)
         {
-            int gameId;
-
             if (uow == null)
                 return null;
 
-            if (move.Game != null)
+            if (squareName.Length != 2)
+                return null;
+
+            int x, y;
+            if (squareName[0] >= 'a' &&
+                squareName[0] <= 'h' &&
+                squareName[1] >= '1' &&
+                squareName[1] <= '8')
             {
-                gameId = move.Game.Id;
-            }
-            else if (move.GameId.HasValue)
-            {
-                gameId = move.GameId.Value;
-            }
-            else
+                x = squareName[0] - 'a';
+                y = squareName[1] - '1';
+            } else
             {
                 return null;
             }
 
-            return await uow.GetRepository<Game>().GetByIdAsync(gameId);
-        }
+            var targetGame = await uow.GetRepository<Game>().GetByIdAsync(gameId);
+#warning кинуть исключение (игры нет)
+            if (targetGame == null)
+                return null;
 
-        private string CommitMove(string currentFen, string move)
-        {
-#warning переработать логику Chess core
-            var chess = new ChessGame(currentFen);
-            var nextFen = chess.Move(move).Fen;
-            if (string.Equals(chess.Fen, nextFen))
-                return string.Empty;
-            else
-                return nextFen;
+            var chessGame = _chessGame.InitGame(targetGame.Fen);
+            return chessGame.GetAllValidMovesForFigureAt(x,y);
         }
-
     }
 }

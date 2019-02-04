@@ -74,7 +74,7 @@ namespace Chess.BL.Moves
             }
             return false;
         }
-
+        
         private bool CanPawnMove()
         {
             int stepY = movingFigure.Figure.GetColor() == Helpers.Color.White ? 1 : -1;
@@ -82,7 +82,6 @@ namespace Chess.BL.Moves
                 CanPawnGo() ||
                 CanPawnJump() ||
                 CanPawnAttack();
-
 
             bool CanPawnGo()
             {

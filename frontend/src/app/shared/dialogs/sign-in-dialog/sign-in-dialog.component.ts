@@ -23,12 +23,14 @@ export class SignInDialogComponent implements OnInit {
 	ngOnInit() {
 		this.user = {
 			login: "",
-			password: ""
+			password: "",
+			isRemember: true
 		};
 	}
 
 	signInWithGoogle() {
-		this.authService.signIn(AuthProviderType.Google).then(error => {
+		this.authService.signIn(AuthProviderType.Google, this.user.isRemember)
+		.then(error => {
 			if (error) {
 				this.firebaseError = (error.message) ? error.message : error;
 			} else {
@@ -39,7 +41,7 @@ export class SignInDialogComponent implements OnInit {
 	}
 
 	signInWithFacebook() {
-		this.authService.signIn(AuthProviderType.Facebook)
+		this.authService.signIn(AuthProviderType.Facebook, this.user.isRemember)
 		.then(error => {
 			if (error) {
 				this.firebaseError = (error.message) ? error.message : error;
@@ -52,8 +54,9 @@ export class SignInDialogComponent implements OnInit {
 
 	
 	onLoginFormSubmit(user, form) {
+		debugger;
 		if (form.valid) {
-			this.authService.signInRegular(user.login, user.password)
+			this.authService.signInRegular(user.login, user.password, user.isRemember)
 			.then(error => {
 				if(error){
 					this.firebaseError = (error.message) ? error.message : error;

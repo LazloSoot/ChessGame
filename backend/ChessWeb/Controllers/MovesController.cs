@@ -1,7 +1,6 @@
 ﻿using System.Threading.Tasks;
 using Chess.BusinessLogic.Interfaces;
 using Chess.Common.DTOs;
-using Chess.DataAccess.Entities;
 using Microsoft.AspNetCore.Mvc;
 
 namespace ChessWeb.Controllers
@@ -18,7 +17,7 @@ namespace ChessWeb.Controllers
             this.service = service;
         }
 
-        // GET: Moves
+        // GET: moves
         [HttpGet]
         public async Task<IActionResult> GetAllMoves()
         {
@@ -27,31 +26,29 @@ namespace ChessWeb.Controllers
                 : Ok(moves);
         }
 
-        // GET: Moves/5
-        [HttpGet("{id}", Name = "GetMove")]
-        public async Task<IActionResult> GetMove(int id)
+        // GET: moves/{:moveId}
+        [HttpGet("{moveId}", Name = "GetMove")]
+        public async Task<IActionResult> GetMove(int moveId)
         {
-            var move = await service.GetByIdAsync(id);
-            return move == null ? NotFound($"Move with id = {id} not found!") as IActionResult
+            var move = await service.GetByIdAsync(moveId);
+            return move == null ? NotFound($"Move with moveId = {moveId} not found!") as IActionResult
                 : Ok(move);
         }
 
-        // POST: Moves
-        public async Task<IActionResult> Move([FromBody]MoveDTO move)
+        // POST: moves
+        [HttpPost]
+        public async Task<IActionResult> Move([FromBody]MoveRequest move)
         {
-            if (!ModelState.IsValid)
-                return BadRequest() as IActionResult;
-
-            var entity = await service.Move(move);
-            return entity == null ? StatusCode(409) as IActionResult
-                : StatusCode(201) as IActionResult;
+            var _move = await service.Move(move);
+            return _move == null ? StatusCode(409) as IActionResult
+                : Ok(_move) as IActionResult;
         }
 
         // DELETE: Moves/5
         [HttpDelete("{id}")]
-        public async Task<IActionResult> DeleteMove(int id)
+        public async Task<IActionResult> DeleteMove(int gameId)
         {
-            var success = await service.TryRemoveAsync(id);
+            var success = await service.TryRemoveAsync(gameId);
             return success ? Ok() : StatusCode(304) as IActionResult;
         }
     }

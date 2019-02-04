@@ -1,5 +1,6 @@
 ﻿using System.Threading.Tasks;
 using Chess.BusinessLogic.Interfaces;
+using Chess.BusinessLogic.Interfaces.SignalR;
 using Chess.Common.DTOs;
 using Chess.DataAccess.Entities;
 using Microsoft.AspNetCore.Authorization;
@@ -13,18 +14,20 @@ namespace ChessWeb.Controllers
     [ApiController]
     public class UsersController : ControllerBase
     {
-        private readonly IUserService service;
+        private readonly IUserService _service;
+        private readonly ISignalRNotificationService _notificationService;
 
-        public UsersController(IUserService service)
+        public UsersController(IUserService service, ISignalRNotificationService notificationService)
         {
-            this.service = service;
+            _service = service;
+            _notificationService = notificationService;
         }
 
         // GET: Users
         [HttpGet]
         public async Task<IActionResult> GetAllUsers()
         {
-            var users = await service.GetListAsync();
+            var users = await _service.GetListAsync();
             return users == null ? NotFound("No users found!") as IActionResult
                 : Ok(users);
         }
@@ -33,27 +36,40 @@ namespace ChessWeb.Controllers
         [HttpGet("{uid}", Name = "GetUser")]
         public async Task<IActionResult> GetUser(string uid)
         {
-            var user = await service.GetByUid(uid);
+            var user = await _service.GetByUid(uid);
             return user == null ? NotFound($"User with id = {uid} not found!") as IActionResult
                 : Ok(user);
         }
 
+        // GET: Users/online
+        [HttpGet("online", Name ="GetOnlineUsers")]
+        public ActionResult GetOnlineUsers()
+        {
+            return Ok(_notificationService.GetOnlineUsersInfo());
+        }
+
+        // GET: Users/online/:{part}
+        [HttpGet("online/{part}", Name= "GetOnlineUsersInfoByNameStartsWith")]
+        public ActionResult GetOnlineUsersInfoByNameStartsWith(string part)
+        {
+            return Ok(_notificationService.GetOnlineUsersInfoByNameStartsWith(part));
+        }
         // POST: Users
         public async Task<IActionResult> AddUser([FromBody]UserDTO user)
         {
             if (!ModelState.IsValid)
                 return BadRequest() as IActionResult;
 
-            var entity = await service.AddAsync(user);
+            var entity = await _service.AddAsync(user);
             return entity == null ? StatusCode(409) as IActionResult
-                : StatusCode(201) as IActionResult;
+                : Ok(entity) as IActionResult;
         }
 
         // DELETE: Users/5
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteUser(int id)
         {
-            var success = await service.TryRemoveAsync(id);
+            var success = await _service.TryRemoveAsync(id);
             return success ? Ok() : StatusCode(304) as IActionResult;
         }
     }

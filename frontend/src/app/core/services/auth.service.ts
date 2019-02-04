@@ -4,18 +4,36 @@ import * as firebase from "firebase/app";
 import { from } from "rxjs";
 import { AuthProviderType, User } from "../models";
 import { AppStateService } from "./app-state.service";
-import { UserService } from './user.service';
+import { UserService } from "./user.service";
 
-		// aSfg14Gszs
+// aSfg14Gszs
 @Injectable({
 	providedIn: "root"
 })
 export class AuthService {
+	private isRemember: boolean;
 	constructor(
 		private firebaseAuth: AngularFireAuth,
 		private appStateService: AppStateService,
 		private userService: UserService
-	) {}
+	) {
+		this.isRemember = appStateService.isRemember;
+		this.firebaseAuth.auth.onAuthStateChanged(
+			async firebaseUser => {
+				if(firebaseUser) {
+					if(this.isRemember) {
+						await this.appStateService.updateAuthState(
+							firebaseUser,
+							true
+						)
+					}
+				} else {
+					await this.appStateService.updateAuthState(
+						firebaseUser
+					)
+				}
+		});
+	}
 
 	signUpRegular(email: string, userName: string, password: string) {
 		return from(
@@ -30,18 +48,20 @@ export class AuthService {
 					await userCred.user
 						.sendEmailVerification()
 						.then(async () => {
-							let newUser: User = {
-								id: undefined,
-								avatarUrl: undefined,
-								name: userName,
-								uid: userCred.user.uid
-							};
-							
-							this.appStateService.token = await userCred.user.getIdToken();
-							await this.userService.add(newUser).toPromise();
-							this.appStateService.token = undefined;
 
-							throw new Error(`You need to confirm your email address in order to use our service. Email confirmation was already send to ${userCred.user.email}. Check your email.`);
+							await this.appStateService.updateAuthState(
+								userCred.user,
+								true
+							).then(async () => {
+								await this.userService
+									.add(new User(userCred.user.uid, userName))
+									.toPromise();
+							})
+							//throw new Error(
+							//	`You need to confirm your email address in order to use our service. Email confirmation was already send to ${
+							//		userCred.user.email
+							//	}. Check your email.`
+							//);
 						})
 						.catch(error => {
 							throw error;
@@ -56,7 +76,7 @@ export class AuthService {
 			});
 	}
 
-	signInRegular(email: string, password: string) {
+	signInRegular(email: string, password: string, isRemember?: boolean) {
 		return from(
 			this.firebaseAuth.auth.signInWithEmailAndPassword(email, password)
 		)
@@ -64,21 +84,19 @@ export class AuthService {
 			.then(
 				async userCred => {
 					if (userCred.user.emailVerified) {
-
-						this.appStateService.token = await userCred.user.getIdToken();
 						await this.appStateService.updateAuthState(
-							this.firebaseAuth.authState,
-							await this.initializeCurrentUser(userCred.user),
-							false
-						)
-						.catch(error => { throw error; });
-
-
+							userCred.user,
+							isRemember
+						);
 					} else {
 						await userCred.user
 							.sendEmailVerification()
 							.then(() => {
-								throw new Error(`You need to confirm your email address in order to use our service.Email confirmation was already send to ${userCred.user.email}. Please check your email.`);
+								throw new Error(
+									`You need to confirm your email address in order to use our service.Email confirmation was already send to ${
+										userCred.user.email
+									}. Please check your email.`
+								);
 							})
 							.catch(error => {
 								throw error;
@@ -94,7 +112,7 @@ export class AuthService {
 			});
 	}
 
-	signIn(authProviderType: AuthProviderType) {
+	signIn(authProviderType: AuthProviderType, isRemember?: boolean) {
 		let authProvider;
 		switch (authProviderType) {
 			case AuthProviderType.Google: {
@@ -106,20 +124,14 @@ export class AuthService {
 				break;
 			}
 		}
-
 		return from(this.firebaseAuth.auth.signInWithPopup(authProvider))
 			.toPromise()
 			.then(
 				async userCred => {
-					this.appStateService.token = await userCred.user.getIdToken();
 					await this.appStateService.updateAuthState(
-						this.firebaseAuth.authState,
-						await this.initializeCurrentUser(userCred.user),
-						false
-					)
-					.catch(error => { 
-						debugger; 
-						throw error; });
+						userCred.user,
+						isRemember
+					);
 				},
 				error => {
 					debugger;
@@ -136,36 +148,5 @@ export class AuthService {
 
 	logout() {
 		return from(this.firebaseAuth.auth.signOut());
-	}
-
-	private async initializeCurrentUser(firebaseUser: firebase.User): Promise<User> {
-		debugger;
-		// userInfo.providerId === "password" means that user logged in by email and password
-		// i.e we need to take a data like avatarUrl and name from our db
-		if(firebaseUser.providerData.filter(userInfo => userInfo.providerId === "password").length > 0)
-		{
-		  return await this.userService.get(firebaseUser.uid)
-				.toPromise()
-				.then(async user => {
-					debugger;
-				  if(user) {
-					  return user;
-				  } else {
-				  debugger;
-					throw new Error(`There is no such user in db!`);
-				  }
-			  })
-			  .catch(error => {
-				  debugger;
-				   throw error; } )  ;
-		} else {
-			let u: User = {
-				id: undefined,
-				uid: firebaseUser.uid,
-				name: firebaseUser.displayName,
-				avatarUrl: firebaseUser.photoURL
-			}
-			return u;
-		}
 	}
 }

@@ -1,101 +1,131 @@
-import { Injectable } from '@angular/core';
-import { BehaviorSubject, Observable } from 'rxjs';
-import { Router } from '@angular/router';
-import { User } from '../models';
-import { UserService } from './user.service';
+import { Injectable } from "@angular/core";
+import { BehaviorSubject, Observable } from "rxjs";
+import { Router } from "@angular/router";
+import { User, UserConnection, Group, Hub, GameSettings } from "../models";
+import { SignalRService } from "./signalr.service";
+import { UserService } from "./user.service";
+import * as firebase from "firebase/app";
 
 @Injectable({
-  providedIn: 'root'
+	providedIn: "root"
 })
 export class AppStateService {
-  private tokenSubject: BehaviorSubject<string> = new BehaviorSubject<string>("");
-  private isLogedInSubject: BehaviorSubject<boolean> = new BehaviorSubject<boolean>(false);
-  private currentUserSubject: BehaviorSubject<User> = new BehaviorSubject<User>(null);
+	private tokenSubject: BehaviorSubject<string> = new BehaviorSubject<string>("");
+	private currentUserSubject: BehaviorSubject<User> = new BehaviorSubject<User>(null);
+	private currentGameSubject: BehaviorSubject<GameSettings> = new BehaviorSubject<GameSettings>(null); 
+	private _signalRConnection: UserConnection;
+	private _isRemember: boolean;
 
 	public get token(): string {
 		return this.tokenSubject.value;
-  }
-  public set token(value: string) {
-    this.tokenSubject.next(value);
-  }
-
-  public get isLogedIn(): boolean {
-    return this.isLogedInSubject.value;
-  }
-  public set isLogedIn(value: boolean) {
-    if(!value){
-      localStorage.removeItem("chess-zm-isLogedIn");
-    }
-
-    this.isLogedInSubject.next(value);
-  }
-
-  constructor(
-    private router: Router,
-    private userService: UserService
-  ) { 
-    /////// BAD IDEA
-    this.isLogedIn = localStorage.getItem("chess-zm-isLogedIn") === "true";
-    this.token = localStorage.getItem("chess-zm-token");
-  }
-
-  getCurrentUser(): Observable<User> {
-    return this.currentUserSubject.asObservable();
-  }
-
-  async updateAuthState(authState: Observable<firebase.User>, currentUser: User, isRemember: boolean): Promise<void> {
-    if(authState)
-    {
-	  authState.subscribe((currentUser) => this.listenAuthState(currentUser));
-
-    this.currentUserSubject.next(currentUser);
-
-	  this.isLogedIn = true;
-      if(isRemember) {
-        /////// BAD IDEA
-        localStorage.setItem("chess-zm-isLogedIn", "true");
-        localStorage.setItem("chess-zm-token", this.token);
-      }
 	}
-  }
-  
-  private async initializeCurrentUser(firebaseUser: firebase.User): Promise<void> {
-	  debugger;
-	  // userInfo.providerId === "password" means that user logged in by email and password
-	  // i.e we need to take a data like avatarUrl and name from our db
-	  if(firebaseUser.providerData.filter(userInfo => userInfo.providerId === "password").length > 0)
-	  {
-		return await this.userService.get(firebaseUser.uid)
-      		.toPromise()
-      		.then(async user => {
-				  debugger;
-      		  if(user) {
-					this.currentUserSubject.next(user);
-      		  } else {
-				debugger;
-      		    throw new Error(`There is no such user in db!`);
-      		  }
-			})
-			.catch(error => {
-				debugger;
-				 throw error; } )  ;
-	  } else {
-		  let u: User = {
-			  id: undefined,
-			  uid: firebaseUser.uid,
-			  name: firebaseUser.displayName,
-			  avatarUrl: firebaseUser.photoURL
-		  }
-		  this.currentUserSubject.next(u);
-	  }
-  }
 
-  private listenAuthState(currentUser: firebase.User | null) {
-    if(!currentUser){
-		this.currentUserSubject.next(null);
-      	this.token = null;
-      	this.isLogedIn = false;
-      	this.router.navigate(["/"]);
-    }
-  }
+	public get isRemember(): boolean {
+		return this._isRemember;
+	}
+
+	public get signalRConnection(): UserConnection {
+		return this._signalRConnection;
+	}
+
+	public getCurrentUserObs(): Observable<User> {
+		return this.currentUserSubject.asObservable();
+	}
+
+	public getCurrentUser(): User {
+		return this.currentUserSubject.value;
+	}
+
+	public get currentGame(): GameSettings {
+		return this.currentGameSubject.value;
+	}
+
+	public set currentGame(value: GameSettings) {
+		this.currentGameSubject.next(value);
+	}
+
+	public getCurrentGameObs(): Observable<GameSettings> {
+		return this.currentGameSubject.asObservable();
+	}
+
+	constructor(
+		private userService: UserService,
+		private signalRService: SignalRService
+	) {
+		this._isRemember = localStorage.getItem("chess-zm-isRemember") === "true";
+		const currentGame = JSON.parse(localStorage.getItem("chess-zm-currentGame"));
+		if(currentGame) {
+			this.currentGameSubject.next(currentGame);
+		}
+		this.currentGameSubject.subscribe((settings) => {
+			if(settings)
+			{
+				localStorage.setItem("chess-zm-currentGame", JSON.stringify(settings));
+			}
+		})
+	}
+
+	async updateAuthState(firebaseUser: firebase.User, isRemember?: boolean): Promise<void> {
+		if (firebaseUser) {
+			this.tokenSubject.next(await firebaseUser.getIdToken());
+			this.currentUserSubject.next(
+				await this.initializeCurrentUser(firebaseUser)
+			);
+
+			this._signalRConnection = this.signalRService.connect(
+				`${Group.User}${this.currentUserSubject.value.uid}`,
+				Hub.Notification,
+				this.token
+			);
+			if(isRemember) {
+				localStorage.setItem("chess-zm-isRemember", "true");
+			} else {
+				localStorage.removeItem("chess-zm-isRemember");
+			}
+		} else {
+			if (this.signalRConnection) {
+				this._signalRConnection.offAll();
+				this.signalRService.leaveGroup(
+					`${Group.User}${this.currentUserSubject.value.uid}`,
+					Hub.Notification
+				);
+			}
+			this.currentUserSubject.next(null);
+			this.tokenSubject.next(null);
+		}
+	}
+
+	private async initializeCurrentUser(firebaseUser: firebase.User): Promise<User> {
+		// userInfo.providerId === "password" means that user logged in by email and password
+		// i.e we need to take a data like avatarUrl and name from our db
+		if (
+			firebaseUser.providerData.length < 2 &&
+			firebaseUser.providerData.filter(
+				userInfo => userInfo.providerId === "password"
+			).length > 0
+		) {
+			return await this.userService
+				.get(firebaseUser.uid)
+				.toPromise()
+				.then(async user => {
+					if (user) {
+						return user;
+					} else {
+						throw new Error(`There is no such user in db!`);
+					}
+				})
+				.catch(error => {
+					debugger;
+					throw error;
+				});
+		} else {
+			let u: User = {
+				id: undefined,
+				uid: firebaseUser.uid,
+				name: firebaseUser.displayName,
+				avatarUrl: firebaseUser.photoURL
+			};
+			return u;
+		}
+	}
 }

@@ -40,6 +40,7 @@
       </mat-error>
     </mat-form-field>
   <div class="forgot-box">
+      <mat-checkbox color="primary" [checked]="user.isRemember" (change)="user.isRemember = !user.isRemember">Remember me</mat-checkbox>
       <a href="#" class="forgot-password" (click)="onForgotPasswordClick()"  color="primary">Forgot password?</a>
   </div>
     
@@ -50,7 +51,7 @@
     </mat-error>
   
     
-    <button class="login-btn" mat-button type="submit">Log In</button>
+    <button class="login-btn" mat-stroked-button type="submit">Log In</button>
 
     <div class="signUp-container">
         Not a member?
