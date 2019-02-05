@@ -1,3 +1,49 @@
-<p>
-  profile works!
-</p>
+<div class="container">
+	<div class="item">
+
+		<div class="avatar">
+			<div class="child bg-five" [ngStyle]="{'background-image': 'url(' + userProfile.avatarUrl + ')'}">
+				<p>Click to change</p>
+			</div>
+		</div>
+
+		<div class="user-data">
+			<div class="user-name">
+				{{userProfile.fullName}}
+			</div>
+			<mat-card-subtitle style="margin-top: 5px">
+				Registration date : <span> {{userProfile.registrationDate | date:'longDate'}}</span>
+			</mat-card-subtitle>
+			<div class="user-rating">
+				<mat-card-subtitle>
+					No Rating
+				</mat-card-subtitle>
+			</div>
+		</div>
+	</div>
+
+	<div class="left-cards" style="margin-top: 20px;" fxLayout fxLayoutAlign="center" fxLayout.xs="column" fxLayoutGap="20px">
+		<div fxLayout="column" fxLayoutGap="20px" fxFlex="25%" fxFlex.sm="35%" fxLayout.xs="column" class="left-card">
+			<div class="item" fxFlex>
+				<div class="left-card">
+					<h2 class="title">Games</h2>
+          <mat-divider></mat-divider>
+          <div class="item-data games-list">
+            <mat-card-subtitle>No games in progress</mat-card-subtitle>
+          </div>
+				</div>
+			</div>
+			<div class="item" fxFlex>
+				<div class="left-card">
+					<h2 class="title"> Activity</h2>
+					<mat-divider></mat-divider>
+					<div class="item-data activity-list">
+            <mat-card-subtitle>There is no recent activity to show</mat-card-subtitle>
+          </div>
+				</div>
+			</div>
+
+		</div>
+
+	</div>
+</div>

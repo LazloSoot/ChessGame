@@ -19,6 +19,7 @@ import { MatTableModule } from '@angular/material/table';
 import { MatPaginatorModule } from '@angular/material/paginator';
 import { MatChipsModule } from '@angular/material/chips';
 import { MatCardModule } from '@angular/material/card';
+import { MatExpansionModule } from '@angular/material/expansion';
 
 @NgModule({
   imports: [
@@ -41,7 +42,8 @@ import { MatCardModule } from '@angular/material/card';
     MatTableModule,
     MatPaginatorModule,
     MatChipsModule,
-    MatCardModule
+    MatCardModule,
+    MatExpansionModule
   ],
   exports: [
     MatButtonModule,
@@ -62,7 +64,8 @@ import { MatCardModule } from '@angular/material/card';
     MatTableModule,
     MatPaginatorModule,
     MatChipsModule,
-    MatCardModule
+    MatCardModule,
+    MatExpansionModule
   ],
   declarations: []
 })

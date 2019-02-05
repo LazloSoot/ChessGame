@@ -82,8 +82,6 @@ export class ChessGameComponent implements OnInit {
 				}
 			});
 		}
-
-		this.onCheckmate(GameSide.Black);
 	}
 
 	ngAfterViewInit() {
