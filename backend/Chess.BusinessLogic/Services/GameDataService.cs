@@ -17,19 +17,16 @@ namespace Chess.BusinessLogic.Services
 {
     public class GameDataService : CRUDService<Game, GameDTO>, IGameDataService
     {
-        private readonly ICurrentUser _currentUserProvider;
         private readonly IUserService _userService;
         private readonly ISignalRNotificationService _notificationService;
         public GameDataService(
             IMapper mapper, 
-            IUnitOfWork unitOfWork, 
-            ICurrentUser currentUserProvider,
+            IUnitOfWork unitOfWork,
             IUserService userService,
             ISignalRNotificationService notificationService
             )
             : base(mapper, unitOfWork)
         {
-            _currentUserProvider = currentUserProvider;
             _notificationService = notificationService;
             _userService = userService;
         }
@@ -54,7 +51,7 @@ namespace Chess.BusinessLogic.Services
             var sides = game.Sides.ToList();
             var currentUserSide = sides.Where(s => s.Player == null).First();
             var opponent = sides.Where(s => s.Player != null).First().Player;
-            var currentUser = await _userService.GetByUid(_currentUserProvider.GetCurrentUserUid());
+            var currentUser = await _userService.GetCurrentUser();
             currentUserSide.Player = currentUser;
             game.Sides = new List<SideDTO>()
             {
@@ -97,7 +94,7 @@ namespace Chess.BusinessLogic.Services
                 game.Fen = ChessGame.DefaultFen;
             }
 
-            var currentUser = await _userService.GetByUid(_currentUserProvider.GetCurrentUserUid());
+            var currentUser = await _userService.GetCurrentUser();
             var currentUserSide = game.Sides.Where(s => s.Player == null || s.PlayerId == currentUser.Id || s.Player.Id == currentUser.Id).First();
             currentUserSide.Player = currentUser;
             game.Sides = new List<SideDTO>()
@@ -125,15 +122,14 @@ namespace Chess.BusinessLogic.Services
                 return null;
 
             var color = (hostSide.Color == DataAccess.Helpers.Color.Black) ? DataAccess.Helpers.Color.White : DataAccess.Helpers.Color.Black;
-            var curentUserUid = _currentUserProvider.GetCurrentUserUid();
-            var currentDbUser = await uow.GetRepository<User>().GetOneAsync(u => string.Equals(u.Uid, curentUserUid));
+            var currentDbUser = await _userService.GetCurrentUser();
             if (currentDbUser == null)
                 return null;
 
             targetGame.Sides.Add(new Side()
             {
                 Color = color,
-                Player = currentDbUser
+                Player = mapper.Map<User>(currentDbUser)
             });
             targetGame.Status = DataAccess.Helpers.GameStatus.Going;
             uow.GetRepository<Game>().Update(targetGame);

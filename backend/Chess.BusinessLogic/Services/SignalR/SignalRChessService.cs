@@ -9,7 +9,7 @@ namespace Chess.BusinessLogic.Services.SignalR
 {
     public class SignalRChessService : SignalRAbsService<ChessGameHub>, ISignalRChessService
     {
-        public SignalRChessService(IHubContext<ChessGameHub> hubContext, ICurrentUser currentUserProvider)
+        public SignalRChessService(IHubContext<ChessGameHub> hubContext, ICurrentUserProvider currentUserProvider)
             : base(hubContext, currentUserProvider)
         {
 

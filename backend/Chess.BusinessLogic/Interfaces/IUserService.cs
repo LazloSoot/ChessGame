@@ -6,6 +6,7 @@ namespace Chess.BusinessLogic.Interfaces
 {
     public interface IUserService : ICRUDService<User, UserDTO>
     {
-        Task<UserDTO> GetByUid(string uid);
+        Task<UserDTO> GetCurrentUser();
+        //Task<UserDTO> GetByUid(string uid);
     }
 }

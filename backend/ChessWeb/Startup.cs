@@ -44,7 +44,7 @@ namespace ChessWeb
                     );
 
             services.AddHttpContextAccessor();
-            services.AddScoped<ICurrentUser, CurrentUser>();
+            services.AddScoped<ICurrentUserProvider, CurrentUser>();
             services.AddScoped<IChessGame, ChessGame>();
             services.AddFirebaseAuthentication(Configuration.GetValue<string>("Firebase:ProjectId"));
             BuisinessLogicModule.ConfigureServices(services, Configuration);
