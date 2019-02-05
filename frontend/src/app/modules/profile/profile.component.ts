@@ -8,7 +8,9 @@ import { ActivatedRoute } from "@angular/router";
 	styleUrls: ["./profile.component.less"]
 })
 export class ProfileComponent implements OnInit {
-	public userProfile: User;
+  public userProfile: User;
+  private isActivitiesLoading: boolean = true;
+  private isGamesLoading: boolean = true;
 	constructor(
 		private route: ActivatedRoute,
 		public userService: UserService
@@ -33,6 +35,11 @@ export class ProfileComponent implements OnInit {
 					}
 				});
 			}
-		});
+    });
+    
+    setTimeout(() => {
+      this.isActivitiesLoading = false;
+      this.isGamesLoading = false;
+    }, 2000);
 	}
 }

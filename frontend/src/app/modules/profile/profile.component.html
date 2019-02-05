@@ -1,6 +1,8 @@
 <div class="container">
 	<div class="item profile-info">
-
+    <div *ngIf="!userProfile" class="profile-info__overlay">
+      <app-spinner-rect></app-spinner-rect>
+    </div>
 		<div class="avatar">
 			<img [src]="(userProfile?.avatarUrl) ? userProfile.avatarUrl : '../../../../assets/images/anonAvatar.png'" [alt]="userProfile?.name + ' avatar'" height="100px" width="100px">
 		</div>
@@ -29,7 +31,10 @@
 					<h2 class="title">Games</h2>
           <mat-divider></mat-divider>
           <div class="item-data games-list">
-            <mat-card-subtitle>No games in progress</mat-card-subtitle>
+              <app-spinner-rect *ngIf="isGamesLoading; else games" spinnerColor="#333" ></app-spinner-rect>
+              <ng-template #games>
+                <mat-card-subtitle>No games to show</mat-card-subtitle>
+              </ng-template>
           </div>
 				</div>
 			</div>
@@ -38,12 +43,15 @@
 					<h2 class="title"> Activity</h2>
 					<mat-divider></mat-divider>
 					<div class="item-data activity-list">
-            <mat-card-subtitle>There is no recent activity to show</mat-card-subtitle>
+            <app-spinner-rect spinnerColor="#333" *ngIf="isActivitiesLoading; else activities"></app-spinner-rect>
+            <ng-template #activities>
+                <mat-card-subtitle>There is no recent activity to show</mat-card-subtitle>
+            </ng-template>
           </div>
 				</div>
 			</div>
 
 		</div>
-
+    
 	</div>
 </div>
