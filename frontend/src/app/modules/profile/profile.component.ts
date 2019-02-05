@@ -1,45 +1,38 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit } from "@angular/core";
+import { User, UserService } from "../../core";
+import { ActivatedRoute } from "@angular/router";
 
 @Component({
-  selector: 'app-profile',
-  templateUrl: './profile.component.html',
-  styleUrls: ['./profile.component.less']
+	selector: "app-profile",
+	templateUrl: "./profile.component.html",
+	styleUrls: ["./profile.component.less"]
 })
 export class ProfileComponent implements OnInit {
-  public userProfile : UserProfile;
-  constructor() { }
+	public userProfile: User;
+	constructor(
+		private route: ActivatedRoute,
+		public userService: UserService
+	) {}
 
-  ngOnInit() {
-    this.userProfile = {
-      id: 1,
-      firstName: "test name",
-      lastName: "Test last name",
-      birthDate: new Date(1990, 10, 2),
-      registrationDate: new Date(2010, 1, 22),
-      country: "Ukraine",
-      city: "Odessa",
-      region: "REGION",
-      avatarUrl: 'https://yt3.ggpht.com/a-/AAuE7mCM5HVUnpncyxbI9bbRJ5Hxno7NisiqPT0wVA=s900-mo-c-c0xffffffff-rj-k-no',
-      fullName: 'test fullname',
-      uid: "uid"
-    }
-  }
-
-}
-
-export interface UserProfile {
-  id?: number;
-  firstName?: string;
-  lastName?: string;
-  birthDate?: Date;
-  registrationDate?: Date;
-  country?: string;
-  city?: string;
-  region?: string;
-  postalCode?: string;
-  address?: string;
-  phone?: string;
-  avatarUrl?: string;
-  fullName?: string;
-  uid?: string;
+	ngOnInit() {
+		this.route.params.subscribe(data => {
+			if (data && data.userId) {
+				this.userService.get(data.userId).subscribe(user => {
+					this.userProfile = user;
+					if (!this.userProfile.avatarUrl) {
+						this.userProfile.avatarUrl =
+							"../../../../assets/images/anonAvatar.png";
+					}
+				});
+			} else {
+				this.userService.getCurrentUser().subscribe(currentUser => {
+					this.userProfile = currentUser;
+					if (!this.userProfile.avatarUrl) {
+						this.userProfile.avatarUrl =
+							"../../../../assets/images/anonAvatar.png";
+					}
+				});
+			}
+		});
+	}
 }

@@ -337,4 +337,4 @@ export class ChessGameComponent implements OnInit {
 
 }
 
-const AIOpponent: User = new User("", "Bob", "../../../assets/images/AIavatar.png");
+const AIOpponent: User = new User( "Bob", "../../../assets/images/AIavatar.png");

@@ -1,6 +1,6 @@
 <div class="container">
 	<mat-card class="opponent__card">
-		<a *ngIf="opponent" routerLinkActive="active" [routerLink]="['/']">
+		<a *ngIf="opponent" routerLinkActive="active" [routerLink]="['/profile', opponent.id]">
 			<mat-card-header>
                 <div mat-card-avatar class="opponent__avatar"
 				[ngStyle]="{'background-image':'url(' + getOpponentAvatarUrl() + ')'}">

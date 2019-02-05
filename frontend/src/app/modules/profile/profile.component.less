@@ -15,6 +15,10 @@
 	padding: 20px;
 }
 
+.profile-info {
+	background-color: #F1F1F1;
+}
+
 .left-card {
 	width: 100%;
 }
@@ -36,18 +40,6 @@
 	overflow: hidden;
 	position: relative;
 	display: inline-block;
-	cursor: pointer;
-}
-
-.child {
-	height: 100%;
-	width: 100%;
-	background-size: cover;
-	background-repeat: no-repeat;
-	-webkit-transition: all .5s;
-	-moz-transition: all .5s;
-	-o-transition: all .5s;
-	transition: all .5s;
 }
 
 
@@ -66,36 +58,6 @@ p {
 	height: 50px;
 	cursor: pointer;
 	text-decoration: none;
-}
-
-
-.avatar {
-	&:hover .child,
-	&:focus .child {
-		-ms-transform: scale(1.2);
-		-moz-transform: scale(1.2);
-		-webkit-transform: scale(1.2);
-		-o-transform: scale(1.2);
-		transform: scale(1.2);
-	}
-
-	&:hover .child:before,
-	&:focus .child:before,
-	&:hover p,
-	&:focus p {
-		display: block;
-	}
-}
-
-.child:before {
-	content: "";
-	display: none;
-	height: 100%;
-	width: 100%;
-	position: absolute;
-	top: 0;
-	left: 0;
-	background-color: rgba(52, 73, 94, 0.75);
 }
 
 .user-name {
@@ -117,22 +79,22 @@ span {
 	margin-top: 0;
 }
 
-::-webkit-scrollbar {
-	width: 5px;
-}
-
-::-webkit-scrollbar-track {
-	background: #f1f1f1;
-}
-
-::-webkit-scrollbar-thumb {
-	background: #888;
-}
-
-::-webkit-scrollbar-thumb:hover {
-	background: #555;
-}
-
 a {
 	cursor: pointer;
+}
+
+.edit {
+	text-decoration: underline;
+	font-size: 15px;
+	color: #000;
+
+	&:hover {
+		text-decoration: none;
+	}
+}
+
+.icon {
+	height: 16px;
+    width: 15px;
+	font-size: 14px;
 }

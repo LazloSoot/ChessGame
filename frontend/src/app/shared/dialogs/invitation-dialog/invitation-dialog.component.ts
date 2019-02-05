@@ -23,8 +23,7 @@ export class InvitationDialogComponent implements OnInit {
 	}
 	
 	ngOnInit() {
-		debugger;
-		this.userService.get(this.invitation.inviter.uid).subscribe(inviter => {
+		this.userService.get(this.invitation.inviter.id).subscribe(inviter => {
 			this.inviter = inviter;
 			this.isUserLoading = false;
 		});

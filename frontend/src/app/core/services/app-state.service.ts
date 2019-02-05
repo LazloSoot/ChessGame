@@ -73,7 +73,7 @@ export class AppStateService {
 			);
 
 			this._signalRConnection = this.signalRService.connect(
-				`${Group.User}${this.currentUserSubject.value.uid}`,
+				`${Group.User}${firebaseUser.uid}`,
 				Hub.Notification,
 				this.token
 			);
@@ -86,7 +86,7 @@ export class AppStateService {
 			if (this.signalRConnection) {
 				this._signalRConnection.offAll();
 				this.signalRService.leaveGroup(
-					`${Group.User}${this.currentUserSubject.value.uid}`,
+					`${Group.User}${firebaseUser.uid}`,
 					Hub.Notification
 				);
 			}
@@ -105,7 +105,7 @@ export class AppStateService {
 			).length > 0
 		) {
 			return await this.userService
-				.get(firebaseUser.uid)
+				.getCurrentUser()
 				.toPromise()
 				.then(async user => {
 					if (user) {
@@ -121,7 +121,6 @@ export class AppStateService {
 		} else {
 			let u: User = {
 				id: undefined,
-				uid: firebaseUser.uid,
 				name: firebaseUser.displayName,
 				avatarUrl: firebaseUser.photoURL
 			};

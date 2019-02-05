@@ -10,12 +10,18 @@ export class UserService {
 	private apiUrl = "/users";
 	constructor(private httpService: HttpService) {}
 
-	get(uid: string): Observable<User> {
+	getCurrentUser(): Observable<User> {
 		return this.httpService.sendRequest(
 			RequestMethod.Get,
-			this.apiUrl,
-			uid
+			`${this.apiUrl}/current`
 		);
+	}
+
+	get(id: number): Observable<User> {
+		return this.httpService.sendRequest(
+			RequestMethod.Get, 
+			this.apiUrl, 
+			id);
 	}
 
 	getOnlineUsers(): Promise<User[]> {

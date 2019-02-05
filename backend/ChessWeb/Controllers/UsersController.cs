@@ -44,7 +44,7 @@ namespace ChessWeb.Controllers
         }
 
         // GET:Users/current
-        [HttpGet("/current", Name = "GetCurrentUser")]
+        [HttpGet("current", Name = "GetCurrentUser")]
         public async Task<IActionResult> GetCurrentUser()
         {
             var user = await _service.GetCurrentUser();
