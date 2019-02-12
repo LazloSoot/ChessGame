@@ -71,7 +71,6 @@ export class AppStateService {
 			this.currentUserSubject.next(
 				await this.initializeCurrentUser(firebaseUser)
 			);
-
 			this._signalRConnection = this.signalRService.connect(
 				`${Group.User}${firebaseUser.uid}`,
 				Hub.Notification,
@@ -122,7 +121,9 @@ export class AppStateService {
 			let u: User = {
 				id: undefined,
 				name: firebaseUser.displayName,
-				avatarUrl: firebaseUser.photoURL
+				avatarUrl: firebaseUser.photoURL,
+				lastSeenDate: new Date(firebaseUser.metadata.lastSignInTime),
+				registrationDate: new Date(firebaseUser.metadata.creationTime)
 			};
 			return u;
 		}

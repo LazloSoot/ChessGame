@@ -1,5 +1,5 @@
 import { Component, OnInit } from "@angular/core";
-import { User, UserService } from "../../core";
+import { User, UserService, AppStateService } from "../../core";
 import { ActivatedRoute } from "@angular/router";
 
 @Component({
@@ -13,7 +13,8 @@ export class ProfileComponent implements OnInit {
   private isGamesLoading: boolean = true;
 	constructor(
 		private route: ActivatedRoute,
-		public userService: UserService
+		public userService: UserService,
+		public appStateService: AppStateService
 	) {}
 
 	ngOnInit() {
@@ -27,12 +28,9 @@ export class ProfileComponent implements OnInit {
 					}
 				});
 			} else {
-				this.userService.getCurrentUser().subscribe(currentUser => {
-					this.userProfile = currentUser;
-					if (!this.userProfile.avatarUrl) {
-						this.userProfile.avatarUrl =
-							"../../../../assets/images/anonAvatar.png";
-					}
+				this.userProfile = this.appStateService.getCurrentUser();
+				this.userService.getCurrentUser().subscribe(currentDbUser => {
+					this.userProfile.avatarUrl = (currentDbUser.avatarUrl) ? currentDbUser.avatarUrl : "../../../../assets/images/anonAvatar.png";
 				});
 			}
     });

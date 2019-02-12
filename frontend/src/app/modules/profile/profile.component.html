@@ -15,7 +15,7 @@
 				Registration date : <span> {{userProfile?.registrationDate | date:'longDate'}}</span>
 			</mat-card-subtitle>
 			<mat-card-subtitle>
-        Last seen : <span> {{userProfile?.registrationDate | date:'longDate'}}</span>
+        Last seen : <span> {{userProfile?.lastSeenDate | date:'longDate'}}</span>
       </mat-card-subtitle>
       <a class="edit" routerLinkActive="active" [routerLink]="['./settings']">
         <mat-icon class="icon" aria-label="Profile edit button">mode_edit</mat-icon>
