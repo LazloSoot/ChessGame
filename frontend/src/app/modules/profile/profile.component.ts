@@ -26,18 +26,34 @@ export class ProfileComponent implements OnInit {
 						this.userProfile.avatarUrl =
 							"../../../../assets/images/anonAvatar.png";
 					}
+				}, error => {},
+				() => {
+					this.getUserGames(this.userProfile);
 				});
 			} else {
 				this.userProfile = this.appStateService.getCurrentUser();
+				this.getUserGames(this.userProfile);
 				this.userService.getCurrentUser().subscribe(currentDbUser => {
 					this.userProfile.avatarUrl = (currentDbUser.avatarUrl) ? currentDbUser.avatarUrl : "../../../../assets/images/anonAvatar.png";
+				},
+				error => {},
+				() => {
+					this.getUserGames(this.userProfile);
 				});
 			}
+			
+	
     });
     
     setTimeout(() => {
       this.isActivitiesLoading = false;
-      this.isGamesLoading = false;
     }, 2000);
+	}
+
+	async getUserGames(user: User) {
+		this.userService.getUserGames(user.id).subscribe(
+			(games) => {
+				debugger;
+		})
 	}
 }

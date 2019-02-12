@@ -17,21 +17,17 @@ namespace ChessWeb.Controllers
     {
         private readonly IUserService _service;
         private readonly ICurrentUserProvider _currentUserProvider;
+        private readonly IGameDataService _gameDataService;
         private readonly ISignalRNotificationService _notificationService;
 
-        public UsersController(IUserService service, ISignalRNotificationService notificationService)
+        public UsersController(IUserService service, 
+            ISignalRNotificationService notificationService,
+            IGameDataService gameDataService
+            )
         {
             _service = service;
             _notificationService = notificationService;
-        }
-
-        // GET: Users
-        [HttpGet]
-        public async Task<IActionResult> GetAllUsers()
-        {
-            var users = await _service.GetListAsync();
-            return users == null ? NotFound("No users found!") as IActionResult
-                : Ok(users);
+            _gameDataService = gameDataService;
         }
 
         // GET: Users/5
@@ -65,6 +61,16 @@ namespace ChessWeb.Controllers
         {
             return Ok(_notificationService.GetOnlineUsersInfoByNameStartsWith(part));
         }
+
+        // GET: users/{userId}/games
+        [HttpGet("{userId}/games", Name = "GetUserGames")]
+        public async Task<IActionResult> GetUserGames(int userId)
+        {
+            var games = await _gameDataService.GetUserGames(userId);
+            return games == null ? NotFound("No games found!") as IActionResult
+                : Ok(games);
+        }
+
         // POST: Users
         public async Task<IActionResult> AddUser([FromBody]UserDTO user)
         {
@@ -74,14 +80,6 @@ namespace ChessWeb.Controllers
             var entity = await _service.AddAsync(user);
             return entity == null ? StatusCode(409) as IActionResult
                 : Ok(entity) as IActionResult;
-        }
-
-        // DELETE: Users/5
-        [HttpDelete("{id}")]
-        public async Task<IActionResult> DeleteUser(int id)
-        {
-            var success = await _service.TryRemoveAsync(id);
-            return success ? Ok() : StatusCode(304) as IActionResult;
         }
     }
 }

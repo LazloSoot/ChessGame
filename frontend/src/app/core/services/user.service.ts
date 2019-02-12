@@ -1,7 +1,7 @@
 import { Injectable } from "@angular/core";
 import { HttpService, RequestMethod } from "./http.service";
 import { Observable } from "rxjs";
-import { User } from "../models";
+import { User, Game } from "../models";
 
 @Injectable({
 	providedIn: "root"
@@ -62,6 +62,12 @@ export class UserService {
 					return error;
 				}
 			);
+	}
+
+	getUserGames(userId: number): Observable<Game[]> {
+		return this.httpService.sendRequest(
+			RequestMethod.Get, 
+			`${this.apiUrl}/${userId}/games`);
 	}
 
 	add(user: User): Observable<User> {
