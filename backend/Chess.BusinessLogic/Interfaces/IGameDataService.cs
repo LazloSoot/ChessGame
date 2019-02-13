@@ -7,16 +7,16 @@ using System.Threading.Tasks;
 
 namespace Chess.BusinessLogic.Interfaces
 {
-    public interface IGameDataService : ICRUDService<Game, GameDTO>
+    public interface IGameDataService : ICRUDService<Game, GameFullDTO>
     {
-        Task<IEnumerable<GameDTO>> GetUserGames(int userID);
+        Task<IEnumerable<GameWidthConclusionDTO>> GetUserGames(int userID);
 
-        Task<GameDTO> CreateNewGameWithFriend(GameDTO entity);
+        Task<GameFullDTO> CreateNewGameWithFriend(GameFullDTO entity);
 
-        Task<GameDTO> CreateNewGameVersusAI(GameDTO game);
+        Task<GameFullDTO> CreateNewGameVersusAI(GameFullDTO game);
 
-        Task<GameDTO> JoinToGame(int gameId);
+        Task<GameFullDTO> JoinToGame(int gameId);
 
-        Task<GameDTO> SuspendGame(int gameId);
+        Task<GameFullDTO> SuspendGame(int gameId);
     }
 }

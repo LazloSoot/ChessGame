@@ -51,7 +51,7 @@ namespace ChessWeb.Controllers
 
         // POST: Games
         [HttpPost(Name ="CreateGameWithFriend")]
-        public async Task<IActionResult> CreateGameWithFriend([FromBody]GameDTO game)
+        public async Task<IActionResult> CreateGameWithFriend([FromBody]GameFullDTO game)
         {
             if (!ModelState.IsValid)
                 return BadRequest() as IActionResult;
@@ -63,7 +63,7 @@ namespace ChessWeb.Controllers
 
         // POST: Games/AI
         [HttpPost("ai", Name = "CreateGameVersusAI")]
-        public async Task<IActionResult> CreateGameVersusAI([FromBody]GameDTO game)
+        public async Task<IActionResult> CreateGameVersusAI([FromBody]GameFullDTO game)
         {
             if (!ModelState.IsValid)
                 return BadRequest() as IActionResult;
@@ -75,7 +75,7 @@ namespace ChessWeb.Controllers
 
         // POST: Games/player
         [HttpPost("player", Name = "CreateGameVersusRandPlayer")]
-        public async Task<IActionResult> CreateGameVersusRandPlayer([FromBody]GameDTO game)
+        public async Task<IActionResult> CreateGameVersusRandPlayer([FromBody]GameFullDTO game)
         {
             if (!ModelState.IsValid)
                 return BadRequest() as IActionResult;

@@ -3,7 +3,7 @@ using System.Collections.Generic;
 
 namespace Chess.Common.DTOs
 {
-    public class GameDTO
+    public class GameFullDTO
     {
         public int Id { get; set; }
         public string Fen { get; set; }
@@ -11,7 +11,7 @@ namespace Chess.Common.DTOs
         public IEnumerable<SideDTO> Sides { get; set; }
         public IEnumerable<MoveDTO> Moves { get; set; }
 
-        public GameDTO()
+        public GameFullDTO()
         {
             this.Sides = new List<SideDTO>();
             this.Moves = new List<MoveDTO>();

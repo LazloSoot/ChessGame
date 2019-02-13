@@ -4,7 +4,7 @@ namespace Chess.Common.DTOs
     public class SideDTO
     {
         public int Id { get; set; }
-        public GameDTO Game { get; set; }
+        public GameFullDTO Game { get; set; }
         public int? GameId { get; set; }
         public UserDTO Player { get; set; }
         public int? PlayerId { get; set; }
