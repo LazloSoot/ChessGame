@@ -1,4 +1,5 @@
 ﻿using Chess.DataAccess.Helpers;
+using System;
 using System.Collections.Generic;
 
 namespace Chess.DataAccess.Entities
@@ -9,7 +10,7 @@ namespace Chess.DataAccess.Entities
         public GameStatus Status { get; set; }
         public virtual ICollection<Move> Moves { get; set; }
         public virtual ICollection<Side> Sides { get; set; }
-
+        public DateTime CreationDate { get; set; }
         public Game()
         {
             Moves = new List<Move>();

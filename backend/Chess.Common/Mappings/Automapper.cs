@@ -65,6 +65,17 @@ namespace Chess.Common.Mappings
                     var isFirstIsTarget = first.Id == targetUserId.Value;
                     var isFirstWon = first.Points > second.Points;
                     return ((isFirstWon && isFirstIsTarget) || (!isFirstWon && !isFirstIsTarget));
+                }))
+                .ForMember(p => p.Side, opt => opt.ResolveUsing((src, dest, destMember, context) =>
+                {
+                    int? targetUserId = context.Items["ConclusionForUserId"] as int?;
+                    if (!targetUserId.HasValue)
+                        return null;
+
+                    return src.Sides
+                    .Where(s => s.PlayerId == targetUserId.Value)
+                    .FirstOrDefault()
+                    ?.Color;
                 }));
                 cfg.CreateMap<GameWidthConclusionDTO, Game>();
 

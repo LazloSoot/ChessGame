@@ -79,6 +79,7 @@ namespace Chess.BusinessLogic.Services
             }
             else
             {
+                game.CreationDate = DateTime.Now;
                 targetGame = await base.AddAsync(game);
             }
             await _notificationService.InviteUserAsync(opponent.Uid, targetGame.Id);
@@ -103,7 +104,8 @@ namespace Chess.BusinessLogic.Services
                 currentUserSide
             };
             game.Status = DataAccess.Helpers.GameStatus.Going;
-            
+
+            game.CreationDate = DateTime.Now;
             return await base.AddAsync(game);
         }
 
