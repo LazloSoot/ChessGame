@@ -1,5 +1,5 @@
 import { Component, OnInit } from "@angular/core";
-import { User, UserService, AppStateService, Game, Page, GameWithConclution } from "../../core";
+import { User, UserService, AppStateService, Game, Page, GameWithConclution, PagedResult } from "../../core";
 import { ActivatedRoute } from "@angular/router";
 
 @Component({
@@ -9,6 +9,7 @@ import { ActivatedRoute } from "@angular/router";
 })
 export class ProfileComponent implements OnInit {
   public userProfile: User;
+  public currentPage: PagedResult<Game>;
   public games: GameWithConclution[] = [];
   private isActivitiesLoading: boolean = true;
   private isGamesLoading: boolean = true;
@@ -52,9 +53,11 @@ export class ProfileComponent implements OnInit {
 	async getUserGames(user: User, page: Page) {
 		this.isGamesLoading = true;
 		this.userService.getUserGames(user.id, page).subscribe(
-			(games: Game[]) => {
-				this.games = games.map((game) => new GameWithConclution(game, user.id));
+			(gamesPage: PagedResult<Game>) => {
+				this.currentPage = gamesPage;
+				this.games = gamesPage.dataRows.map((game) => new GameWithConclution(game, user.id));
 				this.isGamesLoading = false;
+				debugger;
 		});
 	}
 }

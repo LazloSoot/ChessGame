@@ -15,10 +15,10 @@ export class GameWithConclution {
         game: Game,
         targetUserId: number
     ) {
-        const targetUserSide = game.sides.find(s => s.id === targetUserId);
+        const targetUserSide = game.sides.find(s => s.playerId === targetUserId);
         if(targetUserSide) {
             this.initProps(game, targetUserSide);
-            const opponentSide = game.sides.find(u => u.id !== targetUserId);
+            const opponentSide = game.sides.find(u => u.playerId !== targetUserId);
             if(opponentSide) {
                 this.opponent = opponentSide.player;
             }

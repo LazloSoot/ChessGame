@@ -148,7 +148,7 @@ namespace Chess.BusinessLogic.Services
             throw new NotImplementedException();
         }
 
-        public async Task<IEnumerable<GamePartialDTO>> GetUserGames(int userID, int? pageIndex, int? pageSize)
+        public async Task<PagedResultDTO<GamePartialDTO>> GetUserGames(int userID, int? pageIndex, int? pageSize)
         {
             if (uow == null)
                 return null;
@@ -157,21 +157,35 @@ namespace Chess.BusinessLogic.Services
             if (user == null)
                 return null;
 
-            var games = (await uow.GetRepository<Side>()
-                .GetAllAsync(pageIndex, pageSize, s => s.PlayerId == user.Id))
-                .Select(s => s.Game);
-            return mapper.Map<IEnumerable<GamePartialDTO>>(games);
+            var sidesPage = (await uow.GetRepository<Side>()
+                .GetAllAsync(pageIndex, pageSize, s => s.PlayerId == user.Id));
+            var gamesPage = new PagedResultDTO<GamePartialDTO>()
+            {
+                PageCount = sidesPage.PageCount,
+                PageIndex = sidesPage.PageIndex,
+                PageSize = sidesPage.PageSize,
+                TotalDataRowsCount = sidesPage.TotalDataRowsCount,
+                DataRows = mapper.Map<IEnumerable<GamePartialDTO>>(sidesPage.DataRows.Select(s => s.Game).ToList())
+            };
+            return gamesPage;
         } 
-        public override async Task<IEnumerable<GameFullDTO>> GetListAsync(int? pageIndex = null, int? pageSize = null)
+        public override async Task<PagedResultDTO<GameFullDTO>> GetListAsync(int? pageIndex = null, int? pageSize = null)
         {
             if (uow == null)
                 return null;
 
             var currentUser = await _currentUserProvider.GetCurrentUserAsync();
-            var games = (await uow.GetRepository<Side>()
-                .GetAllAsync(pageIndex, pageSize, s => s.PlayerId == currentUser.Id))
-                .Select(s => s.Game);
-            return mapper.Map<IEnumerable<GamePartialDTO>>(games);
+            var sidesPage = (await uow.GetRepository<Side>()
+                .GetAllAsync(pageIndex, pageSize, s => s.PlayerId == currentUser.Id));
+            var gamesPage = new PagedResultDTO<GameFullDTO>()
+            {
+                PageCount = sidesPage.PageCount,
+                PageIndex = sidesPage.PageIndex,
+                PageSize = sidesPage.PageSize,
+                TotalDataRowsCount = sidesPage.TotalDataRowsCount,
+                DataRows = mapper.Map<IEnumerable<GamePartialDTO>>(sidesPage.DataRows.Select(s => s.Game).ToList())
+            };
+            return gamesPage;
         }
     }
 }

@@ -4,12 +4,13 @@ using System.Threading.Tasks;
 using AutoMapper;
 using Chess.DataAccess.Interfaces;
 using Chess.DataAccess.Entities;
+using Chess.Common.DTOs;
 
 namespace Chess.BusinessLogic.Services
 {
     public class CRUDService<TEntity, TEntityDTO> : ICRUDService<TEntity, TEntityDTO>
         where TEntity : Entity, new()
-        where TEntityDTO : class, new()
+        where TEntityDTO : DbEntityDTO, new()
     {
         protected readonly IMapper mapper;
         protected readonly IUnitOfWork uow;
@@ -56,13 +57,13 @@ namespace Chess.BusinessLogic.Services
             return target == null ? null : mapper.Map<TEntityDTO>(target);
         }
 
-        public virtual async Task<IEnumerable<TEntityDTO>> GetListAsync(int? pageIndex = null, int? pageSize = null)
+        public virtual async Task<PagedResultDTO<TEntityDTO>> GetListAsync(int? pageIndex = null, int? pageSize = null)
         {
             if (uow == null)
                 return null;
 
             var targets = await uow.GetRepository<TEntity>().GetAllAsync(pageIndex, pageSize);
-            return mapper.Map<IEnumerable<TEntityDTO>>(targets);
+            return mapper.Map<PagedResultDTO<TEntityDTO>>(targets);
         }
 
         public virtual async Task<bool> TryRemoveAsync(int id)

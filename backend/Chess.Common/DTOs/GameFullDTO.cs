@@ -4,9 +4,8 @@ using System.Collections.Generic;
 
 namespace Chess.Common.DTOs
 {
-    public class GameFullDTO
+    public class GameFullDTO : DbEntityDTO
     {
-        public int Id { get; set; }
         public string Fen { get; set; }
         public GameStatus Status { get; set; }
         public IEnumerable<SideDTO> Sides { get; set; }

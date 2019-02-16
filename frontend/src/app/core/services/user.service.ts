@@ -1,7 +1,7 @@
 import { Injectable } from "@angular/core";
 import { HttpService, RequestMethod } from "./http.service";
 import { Observable } from "rxjs";
-import { User, Game, Page } from "../models";
+import { User, Game, Page, PagedResult } from "../models";
 
 @Injectable({
 	providedIn: "root"
@@ -64,7 +64,7 @@ export class UserService {
 			);
 	}
 
-	getUserGames(userId: number, page?: Page): Observable<Game[]> {
+	getUserGames(userId: number, page?: Page): Observable<PagedResult<Game>> {
 		return this.httpService.sendRequest(
 			RequestMethod.Get, 
 			`${this.apiUrl}/${userId}/games`, undefined, page);
