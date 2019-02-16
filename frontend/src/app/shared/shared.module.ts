@@ -14,6 +14,7 @@ import { SpinnerRectComponent } from './layout/spinners/spinner-rect/spinner-rec
 import { SpinnerCircleComponent } from './layout/spinners/spinner-circle/spinner-circle.component';
 import { CheckmateDialogComponent } from './dialogs/checkmate-dialog/checkmate-dialog.component';
 import { SpinnerColorDirective } from './layout/spinners/directives/spinner-color.directive';
+import { LastEntryDatePipe } from './pipes/last-entry-date.pipe';
 
 @NgModule({
   imports: [
@@ -40,7 +41,8 @@ import { SpinnerColorDirective } from './layout/spinners/directives/spinner-colo
     SpinnerRectComponent,
     SpinnerCircleComponent,
     CheckmateDialogComponent,
-    SpinnerColorDirective
+    SpinnerColorDirective,
+    LastEntryDatePipe
     ],
     
   entryComponents: [

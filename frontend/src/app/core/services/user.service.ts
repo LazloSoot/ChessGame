@@ -1,7 +1,7 @@
 import { Injectable } from "@angular/core";
 import { HttpService, RequestMethod } from "./http.service";
 import { Observable } from "rxjs";
-import { User, Game } from "../models";
+import { User, Game, Page } from "../models";
 
 @Injectable({
 	providedIn: "root"
@@ -64,16 +64,18 @@ export class UserService {
 			);
 	}
 
-	getUserGames(userId: number): Observable<Game[]> {
+	getUserGames(userId: number, page?: Page): Observable<Game[]> {
+		const params = (page) ? { "pageSize": "" + page.size, "pageIndex": "" + page.index } : undefined;
 		return this.httpService.sendRequest(
 			RequestMethod.Get, 
-			`${this.apiUrl}/${userId}/games`);
+			`${this.apiUrl}/${userId}/games`, undefined, params );
 	}
 
 	add(user: User): Observable<User> {
 		return this.httpService.sendRequest(
 			RequestMethod.Post,
 			this.apiUrl,
+			undefined,
 			undefined,
 			user
 		);
@@ -83,6 +85,7 @@ export class UserService {
 		return this.httpService.sendRequest(
 			RequestMethod.Put,
 			this.apiUrl,
+			undefined,
 			undefined,
 			user
 		);

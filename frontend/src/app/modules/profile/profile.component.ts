@@ -1,5 +1,5 @@
 import { Component, OnInit } from "@angular/core";
-import { User, UserService, AppStateService, Game } from "../../core";
+import { User, UserService, AppStateService, Game, Page } from "../../core";
 import { ActivatedRoute } from "@angular/router";
 
 @Component({
@@ -52,10 +52,10 @@ export class ProfileComponent implements OnInit {
 	}
 
 	async getUserGames(user: User) {
-		this.userService.getUserGames(user.id).subscribe(
+		this.userService.getUserGames(user.id, new Page(0, 10)).subscribe(
 			(games: Game[]) => {
 				this.games = games;
 				this.isGamesLoading = false;
-		})
+		});
 	}
 }

@@ -64,7 +64,7 @@ namespace ChessWeb.Controllers
 
         // GET: users/{userId}/games
         [HttpGet("{userId}/games", Name = "GetUserGames")]
-        public async Task<IActionResult> GetUserGames(int userId)
+        public async Task<IActionResult> GetUserGames(int userId, [FromQuery(Name = "pageIndex")] int? pageIndex, [FromQuery(Name = "pageSize")] int? pageSize)
         {
             var games = await _gameDataService.GetUserGames(userId);
             return games == null ? NotFound("No games found!") as IActionResult
