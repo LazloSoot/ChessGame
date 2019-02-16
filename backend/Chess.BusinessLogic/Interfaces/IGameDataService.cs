@@ -9,7 +9,7 @@ namespace Chess.BusinessLogic.Interfaces
 {
     public interface IGameDataService : ICRUDService<Game, GameFullDTO>
     {
-        Task<IEnumerable<GameWidthConclusionDTO>> GetUserGames(int userID, int? pageIndex, int? pageSize);
+        Task<IEnumerable<GamePartialDTO>> GetUserGames(int userID, int? pageIndex, int? pageSize);
 
         Task<GameFullDTO> CreateNewGameWithFriend(GameFullDTO entity);
 

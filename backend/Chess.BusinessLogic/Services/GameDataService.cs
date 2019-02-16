@@ -148,7 +148,7 @@ namespace Chess.BusinessLogic.Services
             throw new NotImplementedException();
         }
 
-        public async Task<IEnumerable<GameWidthConclusionDTO>> GetUserGames(int userID, int? pageIndex, int? pageSize)
+        public async Task<IEnumerable<GamePartialDTO>> GetUserGames(int userID, int? pageIndex, int? pageSize)
         {
             if (uow == null)
                 return null;
@@ -160,9 +160,7 @@ namespace Chess.BusinessLogic.Services
             var games = (await uow.GetRepository<Side>()
                 .GetAllAsync(pageIndex, pageSize, s => s.PlayerId == user.Id))
                 .Select(s => s.Game);
-            var initializedGamesDtos = mapper
-                .Map<IEnumerable<Game>, IEnumerable<GameWidthConclusionDTO>>(games, opt => opt.Items["ConclusionForUserId"] = user.Id);
-            return initializedGamesDtos;
+            return mapper.Map<IEnumerable<GamePartialDTO>>(games);
         } 
         public override async Task<IEnumerable<GameFullDTO>> GetListAsync(int? pageIndex = null, int? pageSize = null)
         {

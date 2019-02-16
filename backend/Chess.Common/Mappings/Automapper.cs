@@ -20,65 +20,6 @@ namespace Chess.Common.Mappings
                 .ForMember(p => p.Moves, opt => opt.Ignore())
                 .ForMember(p => p.Sides, opt => opt.Ignore());
                 cfg.CreateMap<GameFullDTO, Game>();
-                cfg.CreateMap<Game, GameWidthConclusionDTO>()
-                .ForMember(p => p.Moves, opt => opt.Ignore())
-                .ForMember(p => p.Sides, opt => opt.Ignore())
-                .ForMember(p => p.IsDraw, opt => opt.ResolveUsing((src, dest, destMember, context) =>
-                {
-                    if (src.Status != DataAccess.Helpers.GameStatus.Completed)
-                        return false;
-
-                    int? targetUserId = context.Items["ConclusionForUserId"] as int?;
-                    if (!targetUserId.HasValue)
-                        return false;
-
-                    return src.Sides
-                    .Where(s => s.PlayerId == targetUserId.Value)
-                    .FirstOrDefault()
-                    ?.IsDraw;
-                }))
-                .ForMember(p => p.IsResigned, opt => opt.ResolveUsing((src, dest, destMember, context) =>
-                {
-                    if (src.Status != DataAccess.Helpers.GameStatus.Completed)
-                        return false;
-
-                    int? targetUserId = context.Items["ConclusionForUserId"] as int?;
-                    if (!targetUserId.HasValue)
-                        return false;
-
-                    return src.Sides
-                    .Where(s => s.PlayerId == targetUserId.Value)
-                    .FirstOrDefault()
-                    ?.IsResign;
-                }))
-                .ForMember(p => p.IsWon, opt => opt.ResolveUsing((src, dest, destMember, context) =>
-                {
-                    if (src.Status != DataAccess.Helpers.GameStatus.Completed)
-                        return false;
-
-                    int? targetUserId = context.Items["ConclusionForUserId"] as int?;
-                    if (!targetUserId.HasValue || src.Sides.Count() < 2)
-                        return false;
-
-                    var first = src.Sides.FirstOrDefault();
-                    var second = src.Sides.LastOrDefault();
-                    var isFirstIsTarget = first.Id == targetUserId.Value;
-                    var isFirstWon = first.Points > second.Points;
-                    return ((isFirstWon && isFirstIsTarget) || (!isFirstWon && !isFirstIsTarget));
-                }))
-                .ForMember(p => p.Side, opt => opt.ResolveUsing((src, dest, destMember, context) =>
-                {
-                    int? targetUserId = context.Items["ConclusionForUserId"] as int?;
-                    if (!targetUserId.HasValue)
-                        return null;
-
-                    return src.Sides
-                    .Where(s => s.PlayerId == targetUserId.Value)
-                    .FirstOrDefault()
-                    ?.Color;
-                }));
-                cfg.CreateMap<GameWidthConclusionDTO, Game>();
-
                 cfg.CreateMap<Move, MoveDTO>();
                 cfg.CreateMap<MoveDTO, Move>();
 

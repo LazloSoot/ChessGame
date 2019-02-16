@@ -1,5 +1,5 @@
 import { Component, OnInit } from "@angular/core";
-import { User, UserService, AppStateService, Game, Page } from "../../core";
+import { User, UserService, AppStateService, Game, Page, GameWithConclution } from "../../core";
 import { ActivatedRoute } from "@angular/router";
 
 @Component({
@@ -9,7 +9,7 @@ import { ActivatedRoute } from "@angular/router";
 })
 export class ProfileComponent implements OnInit {
   public userProfile: User;
-  public games: Game[] = [];
+  public games: GameWithConclution[] = [];
   private isActivitiesLoading: boolean = true;
   private isGamesLoading: boolean = true;
 	constructor(
@@ -53,7 +53,7 @@ export class ProfileComponent implements OnInit {
 		this.isGamesLoading = true;
 		this.userService.getUserGames(user.id, page).subscribe(
 			(games: Game[]) => {
-				this.games = games;
+				this.games = games.map((game) => new GameWithConclution(game, user.id));
 				this.isGamesLoading = false;
 		});
 	}
