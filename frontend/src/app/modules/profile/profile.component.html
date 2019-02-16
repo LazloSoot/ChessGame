@@ -12,10 +12,10 @@
 				{{userProfile?.name}}
 			</div>
 			<mat-card-subtitle style="margin-top: 5px">
-				Registration date : <span> {{userProfile?.registrationDate | date:'longDate'}}</span>
+				Registration date : <span> {{userProfile?.registrationDate | lastEntryDate }}</span>
 			</mat-card-subtitle>
 			<mat-card-subtitle>
-        Last seen : <span> {{userProfile?.lastSeenDate | date:'longDate'}}</span>
+        Last seen : <span> {{userProfile?.lastSeenDate | lastEntryDate }}</span>
       </mat-card-subtitle>
       <a class="edit" routerLinkActive="active" [routerLink]="['./settings']">
         <mat-icon class="icon" aria-label="Profile edit button">mode_edit</mat-icon>
@@ -36,7 +36,7 @@
 								<mat-card-subtitle *ngIf="!games || games.length < 1">No games to show</mat-card-subtitle>
 								<ul>
 									<li *ngFor="let g of games">
-										{{g.creationDate | date:'longDate' }}  {{g.status}}  {{g.side}}  {{(g.isWon) ? 'win' : 'lose'}}  
+										{{g.creationDate | lastEntryDate }}  {{g.status}}  {{g.side}}  {{(g.isWon) ? 'win' : 'lose'}}  
 									</li>
 								</ul>
 

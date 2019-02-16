@@ -27,7 +27,8 @@ import { LastEntryDatePipe } from './pipes/last-entry-date.pipe';
     MaterialModule,
     FormsModule,
     SpinnerRectComponent,
-    SpinnerColorDirective
+    SpinnerColorDirective,
+    LastEntryDatePipe
   ],
 
   declarations: [
