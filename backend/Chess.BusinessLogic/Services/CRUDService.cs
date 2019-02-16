@@ -56,12 +56,12 @@ namespace Chess.BusinessLogic.Services
             return target == null ? null : mapper.Map<TEntityDTO>(target);
         }
 
-        public virtual async Task<IEnumerable<TEntityDTO>> GetListAsync()
+        public virtual async Task<IEnumerable<TEntityDTO>> GetListAsync(int? pageIndex = null, int? pageSize = null)
         {
             if (uow == null)
                 return null;
 
-            var targets = await uow.GetRepository<TEntity>().GetAllAsync();
+            var targets = await uow.GetRepository<TEntity>().GetAllAsync(pageIndex, pageSize);
             return mapper.Map<IEnumerable<TEntityDTO>>(targets);
         }
 

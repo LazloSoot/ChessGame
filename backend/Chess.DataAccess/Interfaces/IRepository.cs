@@ -22,6 +22,6 @@ namespace Chess.DataAccess.Interfaces
 
         Task<TEntity> GetOneAsync(Expression<Func<TEntity, bool>> predicate);
         
-        Task<IEnumerable<TEntity>> GetAllAsync(Expression<Func<TEntity, bool>> predicate = null);
+        Task<IEnumerable<TEntity>> GetAllAsync(int? pageIndex = null, int? pageSize = null, Expression < Func<TEntity, bool>> predicate = null);
     }
 }

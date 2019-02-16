@@ -12,7 +12,7 @@ namespace Chess.BusinessLogic.Interfaces
 
         Task<TEntityDTO> UpdateAsync(TEntityDTO entity);
 
-        Task<IEnumerable<TEntityDTO>> GetListAsync();
+        Task<IEnumerable<TEntityDTO>> GetListAsync(int? pageIndex = null, int? pageSize = null);
 
         Task<TEntityDTO> AddAsync(TEntityDTO entity);
 

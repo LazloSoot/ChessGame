@@ -13,42 +13,12 @@ export class HttpService {
     private url = environment.apiUrl;
     constructor(private httpClient: HttpClient) { }
 
-   //sendRequest(
-   //    type: RequestMethod,
-   //    endpoint: string,
-   //    params: number | string = "",
-   //    body: any = {},
-   //    respType: string = 'json',
-   //    typeOfContent: string = "json") {
-   //    return this.createRequest(type, endpoint, params, body, respType, typeOfContent).pipe(
-   //        catchError((res: HttpErrorResponse) => this.handleError(res)),
-   //        flatMap((response: any) => {
-   //            if (response === "T") {
-   //                return from(this.authService.refreshToken()).pipe(flatMap(
-   //                    () => this.createRequest(type, endpoint, params, body, respType, typeOfContent)
-   //                        .pipe(
-   //                            catchError((res: HttpErrorResponse) => this.handleError(res)),
-   //                            flatMap((response: any) => {
-   //                                if (response === "T") {
-   //                                    return this.authService.logout()
-   //                                } else {
-   //                                    return of(response);
-   //                                }
-   //                            })
-   //                        )
-   //                ))
-   //            } else {
-   //                return of(response);
-   //            }
-   //        })
-   //    );
-   //}
-
    sendRequest(
     type: RequestMethod,
     endpoint: string,
     params: number | string = "",
-    namedParams?:  { [paramName: string]: string; },
+    namedParams?:  {},
+    //namedParams?:  { [paramName: string]: string; },
     body: any = {},
     respType: string = 'json',
     typeOfContent: string = "json"
@@ -63,7 +33,8 @@ export class HttpService {
     createRequest(type: RequestMethod,
         endpoint: string,
         params: number | string,
-        namedParams?:  { [paramName: string]: string; },
+        namedParams?:  {},
+        //namedParams?:  { [paramName: string]: string; },
         body: any = {},
         respType: string = 'json',
         typeOfContent: string = "json"
@@ -76,7 +47,6 @@ export class HttpService {
         headers.append('Access-Control-Allow-Origin', '*');
         let request: Observable<any>;
         let requestParams: HttpParams;
-        debugger;
         if(namedParams) {
             requestParams = new HttpParams();
             for(let param in namedParams) {

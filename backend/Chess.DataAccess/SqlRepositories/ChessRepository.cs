@@ -35,15 +35,31 @@ namespace Chess.DataAccess.SqlRepositories
             return dbSet.Update(entity).Entity;
         }
 
-        public async Task<IEnumerable<TEntity>> GetAllAsync(Expression<Func<TEntity, bool>> predicate = null)
+        public async Task<IEnumerable<TEntity>> GetAllAsync(int? pageIndex = null, int? pageSize = null, Expression < Func<TEntity, bool>> predicate = null)
         {
             if (predicate == null)
-                return await dbSet.ToListAsync();
+            {
+                if((pageIndex.HasValue && pageIndex.Value >= 0) && (pageSize.HasValue && pageSize.Value > 0))
+                {
+                    return await dbSet.Skip(pageSize.Value * pageIndex.Value).Take(pageSize.Value).ToListAsync();
+                }
+                else
+                {
+                    return await dbSet.ToListAsync();
+                }
+            }
 
             //  Func<IQueryable<TEntity>, Expression<Func<TEntity, bool>>, IQueryable<TEntity>> whereFunc 
             // = (query, predicate) => query.Where(predicate);
 
-            return await dbSet.Where(predicate).ToListAsync();
+            if ((pageIndex.HasValue && pageIndex.Value >= 0) && (pageSize.HasValue && pageSize.Value > 0))
+            {
+                return await dbSet.Where(predicate).Skip(pageSize.Value * pageIndex.Value).Take(pageSize.Value).ToListAsync();
+            }
+            else
+            {
+                return await dbSet.Where(predicate).ToListAsync();
+            }
         }
 
         public async Task<TEntity> GetByIdAsync(int id)

@@ -148,7 +148,7 @@ namespace Chess.BusinessLogic.Services
             throw new NotImplementedException();
         }
 
-        public async Task<IEnumerable<GameWidthConclusionDTO>> GetUserGames(int userID)
+        public async Task<IEnumerable<GameWidthConclusionDTO>> GetUserGames(int userID, int? pageIndex, int? pageSize)
         {
             if (uow == null)
                 return null;
@@ -158,20 +158,20 @@ namespace Chess.BusinessLogic.Services
                 return null;
 
             var games = (await uow.GetRepository<Side>()
-                .GetAllAsync(s => s.PlayerId == user.Id))
+                .GetAllAsync(pageIndex, pageSize, s => s.PlayerId == user.Id))
                 .Select(s => s.Game);
             var initializedGamesDtos = mapper
                 .Map<IEnumerable<Game>, IEnumerable<GameWidthConclusionDTO>>(games, opt => opt.Items["ConclusionForUserId"] = user.Id);
             return initializedGamesDtos;
         } 
-        public override async Task<IEnumerable<GameFullDTO>> GetListAsync()
+        public override async Task<IEnumerable<GameFullDTO>> GetListAsync(int? pageIndex = null, int? pageSize = null)
         {
             if (uow == null)
                 return null;
 
             var currentUser = await _currentUserProvider.GetCurrentUserAsync();
             var games = (await uow.GetRepository<Side>()
-                .GetAllAsync(s => s.PlayerId == currentUser.Id))
+                .GetAllAsync(pageIndex, pageSize, s => s.PlayerId == currentUser.Id))
                 .Select(s => s.Game);
             return mapper.Map<IEnumerable<GamePartialDTO>>(games);
         }

@@ -29,17 +29,15 @@ export class ProfileComponent implements OnInit {
 					}
 				}, error => {},
 				() => {
-					this.getUserGames(this.userProfile);
+					this.getUserGames(this.userProfile, new Page(0, 15));
 				});
 			} else {
 				this.userProfile = this.appStateService.getCurrentUser();
-				this.getUserGames(this.userProfile);
 				this.userService.getCurrentUser().subscribe(currentDbUser => {
 					this.userProfile.avatarUrl = (currentDbUser.avatarUrl) ? currentDbUser.avatarUrl : "../../../../assets/images/anonAvatar.png";
-				},
-				error => {},
+				}, error => {},
 				() => {
-					this.getUserGames(this.userProfile);
+					this.getUserGames(this.userProfile, new Page(0, 15));
 				});
 			}
 			
@@ -51,8 +49,9 @@ export class ProfileComponent implements OnInit {
     }, 2000);
 	}
 
-	async getUserGames(user: User) {
-		this.userService.getUserGames(user.id, new Page(0, 10)).subscribe(
+	async getUserGames(user: User, page: Page) {
+		this.isGamesLoading = true;
+		this.userService.getUserGames(user.id, page).subscribe(
 			(games: Game[]) => {
 				this.games = games;
 				this.isGamesLoading = false;

@@ -44,9 +44,9 @@ export class UserService {
 			);
 	}
 
-	getOnlineUsersByNameStartsWith(part: string): Promise<User[]> {
+	getOnlineUsersByNameStartsWith(part: string, page?: Page): Promise<User[]> {
 		return this.httpService
-			.sendRequest(RequestMethod.Get, `${this.apiUrl}/online`, part)
+			.sendRequest(RequestMethod.Get, `${this.apiUrl}/online`, part, page)
 			.toPromise()
 			.then(
 				users => {
@@ -65,10 +65,9 @@ export class UserService {
 	}
 
 	getUserGames(userId: number, page?: Page): Observable<Game[]> {
-		const params = (page) ? { "pageSize": "" + page.size, "pageIndex": "" + page.index } : undefined;
 		return this.httpService.sendRequest(
 			RequestMethod.Get, 
-			`${this.apiUrl}/${userId}/games`, undefined, params );
+			`${this.apiUrl}/${userId}/games`, undefined, page);
 	}
 
 	add(user: User): Observable<User> {

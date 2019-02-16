@@ -22,14 +22,14 @@ namespace ChessWeb.Controllers
             _chessMovesService = chessMovesService;
         }
 
-        //GET: Games
-        [HttpGet()]
-        public async Task<IActionResult> GetMyGames()
-        {
-            var games = await _service.GetListAsync();
-            return games == null ? NotFound("No games found!") as IActionResult
-                : Ok(games);
-        }
+        ////GET: Games
+        //[HttpGet()]
+        //public async Task<IActionResult> GetMyGames()
+        //{
+        //    var games = await _service.GetListAsync();
+        //    return games == null ? NotFound("No games found!") as IActionResult
+        //        : Ok(games);
+        //}
 
         // GET: Games/5
         [HttpGet("{id}", Name = "GetGame")]
@@ -86,7 +86,7 @@ namespace ChessWeb.Controllers
         }
 
         // PUT: Games/{:id}/join
-        [HttpPut("{gameId}/join", Name ="JoinGame")]
+        [HttpPut("{gameId}/join", Name = "JoinGame")]
         public async Task<IActionResult> JoinGame(int gameId)
         {
             var readyGame = await _service.JoinToGame(gameId);

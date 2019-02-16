@@ -16,7 +16,6 @@ namespace ChessWeb.Controllers
     public class UsersController : ControllerBase
     {
         private readonly IUserService _service;
-        private readonly ICurrentUserProvider _currentUserProvider;
         private readonly IGameDataService _gameDataService;
         private readonly ISignalRNotificationService _notificationService;
 
@@ -66,7 +65,7 @@ namespace ChessWeb.Controllers
         [HttpGet("{userId}/games", Name = "GetUserGames")]
         public async Task<IActionResult> GetUserGames(int userId, [FromQuery(Name = "pageIndex")] int? pageIndex, [FromQuery(Name = "pageSize")] int? pageSize)
         {
-            var games = await _gameDataService.GetUserGames(userId);
+            var games = await _gameDataService.GetUserGames(userId, pageIndex, pageSize);
             return games == null ? NotFound("No games found!") as IActionResult
                 : Ok(games);
         }
