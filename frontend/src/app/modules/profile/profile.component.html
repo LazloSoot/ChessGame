@@ -31,16 +31,9 @@
 					<h2 class="title">Games</h2>
           <mat-divider></mat-divider>
           <div class="item-data games-list">
-              <app-spinner-rect *ngIf="isGamesLoading; else gamesList" spinnerColor="#333" ></app-spinner-rect>
-              <ng-template #gamesList>
-								<mat-card-subtitle *ngIf="!games || games.length < 1">No games to show</mat-card-subtitle>
-								<ul>
-									<li *ngFor="let g of games">
-										{{g.creationDate | lastEntryDate }}  {{g.status}}  {{g.side}}  {{(g.isWon) ? 'win' : 'lose'}}  
-									</li>
-								</ul>
+							
+								<app-games-history *ngIf="userProfile" [targetUserId]="userProfile.id"></app-games-history>
 
-							</ng-template>
           </div>
 				</div>
 			</div>

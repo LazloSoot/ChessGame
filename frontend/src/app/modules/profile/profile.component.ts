@@ -9,10 +9,7 @@ import { ActivatedRoute } from "@angular/router";
 })
 export class ProfileComponent implements OnInit {
   public userProfile: User;
-  public currentPage: PagedResult<Game>;
-  public games: GameWithConclution[] = [];
   private isActivitiesLoading: boolean = true;
-  private isGamesLoading: boolean = true;
 	constructor(
 		private route: ActivatedRoute,
 		public userService: UserService,
@@ -30,7 +27,7 @@ export class ProfileComponent implements OnInit {
 					}
 				}, error => {},
 				() => {
-					this.getUserGames(this.userProfile, new Page(0, 15));
+					//this.getUserGames(new Page(0, this.pageSize));
 				});
 			} else {
 				this.userProfile = this.appStateService.getCurrentUser();
@@ -38,26 +35,13 @@ export class ProfileComponent implements OnInit {
 					this.userProfile.avatarUrl = (currentDbUser.avatarUrl) ? currentDbUser.avatarUrl : "../../../../assets/images/anonAvatar.png";
 				}, error => {},
 				() => {
-					this.getUserGames(this.userProfile, new Page(0, 15));
+					//this.getUserGames(new Page(0, this.pageSize));
 				});
 			}
-			
-	
     });
     
     setTimeout(() => {
       this.isActivitiesLoading = false;
     }, 2000);
-	}
-
-	async getUserGames(user: User, page: Page) {
-		this.isGamesLoading = true;
-		this.userService.getUserGames(user.id, page).subscribe(
-			(gamesPage: PagedResult<Game>) => {
-				this.currentPage = gamesPage;
-				this.games = gamesPage.dataRows.map((game) => new GameWithConclution(game, user.id));
-				this.isGamesLoading = false;
-				debugger;
-		});
 	}
 }
