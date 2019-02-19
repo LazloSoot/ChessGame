@@ -1,5 +1,5 @@
 import { Component, OnInit, Input, SimpleChanges, ViewChild, Output, EventEmitter, AfterViewInit } from "@angular/core";
-import { GameWithConclution, PagedResult, Game, UserService, Page, PageReformationType, PageReformationOptions } from "../../../core";
+import { GameWithConclution, PagedResult, Game, UserService, Page, PageReformationType, PageReformationOptions, GameStatus, GameSide } from "../../../core";
 import { MatPaginator, MatTableDataSource } from "@angular/material";
 import { merge, of, BehaviorSubject, from, Observable, pipe } from "rxjs";
 import { startWith, switchMap, map, catchError, concatMap, flatMap } from "rxjs/operators";
@@ -20,7 +20,7 @@ export class GamesHistoryComponent implements OnInit {
   private isInitialized: boolean = false;
   private isNoGamesToShow: boolean = true;
   private totalGamesCount: number = 0;
-  private displayedColumns: string[] = ['date'];
+  private displayedColumns: string[] = ['date', 'side', 'status', 'result', 'opponent'];
   private pageSizeOptions = [5, 10, 20, 50];
   
   constructor(public userService: UserService) {}
@@ -60,6 +60,7 @@ export class GamesHistoryComponent implements OnInit {
     return await this.userService.getUserGames(this.targetUserId, new Page(0, 5))
     .toPromise()
     .then((gamesPage: PagedResult<Game>) => {
+      debugger;
       const newGamesData = gamesPage.dataRows.map((game) => new GameWithConclution(game, this.targetUserId));
       this.loadedPages = [new PagedResult<GameWithConclution>(gamesPage.pageIndex, gamesPage.pageCount, gamesPage.pageSize, gamesPage.totalDataRowsCount, newGamesData)];
       this.currentPageGames = newGamesData;
@@ -77,7 +78,7 @@ export class GamesHistoryComponent implements OnInit {
           let pagesReformationType = PageReformationType.None;
           if(this.paginator.pageSize !== this.prevPageSize) {
             if(this.paginator.pageSize > this.prevPageSize) {
-              
+
             } else {
               pagesReformationType = PageReformationType.Split;
             }
@@ -170,5 +171,38 @@ export class GamesHistoryComponent implements OnInit {
 
   private mergePages(pages: PagedResult<GameWithConclution>[], index: number, options: PageReformationOptions): PagedResult<GameWithConclution> {
     return null;
+  }
+
+  getGameSide(game: GameWithConclution) {
+    return GameSide[game.side];
+  }
+
+  getGameStatus(game: GameWithConclution) {
+    switch (game.status) {
+      case GameStatus.Going:
+        return "play_arrow";
+      case GameStatus.Completed:
+        return "done";
+      case GameStatus.Waiting:
+        return "alarm";
+      case GameStatus.Suspended: 
+        return "pause";
+      default:
+        return "not_interested";
+    }
+  }
+
+  getGameResultValue(game: GameWithConclution) {
+    if(game.status === GameStatus.Completed) {
+      if(game.isWin) {
+        return "Win"
+      } else if(game.isDraw) {
+        return "Draw";
+      } else {
+        return "Lose"
+      }
+    } else {
+      return "-";
+    }
   }
 }
