@@ -2,10 +2,10 @@
   <mat-sidenav #snav [mode]="mobileQuery.matches ? 'over' : 'side'" [fixedInViewport]="mobileQuery.matches" position="end">
       <div fxLayout="column">
           <section class="user">
-              <a class="user-image" routerLinkActive="active" [routerLink]="['/dashboard']" (click)="snav.toggle();">
+            <a class="user-image" routerLinkActive="active" [routerLink]="['/profile']" (click)="snav.toggle();">
                 <img src="{{user.avatarUrl || defaultAvatarUrl}}">
               </a>
-              <a class="user-name" routerLinkActive="active" [routerLink]="['/dashboard']" (click)="snav.toggle();">
+              <a class="user-name" routerLinkActive="active" [routerLink]="['/profile']" (click)="snav.toggle();">
                 <h4>{{user.name}}</h4>
               </a>
           </section>

@@ -24,6 +24,10 @@ const routes: Routes = [
     loadChildren: './modules/rules/rules.module#RulesModule',
     canActivate: [AuthGuard]
   },
+  {
+    path: 'profile',
+    loadChildren: './modules/profile/profile.module#ProfileModule'
+  },
   { path: '404', component: NotFoundComponent },
   { path: '**', redirectTo: '/404' }
 ];

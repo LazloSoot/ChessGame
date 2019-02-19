@@ -1,4 +1,5 @@
 ﻿using Chess.DataAccess.Entities;
+using Chess.DataAccess.Helpers;
 using System;
 using System.Collections.Generic;
 using System.Linq.Expressions;
@@ -22,6 +23,6 @@ namespace Chess.DataAccess.Interfaces
 
         Task<TEntity> GetOneAsync(Expression<Func<TEntity, bool>> predicate);
         
-        Task<IEnumerable<TEntity>> GetAllAsync(Expression<Func<TEntity, bool>> predicate = null);
+        Task<PagedResult<TEntity>> GetAllAsync(int? pageIndex = null, int? pageSize = null, Expression < Func<TEntity, bool>> predicate = null);
     }
 }

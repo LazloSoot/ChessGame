@@ -22,14 +22,14 @@ namespace ChessWeb.Controllers
             _chessMovesService = chessMovesService;
         }
 
-        // GET: Games
-        [HttpGet]
-        public async Task<IActionResult> GetAllGames()
-        {
-            var games = await _service.GetListAsync();
-            return games == null ? NotFound("No games found!") as IActionResult
-                : Ok(games);
-        }
+        ////GET: Games
+        //[HttpGet()]
+        //public async Task<IActionResult> GetMyGames()
+        //{
+        //    var games = await _service.GetListAsync();
+        //    return games == null ? NotFound("No games found!") as IActionResult
+        //        : Ok(games);
+        //}
 
         // GET: Games/5
         [HttpGet("{id}", Name = "GetGame")]
@@ -51,7 +51,7 @@ namespace ChessWeb.Controllers
 
         // POST: Games
         [HttpPost(Name ="CreateGameWithFriend")]
-        public async Task<IActionResult> CreateGameWithFriend([FromBody]GameDTO game)
+        public async Task<IActionResult> CreateGameWithFriend([FromBody]GameFullDTO game)
         {
             if (!ModelState.IsValid)
                 return BadRequest() as IActionResult;
@@ -63,7 +63,7 @@ namespace ChessWeb.Controllers
 
         // POST: Games/AI
         [HttpPost("ai", Name = "CreateGameVersusAI")]
-        public async Task<IActionResult> CreateGameVersusAI([FromBody]GameDTO game)
+        public async Task<IActionResult> CreateGameVersusAI([FromBody]GameFullDTO game)
         {
             if (!ModelState.IsValid)
                 return BadRequest() as IActionResult;
@@ -75,7 +75,7 @@ namespace ChessWeb.Controllers
 
         // POST: Games/player
         [HttpPost("player", Name = "CreateGameVersusRandPlayer")]
-        public async Task<IActionResult> CreateGameVersusRandPlayer([FromBody]GameDTO game)
+        public async Task<IActionResult> CreateGameVersusRandPlayer([FromBody]GameFullDTO game)
         {
             if (!ModelState.IsValid)
                 return BadRequest() as IActionResult;
@@ -86,20 +86,12 @@ namespace ChessWeb.Controllers
         }
 
         // PUT: Games/{:id}/join
-        [HttpPut("{gameId}/join", Name ="JoinGame")]
+        [HttpPut("{gameId}/join", Name = "JoinGame")]
         public async Task<IActionResult> JoinGame(int gameId)
         {
             var readyGame = await _service.JoinToGame(gameId);
             return readyGame == null ? StatusCode(304) as IActionResult
                 : Ok(readyGame);
-        }
-
-        // DELETE: Games/5
-        [HttpDelete("{id}")]
-        public async Task<IActionResult> DeleteGame(int id)
-        {
-            var success = await _service.TryRemoveAsync(id);
-            return success ? Ok() : StatusCode(304) as IActionResult;
         }
     }
 }

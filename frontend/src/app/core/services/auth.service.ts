@@ -54,7 +54,7 @@ export class AuthService {
 								true
 							).then(async () => {
 								await this.userService
-									.add(new User(userCred.user.uid, userName))
+									.add(new User(userCred.user.uid, userName, undefined, new Date(userCred.user.metadata.creationTime)))
 									.toPromise();
 							})
 							//throw new Error(

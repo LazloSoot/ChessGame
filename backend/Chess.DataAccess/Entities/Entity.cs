@@ -9,5 +9,10 @@ namespace Chess.DataAccess.Entities
         {
             return other?.Id == Id;
         }
+
+        public override int GetHashCode()
+        {
+            return this.Id.GetHashCode() * 18;
+        }
     }
 }

@@ -13,6 +13,8 @@ import { WaitingDialogComponent } from './dialogs/waiting-dialog/waiting-dialog.
 import { SpinnerRectComponent } from './layout/spinners/spinner-rect/spinner-rect.component';
 import { SpinnerCircleComponent } from './layout/spinners/spinner-circle/spinner-circle.component';
 import { CheckmateDialogComponent } from './dialogs/checkmate-dialog/checkmate-dialog.component';
+import { SpinnerColorDirective } from './layout/spinners/directives/spinner-color.directive';
+import { LastEntryDatePipe } from './pipes/last-entry-date.pipe';
 
 @NgModule({
   imports: [
@@ -24,7 +26,9 @@ import { CheckmateDialogComponent } from './dialogs/checkmate-dialog/checkmate-d
   exports: [
     MaterialModule,
     FormsModule,
-    SpinnerRectComponent
+    SpinnerRectComponent,
+    SpinnerColorDirective,
+    LastEntryDatePipe
   ],
 
   declarations: [
@@ -38,6 +42,8 @@ import { CheckmateDialogComponent } from './dialogs/checkmate-dialog/checkmate-d
     SpinnerRectComponent,
     SpinnerCircleComponent,
     CheckmateDialogComponent,
+    SpinnerColorDirective,
+    LastEntryDatePipe
     ],
     
   entryComponents: [

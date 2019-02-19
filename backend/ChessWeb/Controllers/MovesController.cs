@@ -17,15 +17,6 @@ namespace ChessWeb.Controllers
             this.service = service;
         }
 
-        // GET: moves
-        [HttpGet]
-        public async Task<IActionResult> GetAllMoves()
-        {
-            var moves = await service.GetListAsync();
-            return moves == null ? NotFound("No moves found!") as IActionResult
-                : Ok(moves);
-        }
-
         // GET: moves/{:moveId}
         [HttpGet("{moveId}", Name = "GetMove")]
         public async Task<IActionResult> GetMove(int moveId)

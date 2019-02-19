@@ -25,6 +25,8 @@ namespace Chess.DataAccess.Migrations
                         .ValueGeneratedOnAdd()
                         .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
 
+                    b.Property<DateTime>("CreationDate");
+
                     b.Property<string>("Fen");
 
                     b.Property<int>("Status");
@@ -95,6 +97,8 @@ namespace Chess.DataAccess.Migrations
                     b.Property<string>("AvatarUrl");
 
                     b.Property<string>("Name");
+
+                    b.Property<DateTime>("RegistrationDate");
 
                     b.Property<string>("Uid");
 

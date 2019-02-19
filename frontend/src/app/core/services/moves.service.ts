@@ -11,6 +11,6 @@ export class MovesService {
   constructor(private httpService: HttpService) {}
   
   public commitMove(moveRequest: MoveRequest): Observable<Move> {
-    return this.httpService.sendRequest(RequestMethod.Post, this._apiUrl, undefined, moveRequest);
+    return this.httpService.sendRequest(RequestMethod.Post, this._apiUrl, undefined, undefined, moveRequest);
   }
 }

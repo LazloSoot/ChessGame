@@ -12,30 +12,28 @@ using System.Linq;
 using Chess.Common.Interfaces;
 using Chess.BusinessLogic.Services.SignalR;
 using Chess.BusinessLogic.Interfaces.SignalR;
+using Chess.BusinessLogic.Helpers;
 
 namespace Chess.BusinessLogic.Services
 {
-    public class GameDataService : CRUDService<Game, GameDTO>, IGameDataService
+    public class GameDataService : CRUDService<Game, GameFullDTO>, IGameDataService
     {
-        private readonly ICurrentUser _currentUserProvider;
-        private readonly IUserService _userService;
+        private readonly ICurrentUserProvider _currentUserProvider;
         private readonly ISignalRNotificationService _notificationService;
         public GameDataService(
             IMapper mapper, 
-            IUnitOfWork unitOfWork, 
-            ICurrentUser currentUserProvider,
-            IUserService userService,
+            IUnitOfWork unitOfWork,
+            ICurrentUserProvider currentUserProvider,
             ISignalRNotificationService notificationService
             )
             : base(mapper, unitOfWork)
         {
-            _currentUserProvider = currentUserProvider;
             _notificationService = notificationService;
-            _userService = userService;
+            _currentUserProvider = currentUserProvider;
         }
 
 #warning работает только с приглашением оппонента
-        public async Task<GameDTO> CreateNewGameWithFriend(GameDTO game)
+        public async Task<GameFullDTO> CreateNewGameWithFriend(GameFullDTO game)
         {
             if (uow == null)
                 return null;
@@ -54,14 +52,14 @@ namespace Chess.BusinessLogic.Services
             var sides = game.Sides.ToList();
             var currentUserSide = sides.Where(s => s.Player == null).First();
             var opponent = sides.Where(s => s.Player != null).First().Player;
-            var currentUser = await _userService.GetByUid(_currentUserProvider.GetCurrentUserUid());
-            currentUserSide.Player = currentUser;
+            var currentUser = await _currentUserProvider.GetCurrentUserAsync();
+            currentUserSide.Player = mapper.Map<UserDTO>(currentUser);
             game.Sides = new List<SideDTO>()
             {
                 currentUserSide
             };
 
-            GameDTO targetGame;
+            GameFullDTO targetGame;
             var gameRepo = uow.GetRepository<Game>();
             var createdGame = await gameRepo
                                 .GetOneAsync(g =>
@@ -76,18 +74,19 @@ namespace Chess.BusinessLogic.Services
                 {
                     mapper.Map<Side>(currentUserSide)
                 };
-                targetGame = mapper.Map<GameDTO>(gameRepo.Update(createdGame));
+                targetGame = mapper.Map<GameFullDTO>(gameRepo.Update(createdGame));
                 await uow.SaveAsync();
             }
             else
             {
+                game.CreationDate = DateTime.Now;
                 targetGame = await base.AddAsync(game);
             }
             await _notificationService.InviteUserAsync(opponent.Uid, targetGame.Id);
             return targetGame;
         }
 
-        public async Task<GameDTO> CreateNewGameVersusAI(GameDTO game)
+        public async Task<GameFullDTO> CreateNewGameVersusAI(GameFullDTO game)
         {
             if (uow == null)
                 return null;
@@ -97,19 +96,20 @@ namespace Chess.BusinessLogic.Services
                 game.Fen = ChessGame.DefaultFen;
             }
 
-            var currentUser = await _userService.GetByUid(_currentUserProvider.GetCurrentUserUid());
+            var currentUser = await _currentUserProvider.GetCurrentUserAsync();
             var currentUserSide = game.Sides.Where(s => s.Player == null || s.PlayerId == currentUser.Id || s.Player.Id == currentUser.Id).First();
-            currentUserSide.Player = currentUser;
+            currentUserSide.Player = mapper.Map<UserDTO>(currentUser);
             game.Sides = new List<SideDTO>()
             {
                 currentUserSide
             };
             game.Status = DataAccess.Helpers.GameStatus.Going;
-            
+
+            game.CreationDate = DateTime.Now;
             return await base.AddAsync(game);
         }
 
-        public async Task<GameDTO> JoinToGame(int gameId)
+        public async Task<GameFullDTO> JoinToGame(int gameId)
         {
             if (uow == null)
                 return null;
@@ -125,8 +125,7 @@ namespace Chess.BusinessLogic.Services
                 return null;
 
             var color = (hostSide.Color == DataAccess.Helpers.Color.Black) ? DataAccess.Helpers.Color.White : DataAccess.Helpers.Color.Black;
-            var curentUserUid = _currentUserProvider.GetCurrentUserUid();
-            var currentDbUser = await uow.GetRepository<User>().GetOneAsync(u => string.Equals(u.Uid, curentUserUid));
+            var currentDbUser = await _currentUserProvider.GetCurrentUserAsync();
             if (currentDbUser == null)
                 return null;
 
@@ -141,12 +140,52 @@ namespace Chess.BusinessLogic.Services
             await uow.SaveAsync();
 
             await _notificationService.AcceptInvitation(hostSide.Player.Uid, targetGame.Id);
-            return mapper.Map<GameDTO>(targetGame);
+            return mapper.Map<GameFullDTO>(targetGame);
         }
 
-        public Task<GameDTO> SuspendGame(int gameId)
+        public Task<GameFullDTO> SuspendGame(int gameId)
         {
             throw new NotImplementedException();
+        }
+
+        public async Task<PagedResultDTO<GamePartialDTO>> GetUserGames(int userID, int? pageIndex, int? pageSize)
+        {
+            if (uow == null)
+                return null;
+
+            var user = await uow.GetRepository<User>().GetByIdAsync(userID);
+            if (user == null)
+                return null;
+
+            var sidesPage = (await uow.GetRepository<Side>()
+                .GetAllAsync(pageIndex, pageSize, s => s.PlayerId == user.Id));
+            var gamesPage = new PagedResultDTO<GamePartialDTO>()
+            {
+                PageCount = sidesPage.PageCount,
+                PageIndex = sidesPage.PageIndex,
+                PageSize = sidesPage.PageSize,
+                TotalDataRowsCount = sidesPage.TotalDataRowsCount,
+                DataRows = mapper.Map<IEnumerable<GamePartialDTO>>(sidesPage.DataRows.Select(s => s.Game).ToList())
+            };
+            return gamesPage;
+        } 
+        public override async Task<PagedResultDTO<GameFullDTO>> GetListAsync(int? pageIndex = null, int? pageSize = null)
+        {
+            if (uow == null)
+                return null;
+
+            var currentUser = await _currentUserProvider.GetCurrentUserAsync();
+            var sidesPage = (await uow.GetRepository<Side>()
+                .GetAllAsync(pageIndex, pageSize, s => s.PlayerId == currentUser.Id));
+            var gamesPage = new PagedResultDTO<GameFullDTO>()
+            {
+                PageCount = sidesPage.PageCount,
+                PageIndex = sidesPage.PageIndex,
+                PageSize = sidesPage.PageSize,
+                TotalDataRowsCount = sidesPage.TotalDataRowsCount,
+                DataRows = mapper.Map<IEnumerable<GamePartialDTO>>(sidesPage.DataRows.Select(s => s.Game).ToList())
+            };
+            return gamesPage;
         }
     }
 }

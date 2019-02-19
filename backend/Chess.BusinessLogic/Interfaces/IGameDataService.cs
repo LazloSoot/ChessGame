@@ -1,20 +1,19 @@
 ﻿using Chess.Common.DTOs;
 using Chess.DataAccess.Entities;
-using System;
-using System.Collections.Generic;
-using System.Text;
 using System.Threading.Tasks;
 
 namespace Chess.BusinessLogic.Interfaces
 {
-    public interface IGameDataService : ICRUDService<Game, GameDTO>
+    public interface IGameDataService : ICRUDService<Game, GameFullDTO>
     {
-        Task<GameDTO> CreateNewGameWithFriend(GameDTO entity);
+        Task<PagedResultDTO<GamePartialDTO>> GetUserGames(int userID, int? pageIndex, int? pageSize);
 
-        Task<GameDTO> CreateNewGameVersusAI(GameDTO game);
+        Task<GameFullDTO> CreateNewGameWithFriend(GameFullDTO entity);
 
-        Task<GameDTO> JoinToGame(int gameId);
+        Task<GameFullDTO> CreateNewGameVersusAI(GameFullDTO game);
 
-        Task<GameDTO> SuspendGame(int gameId);
+        Task<GameFullDTO> JoinToGame(int gameId);
+
+        Task<GameFullDTO> SuspendGame(int gameId);
     }
 }

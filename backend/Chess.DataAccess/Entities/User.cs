@@ -1,4 +1,6 @@
-﻿namespace Chess.DataAccess.Entities
+﻿using System;
+
+namespace Chess.DataAccess.Entities
 {
     public class User : Entity
     {
@@ -7,5 +9,7 @@
         public string Uid { get; set; }
 
         public string AvatarUrl { get; set; }
+
+        public DateTime RegistrationDate { get; set; }
     }
 }

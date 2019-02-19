@@ -4,6 +4,7 @@ import { GameSide } from "./gameSettings";
 
 export class Side {
     id?: number;
+    playerId?: number;
     game?: Game;
     gameId?: number;
     points?: number;
