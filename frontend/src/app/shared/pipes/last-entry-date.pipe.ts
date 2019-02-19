@@ -13,7 +13,6 @@ export class LastEntryDatePipe extends DatePipe implements PipeTransform {
 	): string | null {
 		const date = new Date(value);
 		const dateNow = new Date();
-
 		if (date.getFullYear() === dateNow.getFullYear()) {
 			if (date.getMonth() === dateNow.getMonth()) {
 				const dateYesterday = new Date(dateNow.getTime() - 24 * 3600000);
@@ -22,9 +21,8 @@ export class LastEntryDatePipe extends DatePipe implements PipeTransform {
 				} else if (date.getDate() === dateYesterday.getDate()) {
 					return ("Yesterday at " + super.transform(value, "shortTime", timezone, locale));
 				}
-			} else {
+			} 
 				return super.transform(value, "MMM d", timezone, locale);
-			}
 		} else {
       return super.transform(value, "'MMM d, y", timezone, locale);
     }
