@@ -1,7 +1,7 @@
 import { Injectable } from "@angular/core";
 import { HttpService, RequestMethod } from "./http.service";
 import { Observable } from "rxjs";
-import { User } from "../models";
+import { User, Game, Page, PagedResult } from "../models";
 
 @Injectable({
 	providedIn: "root"
@@ -10,12 +10,18 @@ export class UserService {
 	private apiUrl = "/users";
 	constructor(private httpService: HttpService) {}
 
-	get(uid: string): Observable<User> {
+	getCurrentUser(): Observable<User> {
 		return this.httpService.sendRequest(
 			RequestMethod.Get,
-			this.apiUrl,
-			uid
+			`${this.apiUrl}/current`
 		);
+	}
+
+	get(id: number): Observable<User> {
+		return this.httpService.sendRequest(
+			RequestMethod.Get, 
+			this.apiUrl, 
+			id);
 	}
 
 	getOnlineUsers(): Promise<User[]> {
@@ -38,9 +44,9 @@ export class UserService {
 			);
 	}
 
-	getOnlineUsersByNameStartsWith(part: string): Promise<User[]> {
+	getOnlineUsersByNameStartsWith(part: string, page?: Page): Promise<User[]> {
 		return this.httpService
-			.sendRequest(RequestMethod.Get, `${this.apiUrl}/online`, part)
+			.sendRequest(RequestMethod.Get, `${this.apiUrl}/online`, part, page)
 			.toPromise()
 			.then(
 				users => {
@@ -58,10 +64,17 @@ export class UserService {
 			);
 	}
 
+	getUserGames(userId: number, page?: Page): Observable<PagedResult<Game>> {
+		return this.httpService.sendRequest(
+			RequestMethod.Get, 
+			`${this.apiUrl}/${userId}/games`, undefined, page);
+	}
+
 	add(user: User): Observable<User> {
 		return this.httpService.sendRequest(
 			RequestMethod.Post,
 			this.apiUrl,
+			undefined,
 			undefined,
 			user
 		);
@@ -71,6 +84,7 @@ export class UserService {
 		return this.httpService.sendRequest(
 			RequestMethod.Put,
 			this.apiUrl,
+			undefined,
 			undefined,
 			user
 		);

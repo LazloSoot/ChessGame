@@ -17,8 +17,10 @@ import { MatTabsModule } from '@angular/material/tabs';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatTableModule } from '@angular/material/table';
 import { MatPaginatorModule } from '@angular/material/paginator';
+import { MatSortModule } from '@angular/material/sort';
 import { MatChipsModule } from '@angular/material/chips';
 import { MatCardModule } from '@angular/material/card';
+import { MatExpansionModule } from '@angular/material/expansion';
 
 @NgModule({
   imports: [
@@ -40,8 +42,10 @@ import { MatCardModule } from '@angular/material/card';
     MatProgressSpinnerModule,
     MatTableModule,
     MatPaginatorModule,
+    MatSortModule,
     MatChipsModule,
-    MatCardModule
+    MatCardModule,
+    MatExpansionModule
   ],
   exports: [
     MatButtonModule,
@@ -61,8 +65,10 @@ import { MatCardModule } from '@angular/material/card';
     MatProgressSpinnerModule,
     MatTableModule,
     MatPaginatorModule,
+    MatSortModule,
     MatChipsModule,
-    MatCardModule
+    MatCardModule,
+    MatExpansionModule
   ],
   declarations: []
 })

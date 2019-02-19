@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using System.Linq.Expressions;
 using Microsoft.EntityFrameworkCore;
 using System.Linq;
+using Chess.DataAccess.Helpers;
 
 namespace Chess.DataAccess.SqlRepositories
 {
@@ -35,15 +36,21 @@ namespace Chess.DataAccess.SqlRepositories
             return dbSet.Update(entity).Entity;
         }
 
-        public async Task<IEnumerable<TEntity>> GetAllAsync(Expression<Func<TEntity, bool>> predicate = null)
+        public async Task<PagedResult<TEntity>> GetAllAsync(int? pageIndex = null, int? pageSize = null, Expression<Func<TEntity, bool>> predicate = null)
         {
-            if (predicate == null)
-                return await dbSet.ToListAsync();
+            var resultPage = new PagedResult<TEntity>();
+            resultPage.PageIndex = (pageIndex.HasValue && pageIndex.Value >= 0) ? pageIndex.Value : 0;
+            resultPage.PageSize = (pageSize.HasValue && pageSize.Value > 0) ? pageSize.Value : int.MaxValue;
 
-            //  Func<IQueryable<TEntity>, Expression<Func<TEntity, bool>>, IQueryable<TEntity>> whereFunc 
-            // = (query, predicate) => query.Where(predicate);
+            var query = (predicate != null) ? dbSet.Where(predicate) : dbSet;
+            resultPage.TotalDataRowsCount = query.Count();
+            resultPage.PageCount = (int)(Math.Ceiling((double)resultPage.TotalDataRowsCount / resultPage.PageSize));
+            resultPage.DataRows = await query
+                .Skip(pageSize.Value * pageIndex.Value)
+                .Take(pageSize.Value)
+                .ToListAsync();
 
-            return await dbSet.Where(predicate).ToListAsync();
+            return resultPage;
         }
 
         public async Task<TEntity> GetByIdAsync(int id)

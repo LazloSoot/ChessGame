@@ -82,8 +82,6 @@ export class ChessGameComponent implements OnInit {
 				}
 			});
 		}
-
-		this.onCheckmate(GameSide.Black);
 	}
 
 	ngAfterViewInit() {
@@ -339,4 +337,4 @@ export class ChessGameComponent implements OnInit {
 
 }
 
-const AIOpponent: User = new User("", "Bob", "../../../assets/images/AIavatar.png");
+const AIOpponent: User = new User( "Bob", "../../../assets/images/AIavatar.png");

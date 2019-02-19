@@ -16,7 +16,7 @@ namespace Chess.BusinessLogic.Services.SignalR
 {
     public class SignalRNotificationService : SignalRAbsService<NotificationHub>, ISignalRNotificationService
     {
-        public SignalRNotificationService(IHubContext<NotificationHub> hubContext, ICurrentUser currentUserProvider)
+        public SignalRNotificationService(IHubContext<NotificationHub> hubContext, ICurrentUserProvider currentUserProvider)
             :base(hubContext, currentUserProvider)
         {
 

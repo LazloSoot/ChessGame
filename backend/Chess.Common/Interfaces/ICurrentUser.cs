@@ -3,7 +3,7 @@ using System.Threading.Tasks;
 
 namespace Chess.Common.Interfaces
 {
-    public interface ICurrentUser
+    public interface ICurrentUserProvider
     {
         Task<User> GetCurrentUserAsync();
 

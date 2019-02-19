@@ -1,0 +1,56 @@
+<div class="container">
+	<div class="item profile-info">
+    <div *ngIf="!userProfile" class="profile-info__overlay">
+      <app-spinner-rect></app-spinner-rect>
+    </div>
+		<div class="avatar">
+			<img [src]="(userProfile?.avatarUrl) ? userProfile.avatarUrl : '../../../../assets/images/anonAvatar.png'" [alt]="userProfile?.name + ' avatar'" height="100px" width="100px">
+		</div>
+
+		<div class="user-data">
+			<div class="user-name">
+				{{userProfile?.name}}
+			</div>
+			<mat-card-subtitle style="margin-top: 5px">
+				Registration date : <span> {{userProfile?.registrationDate | lastEntryDate }}</span>
+			</mat-card-subtitle>
+			<mat-card-subtitle>
+        Last seen : <span> {{userProfile?.lastSeenDate | lastEntryDate }}</span>
+      </mat-card-subtitle>
+      <a class="edit" routerLinkActive="active" [routerLink]="['./settings']">
+        <mat-icon class="icon" aria-label="Profile edit button">mode_edit</mat-icon>
+        Edit
+      </a>
+    </div>
+	</div>
+
+	<div class="left-cards" style="margin-top: 20px;" fxLayout fxLayoutAlign="center" fxLayout.xs="column" fxLayoutGap="20px">
+		<div fxLayout="column" fxLayoutGap="20px" fxFlex="25%" fxFlex.sm="35%" fxLayout.xs="column" class="left-card">
+			<div class="item" fxFlex>
+				<div class="left-card">
+					<h2 class="title">Games</h2>
+          <mat-divider></mat-divider>
+          <div class="item-data games-list">
+							
+								<app-games-history *ngIf="userProfile" [targetUserId]="userProfile.id"></app-games-history>
+
+          </div>
+				</div>
+			</div>
+			<div class="item" fxFlex>
+				<div class="left-card">
+					<h2 class="title"> Activity</h2>
+					<mat-divider></mat-divider>
+					<div class="item-data activity-list">
+            <app-spinner-rect spinnerColor="#333" *ngIf="isActivitiesLoading; else activities"></app-spinner-rect>
+            <ng-template #activities>
+                <mat-card-subtitle>There is no recent activity to show</mat-card-subtitle>
+            </ng-template>
+          </div>
+				</div>
+			</div>
+
+		</div>
+    
+	</div>
+</div>

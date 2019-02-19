@@ -9,7 +9,7 @@ using System.Threading.Tasks;
 
 namespace ChessWeb.Authentication
 {
-    public class CurrentUser : ICurrentUser
+    public class CurrentUser : ICurrentUserProvider
     {
         private readonly IHttpContextAccessor _accessor;
         private readonly IRepository<User> _userProvider;
