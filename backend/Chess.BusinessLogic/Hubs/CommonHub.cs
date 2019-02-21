@@ -16,6 +16,7 @@ namespace Chess.BusinessLogic.Hubs
     public class CommonHub : Hub
     {
         private readonly IRepository<User> _usersProvider;
+        // uid, userName
         internal static ConcurrentDictionary<string, string> ConnectedUsers { get; private set; } 
         public CommonHub(IRepository<User> usersRepo)
         {
@@ -67,5 +68,7 @@ namespace Chess.BusinessLogic.Hubs
             ConnectedUsers.TryRemove(Context.UserIdentifier, out string value);
             await base.OnDisconnectedAsync(exception);
         }
+
+
     }
 }

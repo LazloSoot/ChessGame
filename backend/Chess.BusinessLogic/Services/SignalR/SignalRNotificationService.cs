@@ -22,27 +22,6 @@ namespace Chess.BusinessLogic.Services.SignalR
 
         }
 
-        public Dictionary<string, string> GetOnlineUsersInfo()
-        {
-            return CommonHub.ConnectedUsers.ToDictionary(kv => kv.Key, kv => kv.Value);
-        }
-
-        public Dictionary<string, string> GetOnlineUsersInfoByNameStartsWith(string part)
-        {
-            part = part.Trim().ToLower();
-            return CommonHub.ConnectedUsers
-                .Where(
-                        kv => kv.Value
-                        .Trim()
-                        .ToLower()
-                        .Split(' ')
-                        .Where(n => n
-                            .StartsWith(part))
-                            .Count() > 0
-                       )
-                .ToDictionary(kv => kv.Key, kv => kv.Value);
-        }
-
         public async Task InviteUserAsync(string userUid, int gameId)
         {
             var invition = new Invite(gameId, await _currentUserProvider.GetCurrentUserAsync());
