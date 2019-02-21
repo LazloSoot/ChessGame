@@ -24,44 +24,19 @@ export class UserService {
 			id);
 	}
 
-	getOnlineUsers(): Promise<User[]> {
+	getOnlineUsers(page: PagedResult<User>): Observable<User[]> {
 		return this.httpService
-			.sendRequest(RequestMethod.Get, `${this.apiUrl}/online`)
-			.toPromise()
-			.then(
-				users => {
-					if (users) {
-						let usersResult: User[] = [];
-						for (let prop in users) {
-							usersResult.push(new User(prop, users[prop]));
-						}
-						return usersResult;
-					}
-				},
-				error => {
-					return error;
-				}
-			);
+			.sendRequest(RequestMethod.Get, this.apiUrl, undefined, page);
 	}
 
-	getOnlineUsersByNameStartsWith(part: string, page?: Page): Promise<User[]> {
+	getUsersByNameStartsWith(part: string, isOnline: boolean, page?: Page): Observable<User[]> {
+		let namedParams = {
+			'isOnline' : isOnline,
+			'pageIndex' : (page) ? page.pageIndex : 0,
+			'pageSize' : (page) ? page.pageSize : -1
+		};
 		return this.httpService
-			.sendRequest(RequestMethod.Get, `${this.apiUrl}/online`, part, page)
-			.toPromise()
-			.then(
-				users => {
-					if (users) {
-						let usersResult: User[] = [];
-						for (let prop in users) {
-							usersResult.push(new User(prop, users[prop]));
-						}
-						return usersResult;
-					}
-				},
-				error => {
-					return error;
-				}
-			);
+			.sendRequest(RequestMethod.Get, this.apiUrl, undefined, namedParams);
 	}
 
 	getUserGames(userId: number, page?: Page): Observable<PagedResult<Game>> {

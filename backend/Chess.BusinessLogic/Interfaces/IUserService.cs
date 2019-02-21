@@ -8,7 +8,7 @@ namespace Chess.BusinessLogic.Interfaces
     {
         Task<UserDTO> GetCurrentUser();
         //Task<UserDTO> GetByUid(string uid);
+        Task<PagedResultDTO<UserDTO>> GetUsersByNameOrSurnameStartsWith(string part, bool isOnline, int? pageIndex, int? pageSize);
         Task<PagedResultDTO<UserDTO>> GetOnlineUsers(int? pageIndex, int? pageSize);
-        Task<PagedResultDTO<UserDTO>> GetOnlineUsersByNameOrSurnameStartsWith(string part, int? pageIndex, int? pageSize);
     }
 }

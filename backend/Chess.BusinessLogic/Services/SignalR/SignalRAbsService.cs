@@ -1,4 +1,5 @@
 ﻿using Chess.BusinessLogic.Hubs;
+using Chess.BusinessLogic.Interfaces.SignalR;
 using Chess.Common.Interfaces;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.SignalR;
@@ -8,7 +9,7 @@ using System.Linq;
 namespace Chess.BusinessLogic.Services.SignalR
 {
     [Authorize]
-    public abstract class SignalRAbsService<THub> where THub: CommonHub
+    public abstract class SignalRAbsService<THub> : ISignalRService where THub: CommonHub
     {
         protected readonly IHubContext<THub> _hubContext;
         protected readonly ICurrentUserProvider _currentUserProvider;
@@ -19,12 +20,12 @@ namespace Chess.BusinessLogic.Services.SignalR
             _currentUserProvider = currentUser;
         }
 
-        public Dictionary<string, string> GetOnlineUsers()
+        public Dictionary<string, string> GetOnlineUsersInfo()
         {
             return CommonHub.ConnectedUsers.ToDictionary(kv => kv.Key, kv => kv.Value);
         }
 
-        public Dictionary<string, string> GetOnlineUsersInfoByNameStartsWith(string part)
+        public Dictionary<string, string> GetOnlineUsersInfoByNameOrSurnameStartsWith(string part)
         {
             part = part.Trim().ToLower();
             return CommonHub.ConnectedUsers

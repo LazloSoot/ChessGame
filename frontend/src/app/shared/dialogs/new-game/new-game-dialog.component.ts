@@ -10,7 +10,8 @@ import {
 	OpponentType,
 	User,
 	UserService,
-	AppStateService
+	AppStateService,
+	Page
 } from "../../../core";
 import { EventEmitter } from "@angular/core";
 import { GameOptions } from "../../../core/models/chess/gameSettings/gameOptions";
@@ -35,6 +36,7 @@ export class NewGameDialogComponent implements OnInit {
 	private timeOutSearch: boolean = false;
 	private isSearchMode: boolean = false;
 	private filterInput: string;
+	private isOnlineUserFilterEnabled = false;
 	private users: User[] = [];
 	private currentUser: User;
 
@@ -114,8 +116,8 @@ export class NewGameDialogComponent implements OnInit {
 					this.timeOutSearch = false;
 					if (this.filterInput.length > 0) {
 						this.userService
-							.getOnlineUsersByNameStartsWith(this.filterInput)
-							.then(users => {
+							.getUsersByNameStartsWith(this.filterInput, this.isOnlineUserFilterEnabled, new Page(0, 10))
+							.subscribe(users => {
 								this.users = users.filter(u => u.uid !== this.currentUser.uid);
 								this.timeOutSearch = false;
 							});

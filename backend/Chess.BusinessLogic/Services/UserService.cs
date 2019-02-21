@@ -6,9 +6,11 @@ using Chess.Common.Interfaces;
 using Chess.DataAccess.Entities;
 using Chess.DataAccess.Interfaces;
 using System.Linq;
+using System.Linq.Expressions;
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using Chess.DataAccess.Helpers;
 
 namespace Chess.BusinessLogic.Services
 {
@@ -52,14 +54,24 @@ namespace Chess.BusinessLogic.Services
             return mapper.Map<PagedResultDTO<UserDTO>>(onlineUserPagedProfiles);
         }
 
-        public async Task<PagedResultDTO<UserDTO>> GetOnlineUsersByNameOrSurnameStartsWith(string part, int? pageIndex, int? pageSize)
+        public async Task<PagedResultDTO<UserDTO>> GetUsersByNameOrSurnameStartsWith(string part, bool isOnline, int? pageIndex, int? pageSize)
         {
             if (uow == null)
                 return null;
 
-            var onlineHubUsers = _notificationService.GetOnlineUsersInfoByNameOrSurnameStartsWith(part);
-            var onlineUserPagedProfiles = await uow.GetRepository<User>()
-                .GetAllAsync(pageIndex, pageSize, u => onlineHubUsers.Keys.Contains(u.Uid));
+            PagedResult<User> onlineUserPagedProfiles = null;
+            part = part.Trim();
+            if (isOnline)
+            {
+                var onlineHubUsers = _notificationService.GetOnlineUsersInfoByNameOrSurnameStartsWith(part);
+                onlineUserPagedProfiles = await uow.GetRepository<User>()
+                    .GetAllAsync(pageIndex, pageSize, u => onlineHubUsers.Keys.Contains(u.Uid));
+            } else
+            {
+                onlineUserPagedProfiles = await uow.GetRepository<User>()
+                    .GetAllAsync(pageIndex, pageSize, u => u.Name.Split(' ', 3, StringSplitOptions.RemoveEmptyEntries).Any(n => n.StartsWith(part)));
+            }
+
             if (onlineUserPagedProfiles == null)
                 return null;
 
