@@ -31,12 +31,18 @@ namespace Chess.BusinessLogic.Services
 
         public async Task<UserDTO> GetCurrentUser()
         {
+            if (uow == null)
+                return null;
+
             var currentUser =  await _currentUserProvider.GetCurrentUserAsync();
             if (currentUser == null)
                 return null;
 
+            var currentDbUser = await uow.GetRepository<User>()
+                .GetOneAsync(u => string.Equals(u.Uid, currentUser.Uid));
             var currentUserDTO = mapper.Map<UserDTO>(currentUser);
             currentUserDTO.Uid = currentUser.Uid;
+            currentUserDTO.Id = currentDbUser.Id;
             return currentUserDTO;
         }
 
@@ -59,23 +65,32 @@ namespace Chess.BusinessLogic.Services
             if (uow == null)
                 return null;
 
-            PagedResult<User> onlineUserPagedProfiles = null;
-            part = part.Trim();
-            if (isOnline)
+            PagedResult<User> usersPagedProfiles = null;
+            if(string.IsNullOrWhiteSpace(part))
             {
-                var onlineHubUsers = _notificationService.GetOnlineUsersInfoByNameOrSurnameStartsWith(part);
-                onlineUserPagedProfiles = await uow.GetRepository<User>()
-                    .GetAllAsync(pageIndex, pageSize, u => onlineHubUsers.Keys.Contains(u.Uid));
+                usersPagedProfiles = await uow.GetRepository<User>()
+                    .GetAllAsync(pageIndex, pageSize);
             } else
             {
-                onlineUserPagedProfiles = await uow.GetRepository<User>()
-                    .GetAllAsync(pageIndex, pageSize, u => u.Name.Split(' ', 3, StringSplitOptions.RemoveEmptyEntries).Any(n => n.StartsWith(part)));
+                part = part.Trim().ToLower();
+                if (isOnline)
+                {
+                    var onlineHubUsers = _notificationService.GetOnlineUsersInfoByNameOrSurnameStartsWith(part);
+                    usersPagedProfiles = await uow.GetRepository<User>()
+                        .GetAllAsync(pageIndex, pageSize, u => onlineHubUsers.Keys.Contains(u.Uid));
+                }
+                else
+                {
+                    var partForNextWord = $" {part}";
+                    usersPagedProfiles = await uow.GetRepository<User>()
+                        .GetAllAsync(pageIndex, pageSize, u => u.Name.ToLower().StartsWith(part) || u.Name.ToLower().Contains(partForNextWord));
+                }
             }
 
-            if (onlineUserPagedProfiles == null)
+            if (usersPagedProfiles == null)
                 return null;
 
-            return mapper.Map<PagedResultDTO<UserDTO>>(onlineUserPagedProfiles);
+            return mapper.Map<PagedResultDTO<UserDTO>>(usersPagedProfiles);
         }
     }
 }

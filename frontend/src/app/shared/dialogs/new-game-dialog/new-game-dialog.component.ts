@@ -33,16 +33,11 @@ export class NewGameDialogComponent implements OnInit {
 	private opponentType: OpponentType = OpponentType.Computer;
 	private selectedTab: number = 0;
 	private opponent: User;
-	private timeOutSearch: boolean = false;
-	private isSearchMode: boolean = false;
-	private filterInput: string;
-	private isOnlineUserFilterEnabled = false;
-	private users: User[] = [];
+
 	private currentUser: User;
 
 	constructor(
 		private dialogRef: MatDialogRef<NewGameDialogComponent>,
-		private userService: UserService,
 		private appStateService: AppStateService
 	) {}
 
@@ -83,7 +78,6 @@ export class NewGameDialogComponent implements OnInit {
 	}
 
 	back() {
-		this.users = [];
 		if (this.selectedTab === 0) {
 			this.onSettingsDefined.emit(undefined);
 			this.dialogRef.close();
@@ -105,38 +99,10 @@ export class NewGameDialogComponent implements OnInit {
 		this.opponentType = OpponentType.Computer;
 	}
 
-	filterChange(event) {
-		if (event.target.value.length > 0) {
-			this.isSearchMode = true;
-			this.users = [];
-			if (!this.timeOutSearch) {
-				this.timeOutSearch = true;
-				setTimeout(() => {
-					this.filterInput = event.target.value;
-					this.timeOutSearch = false;
-					if (this.filterInput.length > 0) {
-						this.userService
-							.getUsersByNameStartsWith(this.filterInput, this.isOnlineUserFilterEnabled, new Page(0, 10))
-							.subscribe(users => {
-								this.users = users.filter(u => u.uid !== this.currentUser.uid);
-								this.timeOutSearch = false;
-							});
-					}
-				}, 1000);
-			}
-		} else {
-			this.isSearchMode = false;
-		}
-	}
-
-	resetSearchInput() {
-		this.isSearchMode = false;
-		this.users = [];
-	}
 
 	selectUser(user: User) {
+		debugger;
 		if (user) {
-			this.users = [];
 			this.opponent = user;
 			this.opponentType = OpponentType.Friend;
 			this.selectedTab = 0;

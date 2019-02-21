@@ -24,13 +24,14 @@ export class UserService {
 			id);
 	}
 
-	getOnlineUsers(page: PagedResult<User>): Observable<User[]> {
+	getOnlineUsers(page: PagedResult<User>): Observable<PagedResult<User>> {
 		return this.httpService
 			.sendRequest(RequestMethod.Get, this.apiUrl, undefined, page);
 	}
 
-	getUsersByNameStartsWith(part: string, isOnline: boolean, page?: Page): Observable<User[]> {
+	getUsersByNameStartsWith(part: string, isOnline: boolean, page?: Page): Observable<PagedResult<User>> {
 		let namedParams = {
+			'part' : (part) ? part : '',
 			'isOnline' : isOnline,
 			'pageIndex' : (page) ? page.pageIndex : 0,
 			'pageSize' : (page) ? page.pageSize : -1
