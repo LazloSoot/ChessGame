@@ -32,6 +32,13 @@ namespace Chess.DataAccess
             modelBuilder.Entity<User>()
                 .HasIndex(u => u.Uid)
                 .IsUnique(true);
+
+            modelBuilder.Entity<User>()
+                .Property(u => u.Uid)
+                .IsRequired();
+            modelBuilder.Entity<User>()
+                .Property(u => u.Name)
+                .IsRequired();
         }
 
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)

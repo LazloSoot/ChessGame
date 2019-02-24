@@ -66,7 +66,8 @@ namespace Chess.BusinessLogic.Services
                 return null;
 
             PagedResult<User> usersPagedProfiles = null;
-            if(string.IsNullOrWhiteSpace(part))
+            var onlineHubUsers = _notificationService.GetOnlineUsersInfo();
+            if (string.IsNullOrWhiteSpace(part))
             {
                 usersPagedProfiles = await uow.GetRepository<User>()
                     .GetAllAsync(pageIndex, pageSize);
@@ -75,7 +76,7 @@ namespace Chess.BusinessLogic.Services
                 part = part.Trim().ToLower();
                 if (isOnline)
                 {
-                    var onlineHubUsers = _notificationService.GetOnlineUsersInfoByNameOrSurnameStartsWith(part);
+                    onlineHubUsers = _notificationService.GetOnlineUsersInfoByNameOrSurnameStartsWith(part);
                     usersPagedProfiles = await uow.GetRepository<User>()
                         .GetAllAsync(pageIndex, pageSize, u => onlineHubUsers.Keys.Contains(u.Uid));
                 }
@@ -86,11 +87,18 @@ namespace Chess.BusinessLogic.Services
                         .GetAllAsync(pageIndex, pageSize, u => u.Name.ToLower().StartsWith(part) || u.Name.ToLower().Contains(partForNextWord));
                 }
             }
-
+            
             if (usersPagedProfiles == null)
                 return null;
 
-            return mapper.Map<PagedResultDTO<UserDTO>>(usersPagedProfiles);
+            return mapper.Map<PagedResult<User>, PagedResultDTO<UserDTO>>(usersPagedProfiles, opt => opt.AfterMap((src, dest) =>
+            {
+                var srcUsers = src.DataRows;
+                foreach (var user in dest.DataRows)
+                {
+                    user.IsOnline = (onlineHubUsers.ContainsKey(srcUsers.First(u => u.Id == user.Id).Uid)) ? true : false;
+                }
+            }));
         }
     }
 }
