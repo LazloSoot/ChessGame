@@ -97,13 +97,7 @@ export class AppStateService {
 	private async initializeCurrentUser(firebaseUser: firebase.User): Promise<User> {
 		// userInfo.providerId === "password" means that user logged in by email and password
 		// i.e we need to take a data like avatarUrl and name from our db
-		if (
-			firebaseUser.providerData.length < 2 &&
-			firebaseUser.providerData.filter(
-				userInfo => userInfo.providerId === "password"
-			).length > 0
-		) {
-			return await this.userService
+		return await this.userService
 				.getCurrentUser()
 				.toPromise()
 				.then(async user => {
@@ -117,15 +111,35 @@ export class AppStateService {
 					debugger;
 					throw error;
 				});
-		} else {
-			let u: User = {
-				id: undefined,
-				name: firebaseUser.displayName,
-				avatarUrl: firebaseUser.photoURL,
-				lastSeenDate: new Date(firebaseUser.metadata.lastSignInTime),
-				registrationDate: new Date(firebaseUser.metadata.creationTime)
-			};
-			return u;
-		}
+	//	if (
+	//		firebaseUser.providerData.length < 2 &&
+	//		firebaseUser.providerData.filter(
+	//			userInfo => userInfo.providerId === "password"
+	//		).length > 0
+	//	) {
+	//		return await this.userService
+	//			.getCurrentUser()
+	//			.toPromise()
+	//			.then(async user => {
+	//				if (user) {
+	//					return user;
+	//				} else {
+	//					throw new Error(`There is no such user in db!`);
+	//				}
+	//			})
+	//			.catch(error => {
+	//				debugger;
+	//				throw error;
+	//			});
+	//	} else {
+	//		let u: User = {
+	//			id: undefined,
+	//			name: firebaseUser.displayName,
+	//			avatarUrl: firebaseUser.photoURL,
+	//			lastSeenDate: new Date(firebaseUser.metadata.lastSignInTime),
+	//			registrationDate: new Date(firebaseUser.metadata.creationTime)
+	//		};
+	//		return u;
+	//	}
 	}
 }

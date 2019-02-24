@@ -53,6 +53,7 @@ export class ChessGameComponent implements OnInit {
 	) {}
 
 	ngOnInit() {
+		this.openNewGameDialog();
 		this.subscribeSignalREvents();
 
 		this.awaitedUserUid.subscribe((value) => {

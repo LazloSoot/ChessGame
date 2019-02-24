@@ -17,15 +17,12 @@ namespace ChessWeb.Controllers
     {
         private readonly IUserService _service;
         private readonly IGameDataService _gameDataService;
-        private readonly ISignalRNotificationService _notificationService;
 
         public UsersController(IUserService service, 
-            ISignalRNotificationService notificationService,
             IGameDataService gameDataService
             )
         {
             _service = service;
-            _notificationService = notificationService;
             _gameDataService = gameDataService;
         }
 
@@ -49,16 +46,27 @@ namespace ChessWeb.Controllers
 
         // GET: Users/online
         [HttpGet("online", Name ="GetOnlineUsers")]
-        public ActionResult GetOnlineUsers()
+        public async Task<IActionResult> GetOnlineUsers([FromQuery(Name ="pageIndex")]int? pageIndex, [FromQuery(Name = "pageSize")]int? pageSize, [FromQuery(Name = "isOnline")]bool isOnline)
         {
-            return Ok(_notificationService.GetOnlineUsersInfo());
+            PagedResultDTO<UserDTO> users;
+            if(isOnline)
+            {
+                users = await _service.GetOnlineUsers(pageIndex, pageSize);
+            } else
+            {
+                users = await _service.GetListAsync(pageIndex, pageSize);
+            }
+            return users == null ? NotFound($"No available users!") as IActionResult
+                : Ok(users);
         }
 
-        // GET: Users/online/:{part}
-        [HttpGet("online/{part}", Name= "GetOnlineUsersInfoByNameStartsWith")]
-        public ActionResult GetOnlineUsersInfoByNameStartsWith(string part)
+        // GET: Users/
+        [HttpGet(Name= "GetUsersInfoByNameStartsWith")]
+        public async Task<IActionResult> GetUsersInfoByNameStartsWith([FromQuery(Name ="part")]string part, [FromQuery(Name = "isOnline")]bool isOnline, [FromQuery(Name = "pageIndex")]int? pageIndex, [FromQuery(Name = "pageSize")]int? pageSize)
         {
-            return Ok(_notificationService.GetOnlineUsersInfoByNameStartsWith(part));
+            var users = await _service.GetUsersByNameOrSurnameStartsWith(part, isOnline, pageIndex, pageSize);
+            return users == null ? NotFound($"No users found!") as IActionResult
+                : Ok(users);
         }
 
         // GET: users/{userId}/games
