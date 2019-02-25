@@ -13,9 +13,9 @@ namespace Chess.DataAccess.Interfaces
 
         Task AddRangeAsync(IEnumerable<TEntity> entities);
 
-        TEntity Update(TEntity entity);
+        Task<TEntity> UpdateAsync(TEntity entity);
 
-        TEntity Remove(TEntity entity);
+        Task<TEntity> RemoveAsync(TEntity entity);
 
         Task<TEntity> RemoveByIdAsync(int id);
 

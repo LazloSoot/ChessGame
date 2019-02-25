@@ -7,6 +7,7 @@ using System.Linq.Expressions;
 using Microsoft.EntityFrameworkCore;
 using System.Linq;
 using Chess.DataAccess.Helpers;
+using Chess.DataAccess.ElasticSearch;
 
 namespace Chess.DataAccess.SqlRepositories
 {
@@ -23,16 +24,23 @@ namespace Chess.DataAccess.SqlRepositories
 
         public async Task<TEntity> AddAsync(TEntity entity)
         {
-            return (await dbSet.AddAsync(entity)).Entity;
+            var dbEntity = (await dbSet.AddAsync(entity)).Entity;
+            await ESRepository.UpdateSearchIndex(dbEntity, CRUDAction.Create);
+            return dbEntity;
         }
 
         public async Task AddRangeAsync(IEnumerable<TEntity> entities)
         {
             await dbSet.AddRangeAsync(entities);
+            foreach (var e in entities)
+            {
+                await ESRepository.UpdateSearchIndex(e, CRUDAction.Create);
+            }
         }
 
-        public TEntity Update(TEntity entity)
+        public async Task<TEntity> UpdateAsync(TEntity entity)
         {
+            await ESRepository.UpdateSearchIndex(entity, CRUDAction.Update);
             return dbSet.Update(entity).Entity;
         }
 
@@ -63,8 +71,9 @@ namespace Chess.DataAccess.SqlRepositories
             return await dbSet.Where(predicate).FirstOrDefaultAsync();
         }
 
-        public TEntity Remove(TEntity entity)
+        public async Task<TEntity> RemoveAsync(TEntity entity)
         {
+            await ESRepository.UpdateSearchIndex(entity, CRUDAction.Delete);
             return dbSet.Remove(entity).Entity;
         }
 
@@ -73,6 +82,7 @@ namespace Chess.DataAccess.SqlRepositories
             var target = await dbSet.FindAsync(id);
             if(target != null)
             {
+                await ESRepository.UpdateSearchIndex(target, CRUDAction.Delete);
                 target = dbSet.Remove(target).Entity;
             }
 

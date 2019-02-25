@@ -74,7 +74,7 @@ namespace Chess.BusinessLogic.Services
                 {
                     mapper.Map<Side>(currentUserSide)
                 };
-                targetGame = mapper.Map<GameFullDTO>(gameRepo.Update(createdGame));
+                targetGame = mapper.Map<GameFullDTO>(await gameRepo.UpdateAsync(createdGame));
                 await uow.SaveAsync();
             }
             else
@@ -135,7 +135,7 @@ namespace Chess.BusinessLogic.Services
                 Player = currentDbUser
             });
             targetGame.Status = DataAccess.Helpers.GameStatus.Going;
-            uow.GetRepository<Game>().Update(targetGame);
+            await uow.GetRepository<Game>().UpdateAsync(targetGame);
             
             await uow.SaveAsync();
 

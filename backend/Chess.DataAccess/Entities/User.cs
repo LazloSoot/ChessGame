@@ -1,8 +1,10 @@
-﻿using System;
+﻿using Chess.DataAccess.ElasticSearch.Interfaces;
+using Chess.DataAccess.ElasticSearch.Models;
+using System;
 
 namespace Chess.DataAccess.Entities
 {
-    public class User : Entity
+    public class User : Entity, IElasticSearcheable
     {
         public string Name { get; set; }
 
@@ -11,5 +13,14 @@ namespace Chess.DataAccess.Entities
         public string AvatarUrl { get; set; }
 
         public DateTime RegistrationDate { get; set; }
+
+        public IIndexObject GetIndexObject()
+        {
+            return new UserIndex()
+            {
+                Id = this.Id.ToString(),
+                Name = this.Name
+            };
+        }
     }
 }

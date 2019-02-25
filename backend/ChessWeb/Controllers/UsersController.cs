@@ -88,5 +88,12 @@ namespace ChessWeb.Controllers
             return entity == null ? StatusCode(409) as IActionResult
                 : Ok(entity) as IActionResult;
         }
+
+        [Route("/search/reindex")]
+        public async Task<IActionResult> ReIndex()
+        {
+            var result = await _service.ReIndex();
+            return Ok(result);
+        }
     }
 }

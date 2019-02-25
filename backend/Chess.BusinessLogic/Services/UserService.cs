@@ -11,6 +11,7 @@ using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using Chess.DataAccess.Helpers;
+using Chess.DataAccess.ElasticSearch;
 
 namespace Chess.BusinessLogic.Services
 {
@@ -100,5 +101,15 @@ namespace Chess.BusinessLogic.Services
                 }
             }));
         }
+
+        public async Task<string> ReIndex()
+        {
+            var users = (await uow.GetRepository<User>().GetAllAsync()).DataRows;
+
+            var res = await ESRepository.ReIndex(users);
+
+            return res;
+        }
+
     }
 }
