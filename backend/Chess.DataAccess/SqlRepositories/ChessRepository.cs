@@ -54,8 +54,8 @@ namespace Chess.DataAccess.SqlRepositories
             resultPage.TotalDataRowsCount = query.Count();
             resultPage.PageCount = (int)(Math.Ceiling((double)resultPage.TotalDataRowsCount / resultPage.PageSize));
             resultPage.DataRows = await query
-                .Skip(pageSize.Value * pageIndex.Value)
-                .Take(pageSize.Value)
+                .Skip(resultPage.PageSize * resultPage.PageIndex)
+                .Take(resultPage.PageSize)
                 .ToListAsync();
 
             return resultPage;

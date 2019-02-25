@@ -57,12 +57,7 @@ export class NavigationComponent implements OnInit {
 				});
 			}
 			else {
-				this.user = {
-					id: undefined,
-					uid: undefined,
-					avatarUrl: "../../../../assets/images/anonAvatar.png",
-					name: "not signed"
-				}
+				this.user = new User("not signed", "../../../../assets/images/anonAvatar.png");
 				this.router.navigate(['/']);
 			}
 		});

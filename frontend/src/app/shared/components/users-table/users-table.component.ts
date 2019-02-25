@@ -38,11 +38,11 @@ export class UsersTableComponent implements OnInit {
   ngAfterViewInit() {
 
     this.searchStream = fromEvent(this.searchInput.nativeElement, 'input').pipe(
-      map(i => i.currentTarget.value));
+      map((i: InputEvent) => i.data));
     
     this.searchStream.pipe(
       scan((acc, crr) => acc = crr),
-      debounceTime(500))
+      debounceTime(50))
       .forEach((searchInputText) => {
         this.getUsers(searchInputText);
       })
@@ -75,4 +75,8 @@ export class UsersTableComponent implements OnInit {
       }, 1000);
     }
   }
+}
+
+export interface InputEvent {
+  data: string;
 }
