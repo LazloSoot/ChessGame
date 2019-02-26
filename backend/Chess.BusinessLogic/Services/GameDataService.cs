@@ -158,7 +158,7 @@ namespace Chess.BusinessLogic.Services
                 return null;
 
             var sidesPage = (await uow.GetRepository<Side>()
-                .GetAllAsync(pageIndex, pageSize, s => s.PlayerId == user.Id));
+                .GetAllPagedAsync(pageIndex, pageSize, s => s.PlayerId == user.Id));
             var gamesPage = new PagedResultDTO<GamePartialDTO>()
             {
                 PageCount = sidesPage.PageCount,
@@ -176,7 +176,7 @@ namespace Chess.BusinessLogic.Services
 
             var currentUser = await _currentUserProvider.GetCurrentUserAsync();
             var sidesPage = (await uow.GetRepository<Side>()
-                .GetAllAsync(pageIndex, pageSize, s => s.PlayerId == currentUser.Id));
+                .GetAllPagedAsync(pageIndex, pageSize, s => s.PlayerId == currentUser.Id));
             var gamesPage = new PagedResultDTO<GameFullDTO>()
             {
                 PageCount = sidesPage.PageCount,

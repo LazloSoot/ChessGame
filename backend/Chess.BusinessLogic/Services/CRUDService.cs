@@ -62,7 +62,7 @@ namespace Chess.BusinessLogic.Services
             if (uow == null)
                 return null;
 
-            var targets = await uow.GetRepository<TEntity>().GetAllAsync(pageIndex, pageSize);
+            var targets = await uow.GetRepository<TEntity>().GetAllPagedAsync(pageIndex, pageSize);
             return mapper.Map<PagedResultDTO<TEntityDTO>>(targets);
         }
 

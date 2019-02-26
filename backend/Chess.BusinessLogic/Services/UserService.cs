@@ -59,7 +59,7 @@ namespace Chess.BusinessLogic.Services
 
             var onlineHubUsers = _notificationService.GetOnlineUsersInfo();
             var onlineUserPagedProfiles = await uow.GetRepository<User>()
-                .GetAllAsync(pageIndex, pageSize, u => onlineHubUsers.Keys.Contains(u.Uid));
+                .GetAllPagedAsync(pageIndex, pageSize, u => onlineHubUsers.Keys.Contains(u.Uid));
             if (onlineUserPagedProfiles == null)
                 return null;
 
@@ -70,14 +70,12 @@ namespace Chess.BusinessLogic.Services
         {
             if (uow == null)
                 return null;
-            var timer = new System.Diagnostics.Stopwatch();
-            timer.Start();
-            PagedResult<User> usersPagedProfiles = null;
+
+            PagedResult<UserIndex> usersPagedProfiles = null;
             var onlineHubUsers = _notificationService.GetOnlineUsersInfo();
             if (string.IsNullOrWhiteSpace(query))
             {
-                usersPagedProfiles = await uow.GetRepository<User>()
-                    .GetAllAsync(pageIndex, pageSize);
+                usersPagedProfiles = await _searchService.SearchBy<UserIndex>(query, pageSize, pageIndex);
             } else
             {
                 query = query.Trim().ToLower();
@@ -85,30 +83,29 @@ namespace Chess.BusinessLogic.Services
                 {
 #warning change logic!
                     onlineHubUsers = _notificationService.GetOnlineUsersInfoByNameOrSurnameStartsWith(query);
-                    usersPagedProfiles = await uow.GetRepository<User>()
-                        .GetAllAsync(pageIndex, pageSize, u => onlineHubUsers.Keys.Contains(u.Uid));
+                    //usersPagedProfiles = await uow.GetRepository<User>()
+                    //    .GetAllPagedAsync(pageIndex, pageSize, u => onlineHubUsers.Keys.Contains(u.Uid));
                 }
                 else
                 {
                     var partForNextWord = $" {query}";
-                    usersPagedProfiles = await uow.GetRepository<User>()
-                        .GetAllAsync(pageIndex, pageSize, u => u.Name.ToLower().StartsWith(query) || u.Name.ToLower().Contains(partForNextWord));
+                    usersPagedProfiles = await _searchService.SearchBy<UserIndex>(query, pageSize, pageIndex);
+                    //await uow.GetRepository<User>()
+                    //.GetAllPagedAsync(pageIndex, pageSize, u => u.Name.ToLower().StartsWith(query) || u.Name.ToLower().Contains(partForNextWord));
                 }
             }
             
             if (usersPagedProfiles == null)
                 return null;
 
-            var result = mapper.Map<PagedResult<User>, PagedResultDTO<UserDTO>>(usersPagedProfiles, opt => opt.AfterMap((src, dest) =>
+            var result = mapper.Map<PagedResult<UserIndex>, PagedResultDTO<UserDTO>>(usersPagedProfiles, opt => opt.AfterMap((src, dest) =>
             {
-                var srcUsers = src.DataRows;
-                foreach (var user in dest.DataRows)
-                {
-                    user.IsOnline = (onlineHubUsers.ContainsKey(srcUsers.First(u => u.Id == user.Id).Uid)) ? true : false;
-                }
+                //var srcUsers = src.DataRows;
+                //foreach (var user in dest.DataRows)
+                //{
+                //    user.IsOnline = (onlineHubUsers.ContainsKey(srcUsers.First(u => u.Id == user.Id).Uid)) ? true : false;
+                //}
             }));
-            timer.Stop();
-            result.ElapsedMilliseconds = timer.ElapsedMilliseconds;
             return result;
         }
 
@@ -141,8 +138,7 @@ namespace Chess.BusinessLogic.Services
 
         public async Task<string> ReIndex()
         {
-            var users = (await uow.GetRepository<User>().GetAllAsync()).DataRows;
-
+            var users = await uow.GetRepository<User>().GetAllAsync();
             var res = await ESRepository.ReIndex(users);
 
             return res;

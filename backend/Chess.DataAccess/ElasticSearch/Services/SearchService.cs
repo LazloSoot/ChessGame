@@ -32,7 +32,7 @@ namespace Chess.DataAccess.ElasticSearch.Services
                                     .Query(query)))))
                                         .From(result.PageSize * result.PageIndex)
                                         .Size(result.PageSize));
-
+            
             result.TotalDataRowsCount = responce.Total;
             result.ElapsedMilliseconds = responce.Took;
             result.DataRows = responce.Documents;

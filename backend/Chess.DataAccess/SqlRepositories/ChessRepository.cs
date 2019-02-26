@@ -44,7 +44,7 @@ namespace Chess.DataAccess.SqlRepositories
             return dbSet.Update(entity).Entity;
         }
 
-        public async Task<PagedResult<TEntity>> GetAllAsync(int? pageIndex = null, int? pageSize = null, Expression<Func<TEntity, bool>> predicate = null)
+        public async Task<PagedResult<TEntity>> GetAllPagedAsync(int? pageIndex = null, int? pageSize = null, Expression<Func<TEntity, bool>> predicate = null)
         {
             var resultPage = new PagedResult<TEntity>();
             resultPage.PageIndex = (pageIndex.HasValue && pageIndex.Value >= 0) ? pageIndex.Value : 0;
@@ -61,6 +61,10 @@ namespace Chess.DataAccess.SqlRepositories
             return resultPage;
         }
 
+        public async Task<IEnumerable<TEntity>> GetAllAsync(Expression<Func<TEntity,bool>> predicate)
+        {
+            return (predicate == null) ? await dbSet.ToListAsync() : await dbSet.Where(predicate).ToListAsync();
+        }
         public async Task<TEntity> GetByIdAsync(int id)
         {
             return await dbSet.FindAsync(id);
