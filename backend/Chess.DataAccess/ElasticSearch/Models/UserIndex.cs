@@ -10,7 +10,6 @@ namespace Chess.DataAccess.ElasticSearch.Models
         public DateTime? UpdatedAt { get; set; }
         public DateTime CreatedAt { get; set; }
         [Completion]
-        [Text]
         public string Name { get; set; }
     }
 }

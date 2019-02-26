@@ -13,6 +13,7 @@ using System.Threading.Tasks;
 using Chess.DataAccess.Helpers;
 using Chess.DataAccess.ElasticSearch;
 using Chess.DataAccess.ElasticSearch.Interfaces;
+using Chess.DataAccess.ElasticSearch.Models;
 
 namespace Chess.BusinessLogic.Services
 {
@@ -25,11 +26,13 @@ namespace Chess.BusinessLogic.Services
             IMapper mapper,
             IUnitOfWork uow,
             ICurrentUserProvider currentUserProvider,
-            ISignalRNotificationService notificationService
+            ISignalRNotificationService notificationService,
+            ISearchService searchService
             ) : base(mapper, uow)
         {
             _currentUserProvider = currentUserProvider;
             _notificationService = notificationService;
+            _searchService = searchService;
         }
 
         public async Task<UserDTO> GetCurrentUser()
@@ -107,6 +110,33 @@ namespace Chess.BusinessLogic.Services
             timer.Stop();
             result.ElapsedMilliseconds = timer.ElapsedMilliseconds;
             return result;
+        }
+
+        public async Task<PagedResult<UserIndex>> SearchUsers2(string query, bool isOnline, int? pageIndex, int? pageSize)
+        {
+            if (uow == null)
+                return null;
+            var timer = new System.Diagnostics.Stopwatch();
+            timer.Start();
+            PagedResult<UserIndex> usersPagedProfiles = null;
+            var onlineHubUsers = _notificationService.GetOnlineUsersInfo();
+            if (string.IsNullOrWhiteSpace(query))
+            {
+                usersPagedProfiles = await _searchService.SearchBy<UserIndex>(query, pageSize, pageIndex);
+            }
+            else
+            {
+                query = query.Trim().ToLower();
+                
+            }
+
+            if (usersPagedProfiles == null)
+                return null;
+
+            
+            timer.Stop();
+            usersPagedProfiles.ElapsedMilliseconds = timer.ElapsedMilliseconds;
+            return usersPagedProfiles;
         }
 
         public async Task<string> ReIndex()

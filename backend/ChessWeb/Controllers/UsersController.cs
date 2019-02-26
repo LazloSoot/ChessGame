@@ -9,7 +9,7 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace ChessWeb.Controllers
 {
-    [Authorize]
+    //[Authorize]
     [Route("[controller]")]
     [Produces("application/json")]
     [ApiController]
@@ -64,7 +64,7 @@ namespace ChessWeb.Controllers
         [HttpGet(Name= "SearchUsers")]
         public async Task<IActionResult> SearchUsers([FromQuery(Name ="part")]string query, [FromQuery(Name = "isOnline")]bool isOnline, [FromQuery(Name = "pageIndex")]int? pageIndex, [FromQuery(Name = "pageSize")]int? pageSize)
         {
-            var users = await _service.SearchUsers(query, isOnline, pageIndex, pageSize);
+            var users = await _service.SearchUsers2(query, isOnline, pageIndex, pageSize);
             return users == null ? NotFound($"No users found!") as IActionResult
                 : Ok(users);
         }

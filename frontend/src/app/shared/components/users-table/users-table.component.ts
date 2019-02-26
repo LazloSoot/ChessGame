@@ -62,7 +62,7 @@ export class UsersTableComponent implements OnInit {
       setTimeout(() => {
         this.timeOutSearch = false;
         this.userService
-            .getUsersByNameStartsWith(filter, this.isOnlineUserFilterEnabled, new Page(0, 10))
+            .getUsersByNameStartsWith(filter, this.isOnlineUserFilterEnabled, new Page(0, 10000))
             .subscribe((users: PagedResult<User>) => {
               this.users = [];
               if(users) {

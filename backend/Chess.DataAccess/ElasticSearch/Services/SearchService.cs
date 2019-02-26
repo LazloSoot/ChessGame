@@ -1,4 +1,5 @@
 ﻿using Chess.DataAccess.ElasticSearch.Interfaces;
+using Chess.DataAccess.ElasticSearch.Models;
 using Chess.DataAccess.Helpers;
 using Nest;
 using System;
@@ -15,12 +16,12 @@ namespace Chess.DataAccess.ElasticSearch.Services
         }
 
         public async Task<PagedResult<T>> SearchBy<T>(string query, int? pageSize, int? PageIndex)
-            where T: class, IIndexObject, new()
+            where T : class, IIndexObject, new()
         {
             var result = new PagedResult<T>()
             {
                 PageSize = (pageSize.HasValue && pageSize.Value > 0) ? pageSize.Value : PagedResult<T>.MaxPageSize,
-                PageIndex = (PageIndex.HasValue && pageSize.Value >= 0) ? pageSize.Value : 0 
+                PageIndex = (PageIndex.HasValue && PageIndex.Value >= 0) ? PageIndex.Value : 0
             };
 
             var responce = await _client.SearchAsync<T>(searchDescriptor => searchDescriptor
