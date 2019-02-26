@@ -4,6 +4,7 @@ export class PagedResult<T> {
         public pageCount?: number,
         public pageSize?: number,
         public totalDataRowsCount?: number,
-        public dataRows?: T[]
+        public dataRows?: T[],
+        public elapsedMilliseconds?: number
     ){}
 }

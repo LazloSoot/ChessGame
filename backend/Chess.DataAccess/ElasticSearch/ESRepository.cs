@@ -10,32 +10,24 @@ using System.Threading.Tasks;
 using Chess.DataAccess.ElasticSearch.Models;
 using System.Collections.Generic;
 using System.Linq;
+using Chess.DataAccess.ElasticSearch.Services;
 
 namespace Chess.DataAccess.ElasticSearch
 {
     public static class ESRepository
     {
-        private static IElasticClient _elasticClient;
-
         private static IElasticLowLevelClient _lowlevelClient;
 
         private static ConnectionSettings _settings;
 
-        private static bool _updateSearchService;
-
-        public static bool IsElasticUsed
-        {
-            get
-            {
-                return _updateSearchService;
-            }
-        }
+        public static bool IsElasticUsed { get; private set; }
+        public static IElasticClient Client { get; private set; }
 
         public static void AddElasticSearch(this IServiceCollection services, IConfiguration config)
         {
             var url = config["elasticsearch:url"];
             var defaultIndex = config["elasticsearch:index"];
-            _updateSearchService = bool.Parse(config["elasticsearch:updateIndex"]);
+            IsElasticUsed = bool.Parse(config["elasticsearch:updateIndex"]);
             _settings = new ConnectionSettings(new Uri(url))
                 .DefaultFieldNameInferrer(s => s)
                 .DefaultMappingFor<UserIndex>(m => m
@@ -49,9 +41,10 @@ namespace Chess.DataAccess.ElasticSearch
                 _settings.DefaultIndex(defaultIndex);
             }
 
-            _elasticClient = new ElasticClient(_settings);
-            services.AddSingleton<IElasticClient>(_elasticClient);
-            
+            Client = new ElasticClient(_settings);
+            services.AddSingleton<IElasticClient>(Client);
+            services.AddTransient<ISearchService>(a => new SearchService(Client));
+
             var settingslow = new ConnectionConfiguration(new Uri(url))
                 .RequestTimeout(TimeSpan.FromMinutes(2));
 
@@ -60,7 +53,7 @@ namespace Chess.DataAccess.ElasticSearch
 
         public static async Task UpdateSearchIndex<T>(T entityToUpdate, CRUDAction action) where T : Entity, new()
         {
-            if (_updateSearchService)
+            if (IsElasticUsed)
             {
                 if (entityToUpdate is IElasticSearcheable searchable)
                 {

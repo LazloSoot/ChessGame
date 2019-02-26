@@ -61,10 +61,10 @@ namespace ChessWeb.Controllers
         }
 
         // GET: Users/
-        [HttpGet(Name= "GetUsersInfoByNameStartsWith")]
-        public async Task<IActionResult> GetUsersInfoByNameStartsWith([FromQuery(Name ="part")]string part, [FromQuery(Name = "isOnline")]bool isOnline, [FromQuery(Name = "pageIndex")]int? pageIndex, [FromQuery(Name = "pageSize")]int? pageSize)
+        [HttpGet(Name= "SearchUsers")]
+        public async Task<IActionResult> SearchUsers([FromQuery(Name ="part")]string query, [FromQuery(Name = "isOnline")]bool isOnline, [FromQuery(Name = "pageIndex")]int? pageIndex, [FromQuery(Name = "pageSize")]int? pageSize)
         {
-            var users = await _service.GetUsersByNameOrSurnameStartsWith(part, isOnline, pageIndex, pageSize);
+            var users = await _service.SearchUsers(query, isOnline, pageIndex, pageSize);
             return users == null ? NotFound($"No users found!") as IActionResult
                 : Ok(users);
         }

@@ -48,11 +48,11 @@ namespace Chess.DataAccess.SqlRepositories
         {
             var resultPage = new PagedResult<TEntity>();
             resultPage.PageIndex = (pageIndex.HasValue && pageIndex.Value >= 0) ? pageIndex.Value : 0;
-            resultPage.PageSize = (pageSize.HasValue && pageSize.Value > 0) ? pageSize.Value : int.MaxValue;
+            resultPage.PageSize = (pageSize.HasValue && pageSize.Value > 0) ? pageSize.Value : PagedResult<TEntity>.MaxPageSize;
 
             var query = (predicate != null) ? dbSet.Where(predicate) : dbSet;
             resultPage.TotalDataRowsCount = query.Count();
-            resultPage.PageCount = (int)(Math.Ceiling((double)resultPage.TotalDataRowsCount / resultPage.PageSize));
+            resultPage.PageCount = (long)(Math.Ceiling((double)resultPage.TotalDataRowsCount / resultPage.PageSize));
             resultPage.DataRows = await query
                 .Skip(resultPage.PageSize * resultPage.PageIndex)
                 .Take(resultPage.PageSize)

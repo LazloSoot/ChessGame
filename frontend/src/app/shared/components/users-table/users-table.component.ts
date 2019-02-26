@@ -70,6 +70,7 @@ export class UsersTableComponent implements OnInit {
                 this.users = users.dataRows.filter(u => u.id !== currentId);
                 this.timeOutSearch = false;
                 this.isUsersLoading = false;
+                console.log(`elapsed milliseconds :  ${users.elapsedMilliseconds}`);
               }
             });
       }, 1000);

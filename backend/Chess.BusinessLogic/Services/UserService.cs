@@ -12,6 +12,7 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 using Chess.DataAccess.Helpers;
 using Chess.DataAccess.ElasticSearch;
+using Chess.DataAccess.ElasticSearch.Interfaces;
 
 namespace Chess.BusinessLogic.Services
 {
@@ -19,6 +20,7 @@ namespace Chess.BusinessLogic.Services
     {
         private readonly ICurrentUserProvider _currentUserProvider;
         private readonly ISignalRNotificationService _notificationService;
+        private readonly ISearchService _searchService;
         public UserService(
             IMapper mapper,
             IUnitOfWork uow,
@@ -61,38 +63,40 @@ namespace Chess.BusinessLogic.Services
             return mapper.Map<PagedResultDTO<UserDTO>>(onlineUserPagedProfiles);
         }
 
-        public async Task<PagedResultDTO<UserDTO>> GetUsersByNameOrSurnameStartsWith(string part, bool isOnline, int? pageIndex, int? pageSize)
+        public async Task<PagedResultDTO<UserDTO>> SearchUsers(string query, bool isOnline, int? pageIndex, int? pageSize)
         {
             if (uow == null)
                 return null;
-
+            var timer = new System.Diagnostics.Stopwatch();
+            timer.Start();
             PagedResult<User> usersPagedProfiles = null;
             var onlineHubUsers = _notificationService.GetOnlineUsersInfo();
-            if (string.IsNullOrWhiteSpace(part))
+            if (string.IsNullOrWhiteSpace(query))
             {
                 usersPagedProfiles = await uow.GetRepository<User>()
                     .GetAllAsync(pageIndex, pageSize);
             } else
             {
-                part = part.Trim().ToLower();
+                query = query.Trim().ToLower();
                 if (isOnline)
                 {
-                    onlineHubUsers = _notificationService.GetOnlineUsersInfoByNameOrSurnameStartsWith(part);
+#warning change logic!
+                    onlineHubUsers = _notificationService.GetOnlineUsersInfoByNameOrSurnameStartsWith(query);
                     usersPagedProfiles = await uow.GetRepository<User>()
                         .GetAllAsync(pageIndex, pageSize, u => onlineHubUsers.Keys.Contains(u.Uid));
                 }
                 else
                 {
-                    var partForNextWord = $" {part}";
+                    var partForNextWord = $" {query}";
                     usersPagedProfiles = await uow.GetRepository<User>()
-                        .GetAllAsync(pageIndex, pageSize, u => u.Name.ToLower().StartsWith(part) || u.Name.ToLower().Contains(partForNextWord));
+                        .GetAllAsync(pageIndex, pageSize, u => u.Name.ToLower().StartsWith(query) || u.Name.ToLower().Contains(partForNextWord));
                 }
             }
             
             if (usersPagedProfiles == null)
                 return null;
 
-            return mapper.Map<PagedResult<User>, PagedResultDTO<UserDTO>>(usersPagedProfiles, opt => opt.AfterMap((src, dest) =>
+            var result = mapper.Map<PagedResult<User>, PagedResultDTO<UserDTO>>(usersPagedProfiles, opt => opt.AfterMap((src, dest) =>
             {
                 var srcUsers = src.DataRows;
                 foreach (var user in dest.DataRows)
@@ -100,6 +104,9 @@ namespace Chess.BusinessLogic.Services
                     user.IsOnline = (onlineHubUsers.ContainsKey(srcUsers.First(u => u.Id == user.Id).Uid)) ? true : false;
                 }
             }));
+            timer.Stop();
+            result.ElapsedMilliseconds = timer.ElapsedMilliseconds;
+            return result;
         }
 
         public async Task<string> ReIndex()
