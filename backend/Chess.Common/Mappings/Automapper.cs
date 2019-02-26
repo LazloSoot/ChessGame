@@ -4,6 +4,7 @@ using AutoMapper;
 using System.Linq;
 using System;
 using Chess.DataAccess.Helpers;
+using Chess.DataAccess.ElasticSearch.Models;
 
 namespace Chess.Common.Mappings
 {
@@ -26,6 +27,7 @@ namespace Chess.Common.Mappings
                 cfg.CreateMap<User, UserDTO>()
                 .ForMember(p => p.Uid, opt => opt.UseValue(string.Empty));
                 cfg.CreateMap<UserDTO, User>();
+                cfg.CreateMap<UserIndex, UserDTO>();
 
                 cfg.CreateMap<Side, SideDTO>();
                 cfg.CreateMap<SideDTO, Side>();

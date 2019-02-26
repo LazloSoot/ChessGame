@@ -38,11 +38,11 @@ export class UsersTableComponent implements OnInit {
   ngAfterViewInit() {
 
     this.searchStream = fromEvent(this.searchInput.nativeElement, 'input').pipe(
-      map(i => i.currentTarget.value));
+      map((i: InputEvent) => i.data));
     
     this.searchStream.pipe(
       scan((acc, crr) => acc = crr),
-      debounceTime(500))
+      debounceTime(50))
       .forEach((searchInputText) => {
         this.getUsers(searchInputText);
       })
@@ -62,7 +62,7 @@ export class UsersTableComponent implements OnInit {
       setTimeout(() => {
         this.timeOutSearch = false;
         this.userService
-            .getUsersByNameStartsWith(filter, this.isOnlineUserFilterEnabled, new Page(0, 10))
+            .getUsersByNameStartsWith(filter, this.isOnlineUserFilterEnabled, new Page(0, 10000))
             .subscribe((users: PagedResult<User>) => {
               this.users = [];
               if(users) {
@@ -70,9 +70,14 @@ export class UsersTableComponent implements OnInit {
                 this.users = users.dataRows.filter(u => u.id !== currentId);
                 this.timeOutSearch = false;
                 this.isUsersLoading = false;
+                console.log(`elapsed milliseconds :  ${users.elapsedMilliseconds}`);
               }
             });
       }, 1000);
     }
   }
+}
+
+export interface InputEvent {
+  data: string;
 }

@@ -1,4 +1,5 @@
-﻿using Chess.DataAccess.Interfaces;
+﻿using Chess.DataAccess.ElasticSearch;
+using Chess.DataAccess.Interfaces;
 using Chess.DataAccess.SqlRepositories;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.EntityFrameworkCore;
@@ -26,6 +27,8 @@ namespace Chess.DataAccess
             services.AddScoped(typeof(DbContext), typeof(DataContext));
             services.AddScoped(typeof(IRepository<>), typeof(ChessRepository<>));
             services.AddScoped<IUnitOfWork, UnitOfWork>();
+
+            services.AddElasticSearch(configuration);
         }
 
         public static void ConfigureMiddleware(this IApplicationBuilder app)

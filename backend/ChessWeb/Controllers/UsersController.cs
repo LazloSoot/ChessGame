@@ -9,7 +9,7 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace ChessWeb.Controllers
 {
-    [Authorize]
+    //[Authorize]
     [Route("[controller]")]
     [Produces("application/json")]
     [ApiController]
@@ -61,10 +61,10 @@ namespace ChessWeb.Controllers
         }
 
         // GET: Users/
-        [HttpGet(Name= "GetUsersInfoByNameStartsWith")]
-        public async Task<IActionResult> GetUsersInfoByNameStartsWith([FromQuery(Name ="part")]string part, [FromQuery(Name = "isOnline")]bool isOnline, [FromQuery(Name = "pageIndex")]int? pageIndex, [FromQuery(Name = "pageSize")]int? pageSize)
+        [HttpGet(Name= "SearchUsers")]
+        public async Task<IActionResult> SearchUsers([FromQuery(Name ="part")]string part, [FromQuery(Name = "isOnline")]bool isOnline, [FromQuery(Name = "pageIndex")]int? pageIndex, [FromQuery(Name = "pageSize")]int? pageSize)
         {
-            var users = await _service.GetUsersByNameOrSurnameStartsWith(part, isOnline, pageIndex, pageSize);
+            var users = await _service.SearchUsers(part, isOnline, pageIndex, pageSize);
             return users == null ? NotFound($"No users found!") as IActionResult
                 : Ok(users);
         }
@@ -87,6 +87,13 @@ namespace ChessWeb.Controllers
             var entity = await _service.AddAsync(user);
             return entity == null ? StatusCode(409) as IActionResult
                 : Ok(entity) as IActionResult;
+        }
+
+        [Route("/search/reindex")]
+        public async Task<IActionResult> ReIndex()
+        {
+            var result = await _service.ReIndex();
+            return Ok(result);
         }
     }
 }
