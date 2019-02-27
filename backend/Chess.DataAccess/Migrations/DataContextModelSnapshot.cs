@@ -96,17 +96,18 @@ namespace Chess.DataAccess.Migrations
 
                     b.Property<string>("AvatarUrl");
 
-                    b.Property<string>("Name");
+                    b.Property<string>("Name")
+                        .IsRequired();
 
                     b.Property<DateTime>("RegistrationDate");
 
-                    b.Property<string>("Uid");
+                    b.Property<string>("Uid")
+                        .IsRequired();
 
                     b.HasKey("Id");
 
                     b.HasIndex("Uid")
-                        .IsUnique()
-                        .HasFilter("[Uid] IS NOT NULL");
+                        .IsUnique();
 
                     b.ToTable("Users");
                 });

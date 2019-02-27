@@ -7,6 +7,7 @@ using System.Linq.Expressions;
 using Microsoft.EntityFrameworkCore;
 using System.Linq;
 using Chess.DataAccess.Helpers;
+using Chess.DataAccess.ElasticSearch;
 
 namespace Chess.DataAccess.SqlRepositories
 {
@@ -23,36 +24,47 @@ namespace Chess.DataAccess.SqlRepositories
 
         public async Task<TEntity> AddAsync(TEntity entity)
         {
-            return (await dbSet.AddAsync(entity)).Entity;
+            var dbEntity = (await dbSet.AddAsync(entity)).Entity;
+            await ESRepository.UpdateSearchIndex(dbEntity, CRUDAction.Create);
+            return dbEntity;
         }
 
         public async Task AddRangeAsync(IEnumerable<TEntity> entities)
         {
             await dbSet.AddRangeAsync(entities);
+            foreach (var e in entities)
+            {
+                await ESRepository.UpdateSearchIndex(e, CRUDAction.Create);
+            }
         }
 
-        public TEntity Update(TEntity entity)
+        public async Task<TEntity> UpdateAsync(TEntity entity)
         {
+            await ESRepository.UpdateSearchIndex(entity, CRUDAction.Update);
             return dbSet.Update(entity).Entity;
         }
 
-        public async Task<PagedResult<TEntity>> GetAllAsync(int? pageIndex = null, int? pageSize = null, Expression<Func<TEntity, bool>> predicate = null)
+        public async Task<PagedResult<TEntity>> GetAllPagedAsync(int? pageIndex = null, int? pageSize = null, Expression<Func<TEntity, bool>> predicate = null)
         {
             var resultPage = new PagedResult<TEntity>();
             resultPage.PageIndex = (pageIndex.HasValue && pageIndex.Value >= 0) ? pageIndex.Value : 0;
-            resultPage.PageSize = (pageSize.HasValue && pageSize.Value > 0) ? pageSize.Value : int.MaxValue;
+            resultPage.PageSize = (pageSize.HasValue && pageSize.Value > 0) ? pageSize.Value : PagedResult<TEntity>.MaxPageSize;
 
             var query = (predicate != null) ? dbSet.Where(predicate) : dbSet;
             resultPage.TotalDataRowsCount = query.Count();
-            resultPage.PageCount = (int)(Math.Ceiling((double)resultPage.TotalDataRowsCount / resultPage.PageSize));
+            resultPage.PageCount = (long)(Math.Ceiling((double)resultPage.TotalDataRowsCount / resultPage.PageSize));
             resultPage.DataRows = await query
-                .Skip(pageSize.Value * pageIndex.Value)
-                .Take(pageSize.Value)
+                .Skip(resultPage.PageSize * resultPage.PageIndex)
+                .Take(resultPage.PageSize)
                 .ToListAsync();
 
             return resultPage;
         }
 
+        public async Task<IEnumerable<TEntity>> GetAllAsync(Expression<Func<TEntity,bool>> predicate)
+        {
+            return (predicate == null) ? await dbSet.ToListAsync() : await dbSet.Where(predicate).ToListAsync();
+        }
         public async Task<TEntity> GetByIdAsync(int id)
         {
             return await dbSet.FindAsync(id);
@@ -63,8 +75,9 @@ namespace Chess.DataAccess.SqlRepositories
             return await dbSet.Where(predicate).FirstOrDefaultAsync();
         }
 
-        public TEntity Remove(TEntity entity)
+        public async Task<TEntity> RemoveAsync(TEntity entity)
         {
+            await ESRepository.UpdateSearchIndex(entity, CRUDAction.Delete);
             return dbSet.Remove(entity).Entity;
         }
 
@@ -73,6 +86,7 @@ namespace Chess.DataAccess.SqlRepositories
             var target = await dbSet.FindAsync(id);
             if(target != null)
             {
+                await ESRepository.UpdateSearchIndex(target, CRUDAction.Delete);
                 target = dbSet.Remove(target).Entity;
             }
 
