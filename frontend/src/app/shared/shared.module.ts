@@ -16,6 +16,7 @@ import { CheckmateDialogComponent } from './dialogs/checkmate-dialog/checkmate-d
 import { SpinnerColorDirective } from './layout/spinners/directives/spinner-color.directive';
 import { LastEntryDatePipe } from './pipes/last-entry-date.pipe';
 import { UsersTableComponent } from './components/users-table/users-table.component';
+import { InfoDialogComponent } from './dialogs/info-dialog/info-dialog.component';
 
 @NgModule({
   imports: [
@@ -45,7 +46,8 @@ import { UsersTableComponent } from './components/users-table/users-table.compon
     CheckmateDialogComponent,
     SpinnerColorDirective,
     LastEntryDatePipe,
-    UsersTableComponent
+    UsersTableComponent,
+    InfoDialogComponent
     ],
     
   entryComponents: [
@@ -55,7 +57,8 @@ import { UsersTableComponent } from './components/users-table/users-table.compon
     NewGameDialogComponent,
     InvitationDialogComponent,
     WaitingDialogComponent,
-    CheckmateDialogComponent
+    CheckmateDialogComponent,
+    InfoDialogComponent
   ]
 })
 export class SharedModule { }

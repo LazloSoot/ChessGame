@@ -48,7 +48,13 @@
   
     <mat-error class="firebase-error" *ngIf="firebaseError">
       {{firebaseError}}
+      <div class="emailNotConfirmed-error" *ngIf="isEmailConfirmationRequired">
+        <button (click)="onResendConfirmation()" mat-stroked-button type="button">Resend</button>
+      </div>
     </mat-error>
+    <mat-hint class="firebase-hint" *ngIf="firebaseHint">
+      {{firebaseHint}}
+    </mat-hint>
   
     
     <button class="login-btn" mat-stroked-button type="submit">Log In</button>

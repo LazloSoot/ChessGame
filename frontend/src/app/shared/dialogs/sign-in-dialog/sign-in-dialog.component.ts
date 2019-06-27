@@ -1,7 +1,7 @@
 import { Component, OnInit, EventEmitter, Output } from "@angular/core";
 import { MatDialogRef } from "@angular/material";
 import { EventService } from "../../helpers";
-import { AuthService, AuthProviderType } from "../../../core";
+import { AuthService, AuthProviderType, EmailNotVerifiedError } from "../../../core";
 
 @Component({
 	selector: "app-sign-in-dialog",
@@ -11,6 +11,8 @@ import { AuthService, AuthProviderType } from "../../../core";
 export class SignInDialogComponent implements OnInit {
 	@Output() onSucceessLogin = new EventEmitter<boolean>();
 	public firebaseError: string;
+	public firebaseHint: string;
+	public isEmailConfirmationRequired: boolean;
 	public hide = true;
 	public user: any;
 
@@ -46,28 +48,32 @@ export class SignInDialogComponent implements OnInit {
 			if (error) {
 				this.firebaseError = (error.message) ? error.message : error;
 			} else {
-				this.onSucceessLogin.emit(true);
 				this.dialogRef.close();
+				this.onSucceessLogin.emit(true);
 			}
 		});
 	}
 
-	
+	  //  zhukov.mikhail8@gmail.com
+	  //  asGD1234sfgs
 	onLoginFormSubmit(user, form) {
-		debugger;
 		if (form.valid) {
 			this.authService.signInRegular(user.login, user.password, user.isRemember)
-			.then(error => {
-				if(error){
-					this.firebaseError = (error.message) ? error.message : error;
+			.then(() => {
+				this.onSucceessLogin.emit(true);
+				this.dialogRef.close();
+			}, error => {
+				if(error instanceof EmailNotVerifiedError) {
+					this.firebaseError = error.message
+					this.isEmailConfirmationRequired = true;
 				} else {
-					this.onSucceessLogin.emit(true);
-					this.dialogRef.close();
+					this.firebaseError = (error.message) ? error.message : error;
 				}
 			})
 			.catch(error => {
 				this.firebaseError = (error.message) ? error.message : error;
-			})
+			});
+			
 		 }
 	}
 
@@ -81,5 +87,15 @@ export class SignInDialogComponent implements OnInit {
 		setTimeout(() => {
 			this.eventService.filter("signUp");
 		}, 50);
+	}
+
+	onResendConfirmation() {
+		this.authService.sendEmailVerification()
+		.then(email => {
+			this.firebaseError = undefined;
+			this.firebaseHint = `Email confirmation was already send to ${email}. Check your email.`;
+		}, error => {
+			this.firebaseError = error;
+		})
 	}
 }

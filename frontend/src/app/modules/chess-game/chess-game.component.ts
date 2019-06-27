@@ -53,7 +53,6 @@ export class ChessGameComponent implements OnInit {
 	) {}
 
 	ngOnInit() {
-		this.openNewGameDialog();
 		this.subscribeSignalREvents();
 
 		this.awaitedUserUid.subscribe((value) => {
@@ -86,7 +85,10 @@ export class ChessGameComponent implements OnInit {
 	}
 
 	ngAfterViewInit() {
+		// ExpressionChangedAfterItHasBeenCheckedError   workaround
+		Promise.resolve().then(()=> this.openNewGameDialog());
 		this.cdRef.detectChanges();
+		
 	}
 
 	ngOnDestroy() {

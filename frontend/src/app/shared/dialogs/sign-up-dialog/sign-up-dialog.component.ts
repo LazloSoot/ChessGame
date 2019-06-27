@@ -10,6 +10,7 @@ import { AuthProviderType } from '../../../core';
 })
 export class SignUpDialogComponent implements OnInit {
   @Output() onSuccessSignUp = new EventEmitter<any>();
+  @Output() onVerificationEmailSent = new EventEmitter<string>();
   public firebaseError: string;
   private user: any; 
   private hide = true;
@@ -31,9 +32,24 @@ export class SignUpDialogComponent implements OnInit {
   signUpFormSubmit(user, form) {
     if(form.valid){
       this.authService.signUpRegular(user.login, user.nickname, user.password)
-      .then(info => {
-        this.firebaseError = info;
-      });
+      .then(() => {
+          this.authService.sendEmailVerification()
+          .then(
+            (email) => {
+              this.onVerificationEmailSent.emit(email);
+              this.dialogRef.close();
+          }, 
+          error => {
+            this.firebaseError = error;
+          })
+				},
+				error => {
+					return error;
+				}
+			)
+			.catch(error => {
+				return error;
+			});
     }
   }
 
