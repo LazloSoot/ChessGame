@@ -1,11 +1,11 @@
 import { Component, OnInit, ChangeDetectorRef, NgZone } from "@angular/core";
 import { MediaMatcher } from "@angular/cdk/layout";
 import { EventService } from "../../helpers";
-import { MatDialog } from "@angular/material";
-import { SignInDialogComponent } from "../../dialogs/sign-in-dialog/sign-in-dialog.component";
-import { SignUpDialogComponent } from "../../dialogs/sign-up-dialog/sign-up-dialog.component";
+import { MatDialog, MatDialogConfig } from "@angular/material";
+import { SignInDialogComponent , SignUpDialogComponent, InfoDialogComponent } from '../../dialogs';
 import { AppStateService, User, AuthService } from "../../../core";
 import { Router } from "@angular/router";
+import { config } from "rxjs";
 
 @Component({
 	selector: "app-navigation",
@@ -58,7 +58,9 @@ export class NavigationComponent implements OnInit {
 			}
 			else {
 				this.user = new User("not signed", "../../../../assets/images/anonAvatar.png");
+				this.zone.run(() => {
 				this.router.navigate(['/']);
+				});
 			}
 		});
 	}
@@ -78,9 +80,19 @@ export class NavigationComponent implements OnInit {
 	onSignUpClick() {
 		let dialogRef = this.dialog.open(SignUpDialogComponent);
 
+		dialogRef.componentInstance.onVerificationEmailSent.subscribe((email) => {
+			const config: MatDialogConfig = {
+				data: `You need to confirm your email address in order to use our service. 
+				Email confirmation was already send to ${email}. Check your email.`
+			}
+			const dialogRef = this.dialog.open(InfoDialogComponent, config )
+		});
+
 		dialogRef.componentInstance.onSuccessSignUp.subscribe(
 			(isSuccess) => {
-				if(isSuccess) {
+				let a = this.appStateService.getCurrentUser();
+				debugger;
+				if(isSuccess && this.appStateService.getCurrentUser()) {
 					this.router.navigate(['/play']);
 				}
 			}
@@ -88,6 +100,7 @@ export class NavigationComponent implements OnInit {
 
 		dialogRef.afterClosed().subscribe(() => {
 			dialogRef.componentInstance.onSuccessSignUp.unsubscribe();
+			dialogRef.componentInstance.onVerificationEmailSent.unsubscribe();
 		});
 		
 	}

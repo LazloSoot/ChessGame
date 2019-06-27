@@ -1,6 +1,5 @@
 import { Injectable } from "@angular/core";
 import { BehaviorSubject, Observable } from "rxjs";
-import { Router } from "@angular/router";
 import { User, UserConnection, Group, Hub, GameSettings } from "../models";
 import { SignalRService } from "./signalr.service";
 import { UserService } from "./user.service";
@@ -14,6 +13,7 @@ export class AppStateService {
 	private currentUserSubject: BehaviorSubject<User> = new BehaviorSubject<User>(null);
 	private currentGameSubject: BehaviorSubject<GameSettings> = new BehaviorSubject<GameSettings>(null); 
 	private _signalRConnection: UserConnection;
+	private signalRConnectionGroupName: string;
 	private _isRemember: boolean;
 
 	public get token(): string {
@@ -71,8 +71,9 @@ export class AppStateService {
 			this.currentUserSubject.next(
 				await this.initializeCurrentUser(firebaseUser)
 			);
+			this.signalRConnectionGroupName = `${Group.User}${firebaseUser.uid}`;
 			this._signalRConnection = this.signalRService.connect(
-				`${Group.User}${firebaseUser.uid}`,
+				this.signalRConnectionGroupName,
 				Hub.Notification,
 				this.token
 			);
@@ -85,7 +86,7 @@ export class AppStateService {
 			if (this.signalRConnection) {
 				this._signalRConnection.offAll();
 				this.signalRService.leaveGroup(
-					`${Group.User}${firebaseUser.uid}`,
+					this.signalRConnectionGroupName,
 					Hub.Notification
 				);
 			}
@@ -108,7 +109,6 @@ export class AppStateService {
 					}
 				})
 				.catch(error => {
-					debugger;
 					throw error;
 				});
 	//	if (

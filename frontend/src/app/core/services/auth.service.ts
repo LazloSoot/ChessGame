@@ -2,9 +2,10 @@ import { Injectable } from "@angular/core";
 import { AngularFireAuth } from "@angular/fire/auth";
 import * as firebase from "firebase/app";
 import { from } from "rxjs";
-import { AuthProviderType, User } from "../models";
+import { AuthProviderType, User, EmailNotVerifiedError } from "../models";
 import { AppStateService } from "./app-state.service";
 import { UserService } from "./user.service";
+import { reject } from "q";
 
 // aSfg14Gszs
 @Injectable({
@@ -12,6 +13,12 @@ import { UserService } from "./user.service";
 })
 export class AuthService {
 	private isRemember: boolean;
+	private currentUserCredintials: firebase.auth.UserCredential;
+
+	public get isUserLogedIn() {
+		return this.currentUserCredintials !== undefined && this.currentUserCredintials !== null;
+	}
+
 	constructor(
 		private firebaseAuth: AngularFireAuth,
 		private appStateService: AppStateService,
@@ -21,7 +28,7 @@ export class AuthService {
 		this.firebaseAuth.auth.onAuthStateChanged(
 			async firebaseUser => {
 				if(firebaseUser) {
-					if(this.isRemember) {
+					if(this.isRemember && firebaseUser.emailVerified) {
 						await this.appStateService.updateAuthState(
 							firebaseUser,
 							true
@@ -35,7 +42,7 @@ export class AuthService {
 		});
 	}
 
-	signUpRegular(email: string, userName: string, password: string) {
+	signUpRegular(email: string, userName: string, password: string): Promise<void> {
 		return from(
 			this.firebaseAuth.auth.createUserWithEmailAndPassword(
 				email,
@@ -43,74 +50,54 @@ export class AuthService {
 			)
 		)
 			.toPromise()
-			.then(
-				async userCred => {
-					await userCred.user
-						.sendEmailVerification()
-						.then(async () => {
-
-							await this.appStateService.updateAuthState(
-								userCred.user,
-								true
-							).then(async () => {
-								await this.userService
-									.add(new User(userCred.user.uid, userName, undefined, new Date(userCred.user.metadata.creationTime)))
-									.toPromise();
-							})
-							//throw new Error(
-							//	`You need to confirm your email address in order to use our service. Email confirmation was already send to ${
-							//		userCred.user.email
-							//	}. Check your email.`
-							//);
+			.then(async userCredential => {  // add new user to db
+				const dateNow = new Date(userCredential.user.metadata.creationTime);
+				await this.userService
+						.add( {
+							name: userName,
+							uid: userCredential.user.uid,
+							registrationDate: dateNow,
+							avatarUrl: undefined,
+							id: undefined,
+							isOnline: undefined,
+							lastSeenDate: dateNow
 						})
-						.catch(error => {
-							throw error;
-						});
-				},
-				error => {
-					return error;
-				}
-			)
-			.catch(error => {
-				return error;
+						.toPromise();
+
+				this.currentUserCredintials = userCredential;
 			});
 	}
 
-	signInRegular(email: string, password: string, isRemember?: boolean) {
+	signInRegular(email: string, password: string, isRemember?: boolean) :Promise<void> {
 		return from(
 			this.firebaseAuth.auth.signInWithEmailAndPassword(email, password)
 		)
 			.toPromise()
 			.then(
 				async userCred => {
+					this.currentUserCredintials = userCred;
 					if (userCred.user.emailVerified) {
-						await this.appStateService.updateAuthState(
+						return await this.appStateService.updateAuthState(
 							userCred.user,
 							isRemember
 						);
+						
 					} else {
-						await userCred.user
-							.sendEmailVerification()
-							.then(() => {
-								throw new Error(
-									`You need to confirm your email address in order to use our service.Email confirmation was already send to ${
-										userCred.user.email
-									}. Please check your email.`
-								);
-							})
-							.catch(error => {
-								throw error;
-							});
+						throw new EmailNotVerifiedError(
+							`You need to confirm your email address in order to use our service.`
+						);
 					}
 				},
 				error => {
+					throw error;
 					return error;
 				}
 			)
 			.catch(error => {
-				return error;
+				throw error;
 			});
 	}
+
 
 	signIn(authProviderType: AuthProviderType, isRemember?: boolean) {
 		let authProvider;
@@ -134,17 +121,26 @@ export class AuthService {
 					);
 				},
 				error => {
-					debugger;
 					return error;
 				}
 			)
 			.catch(error => {
-				debugger;
 				return error;
 			});
 	}
 
 	refreshToken() {}
+
+	async sendEmailVerification(): Promise<string> {
+		if(this.currentUserCredintials) {
+			return await this.currentUserCredintials.user.sendEmailVerification()
+			.then(() => {
+				return this.currentUserCredintials.user.email
+			});
+		} else {
+			reject("Error occurred while sending email verification.There is no valid user credentials, please contact with administrator.");
+		}
+	}
 
 	logout() {
 		return from(this.firebaseAuth.auth.signOut());
