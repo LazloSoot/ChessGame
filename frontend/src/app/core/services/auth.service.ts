@@ -6,8 +6,9 @@ import { AuthProviderType, User, EmailNotVerifiedError } from "../models";
 import { AppStateService } from "./app-state.service";
 import { UserService } from "./user.service";
 import { reject } from "q";
+import { PresenceService } from "./presence.service";
+import { AngularFireDatabase } from "@angular/fire/database";
 
-// aSfg14Gszs
 @Injectable({
 	providedIn: "root"
 })
@@ -21,14 +22,16 @@ export class AuthService {
 
 	constructor(
 		private firebaseAuth: AngularFireAuth,
+		private database: AngularFireDatabase,
 		private appStateService: AppStateService,
-		private userService: UserService
+		private userService: UserService,
+		private presenceService: PresenceService
 	) {
 		this.isRemember = appStateService.isRemember;
 		this.firebaseAuth.auth.onAuthStateChanged(
 			async firebaseUser => {
 				if(firebaseUser) {
-					if(this.isRemember && firebaseUser.emailVerified) {
+					if(this.isRemember && (this.checkProviderData(firebaseUser))) {
 						await this.appStateService.updateAuthState(
 							firebaseUser,
 							true
@@ -90,14 +93,12 @@ export class AuthService {
 				},
 				error => {
 					throw error;
-					return error;
 				}
 			)
 			.catch(error => {
 				throw error;
 			});
 	}
-
 
 	signIn(authProviderType: AuthProviderType, isRemember?: boolean) {
 		let authProvider;
@@ -143,6 +144,11 @@ export class AuthService {
 	}
 
 	logout() {
+		firebase.database().goOffline();
 		return from(this.firebaseAuth.auth.signOut());
+	}
+
+	private checkProviderData(firebaseUser: firebase.User) : boolean {
+		return firebaseUser.providerData.find(pd => pd.providerId !== 'password') !== undefined || (firebaseUser.emailVerified);
 	}
 }
