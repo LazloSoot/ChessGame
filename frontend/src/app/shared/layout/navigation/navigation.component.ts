@@ -90,8 +90,6 @@ export class NavigationComponent implements OnInit {
 
 		dialogRef.componentInstance.onSuccessSignUp.subscribe(
 			(isSuccess) => {
-				let a = this.appStateService.getCurrentUser();
-				debugger;
 				if(isSuccess && this.appStateService.getCurrentUser()) {
 					this.router.navigate(['/play']);
 				}

@@ -9,7 +9,7 @@ export const environment = {
     authDomain: "chess-zm.firebaseapp.com",
     databaseURL: "https://chess-zm.firebaseio.com",
     projectId: "chess-zm",
-    storageBucket: "",
+    storageBucket: "chess-zm.appspot.com",
     messagingSenderId: "297708221272"
   },
   apiUrl: 'http://localhost:52996'

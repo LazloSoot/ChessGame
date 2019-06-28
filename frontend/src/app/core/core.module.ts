@@ -12,7 +12,7 @@ import { environment } from '../../environments/environment';
   imports: [
     CommonModule,
     HttpClientModule,
-    AngularFireModule.initializeApp(environment.firebase, 'firebase_auth'),
+    AngularFireModule.initializeApp(environment.firebase),
     AngularFireDatabaseModule,
     AngularFireAuthModule,
   ],
