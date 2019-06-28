@@ -54,8 +54,6 @@ export class SignInDialogComponent implements OnInit {
 		});
 	}
 
-	  //  zhukov.mikhail8@gmail.com
-	  //  asGD1234sfgs
 	onLoginFormSubmit(user, form) {
 		if (form.valid) {
 			this.authService.signInRegular(user.login, user.password, user.isRemember)

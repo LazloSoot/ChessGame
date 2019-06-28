@@ -12,6 +12,8 @@ import { AngularFireDatabase } from "@angular/fire/database";
 @Injectable({
 	providedIn: "root"
 })
+
+//  asGD1234sfgs
 export class AuthService {
 	private isRemember: boolean;
 	private currentUserCredintials: firebase.auth.UserCredential;
@@ -80,6 +82,7 @@ export class AuthService {
 				async userCred => {
 					this.currentUserCredintials = userCred;
 					if (userCred.user.emailVerified) {
+						firebase.database().goOnline();
 						return await this.appStateService.updateAuthState(
 							userCred.user,
 							isRemember
@@ -116,6 +119,7 @@ export class AuthService {
 			.toPromise()
 			.then(
 				async userCred => {
+					firebase.database().goOnline();
 					await this.appStateService.updateAuthState(
 						userCred.user,
 						isRemember
