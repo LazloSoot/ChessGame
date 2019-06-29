@@ -21,6 +21,7 @@ import { MatSortModule } from '@angular/material/sort';
 import { MatChipsModule } from '@angular/material/chips';
 import { MatCardModule } from '@angular/material/card';
 import { MatExpansionModule } from '@angular/material/expansion';
+import { MatTooltipModule } from '@angular/material/tooltip';
 
 @NgModule({
   imports: [
@@ -45,7 +46,8 @@ import { MatExpansionModule } from '@angular/material/expansion';
     MatSortModule,
     MatChipsModule,
     MatCardModule,
-    MatExpansionModule
+    MatExpansionModule,
+    MatTooltipModule
   ],
   exports: [
     MatButtonModule,
@@ -68,7 +70,8 @@ import { MatExpansionModule } from '@angular/material/expansion';
     MatSortModule,
     MatChipsModule,
     MatCardModule,
-    MatExpansionModule
+    MatExpansionModule,
+    MatTooltipModule
   ],
   declarations: []
 })

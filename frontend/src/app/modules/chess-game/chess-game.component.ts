@@ -38,7 +38,8 @@ import { BehaviorSubject } from "rxjs";
 export class ChessGameComponent implements OnInit {
 	private gameSettings: GameSettings = new GameSettings();
 	private commitedMoves: Move[];
-	private opponent: User;
+	private opponent: User = new User("", "../../../assets/images/anonAvatar.png");
+	private player: User;
 	private isGameInitialized = false;
 	private waitingDialog: MatDialogRef<WaitingDialogComponent>;
 	private invitationDialog: MatDialogRef<InvitationDialogComponent>;
@@ -55,6 +56,7 @@ export class ChessGameComponent implements OnInit {
 	ngOnInit() {
 		this.subscribeSignalREvents();
 
+		this.player = this.appStateService.getCurrentUser();
 		this.awaitedUserUid.subscribe((value) => {
 			if(!value && this.waitingDialog)
 			{
@@ -337,6 +339,9 @@ export class ChessGameComponent implements OnInit {
 		);
 	}
 
+	getOpponentAvatarUrl() {
+		return (this.opponent.avatarUrl) ? this.opponent.avatarUrl : '../../../../assets/images/anonAvatar.png' ;
+	}
 
 }
 
