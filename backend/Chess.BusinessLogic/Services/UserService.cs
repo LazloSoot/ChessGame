@@ -6,9 +6,7 @@ using Chess.Common.Interfaces;
 using Chess.DataAccess.Entities;
 using Chess.DataAccess.Interfaces;
 using System.Linq;
-using System.Linq.Expressions;
 using System;
-using System.Collections.Generic;
 using System.Threading.Tasks;
 using Chess.DataAccess.Helpers;
 using Chess.DataAccess.ElasticSearch;
@@ -75,7 +73,7 @@ namespace Chess.BusinessLogic.Services
             var onlineHubUsers = _notificationService.GetOnlineUsersInfo();
             if (string.IsNullOrWhiteSpace(query))
             {
-                usersPagedProfiles = await _searchService.SearchBy<UserIndex>(query, pageSize, pageIndex);
+                usersPagedProfiles = await _searchService.SearchUsers(query, pageSize, pageIndex);
             } else
             {
                 query = query.Trim().ToLower();
@@ -89,7 +87,7 @@ namespace Chess.BusinessLogic.Services
                 else
                 {
                     var partForNextWord = $" {query}";
-                    usersPagedProfiles = await _searchService.SearchBy<UserIndex>(query, pageSize, pageIndex);
+                    usersPagedProfiles = await _searchService.SearchUsers(query, pageSize, pageIndex);
                     //await uow.GetRepository<User>()
                     //.GetAllPagedAsync(pageIndex, pageSize, u => u.Name.ToLower().StartsWith(query) || u.Name.ToLower().Contains(partForNextWord));
                 }
@@ -107,33 +105,6 @@ namespace Chess.BusinessLogic.Services
                 //}
             }));
             return result;
-        }
-
-        public async Task<PagedResult<UserIndex>> SearchUsers2(string query, bool isOnline, int? pageIndex, int? pageSize)
-        {
-            if (uow == null)
-                return null;
-            var timer = new System.Diagnostics.Stopwatch();
-            timer.Start();
-            PagedResult<UserIndex> usersPagedProfiles = null;
-            var onlineHubUsers = _notificationService.GetOnlineUsersInfo();
-            if (string.IsNullOrWhiteSpace(query))
-            {
-                usersPagedProfiles = await _searchService.SearchBy<UserIndex>(query, pageSize, pageIndex);
-            }
-            else
-            {
-                query = query.Trim().ToLower();
-                
-            }
-
-            if (usersPagedProfiles == null)
-                return null;
-
-            
-            timer.Stop();
-            usersPagedProfiles.ElapsedMilliseconds = timer.ElapsedMilliseconds;
-            return usersPagedProfiles;
         }
 
         public async Task<string> ReIndex()
