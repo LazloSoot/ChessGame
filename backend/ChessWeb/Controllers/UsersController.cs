@@ -44,22 +44,6 @@ namespace ChessWeb.Controllers
                 : Ok(user);
         }
 
-        // GET: Users/online
-        [HttpGet("online", Name ="GetOnlineUsers")]
-        public async Task<IActionResult> GetOnlineUsers([FromQuery(Name ="pageIndex")]int? pageIndex, [FromQuery(Name = "pageSize")]int? pageSize, [FromQuery(Name = "isOnline")]bool isOnline)
-        {
-            PagedResultDTO<UserDTO> users;
-            if(isOnline)
-            {
-                users = await _service.GetOnlineUsers(pageIndex, pageSize);
-            } else
-            {
-                users = await _service.GetListAsync(pageIndex, pageSize);
-            }
-            return users == null ? NotFound($"No available users!") as IActionResult
-                : Ok(users);
-        }
-
         // GET: Users/
         [HttpGet(Name= "SearchUsers")]
         public async Task<IActionResult> SearchUsers([FromQuery(Name ="part")]string part, [FromQuery(Name = "isOnline")]bool isOnline, [FromQuery(Name = "pageIndex")]int? pageIndex, [FromQuery(Name = "pageSize")]int? pageSize)

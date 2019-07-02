@@ -4,6 +4,7 @@ import * as firebase from 'firebase/app';
 import { tap, map, throttleTime, flatMap } from 'rxjs/operators';
 import { AngularFireDatabase } from '@angular/fire/database';
 import { Observable, Subscription, fromEvent, timer } from 'rxjs'
+import { PagedResult, User, Page } from '..';
 
 @Injectable({
   providedIn: 'root'
@@ -52,6 +53,8 @@ export class PresenceService {
     return this.database.object('.info/connected').valueChanges()
       .pipe(tap(connected => {
         if (connected) {
+          
+      this.getOnlineUsers(new Page(0,2));////////////////////////////////////////////////////////////////////////////////
           this.initUserData();
         }
       }))
@@ -63,7 +66,6 @@ export class PresenceService {
       .onDisconnect()
       .update({ status: 'offline', lastSeen: firebase.database.ServerValue.TIMESTAMP });
   }
-
 
   private updateOnIdle() {
     return fromEvent(document, 'mousemove')
@@ -84,5 +86,25 @@ export class PresenceService {
         if (this.currentUser)
           firebase.database().ref('users/' + this.currentUser.uid).update({ status: 'away', lastSeen: firebase.database.ServerValue.TIMESTAMP });
       })).subscribe()
+  }
+
+  public getOnlineUsers(page?: Page): PagedResult<User> {
+    debugger;
+    let a = firebase.database().ref('users/')
+    .orderByChild("status")
+    //.startAt(page.pageIndex)
+    //.endAt(page.pageIndex + page.pageSize)
+    .once('value', function(snapshot) {
+      debugger;
+      snapshot.forEach(function(childSnapshot) { 
+        var childKey = childSnapshot.key;
+    var childData = childSnapshot.val();
+    console.log(childData);
+      })
+    }).then((data) => {
+      debugger; 
+    });
+    let b = firebase.database().ref('users/' + this.currentUser.uid);
+    return null;
   }
 }

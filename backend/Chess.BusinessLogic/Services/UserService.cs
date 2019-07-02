@@ -50,6 +50,7 @@ namespace Chess.BusinessLogic.Services
             return currentUserDTO;
         }
 
+        [Obsolete("Backend no longer serves online status.Currently firebase realtime database serves it.")]
         public async Task<PagedResultDTO<UserDTO>> GetOnlineUsers(int? pageIndex, int? pageSize)
         {
             if (uow == null)
@@ -86,7 +87,6 @@ namespace Chess.BusinessLogic.Services
                 }
                 else
                 {
-                    var partForNextWord = $" {query}";
                     usersPagedProfiles = await _searchService.SearchUsers(query, pageSize, pageIndex);
                     //await uow.GetRepository<User>()
                     //.GetAllPagedAsync(pageIndex, pageSize, u => u.Name.ToLower().StartsWith(query) || u.Name.ToLower().Contains(partForNextWord));
