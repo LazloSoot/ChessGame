@@ -65,7 +65,7 @@ export class ChessGameComponent implements OnInit {
 		});
 
 		let currentGame = this.appStateService.currentGame;
-		if(currentGame)
+		if(currentGame && currentGame.gameId)
 		{
 			this.chessGame.get(currentGame.gameId)
 			.subscribe((game) => {

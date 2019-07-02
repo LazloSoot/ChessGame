@@ -2,7 +2,7 @@
 	<h4>Invite user</h4>
 	<mat-form-field class="users-search">
 		<input class="users-search__input" matInput placeholder="Search user" #searchInput
-		 name="searchInput">
+		 name="searchInput" [(ngModel)]="namePart">
 		<mat-spinner *ngIf="timeOutSearch" [diameter]="20" matSuffix></mat-spinner>
 		<button matSuffix *ngIf="!timeOutSearch" mat-button mat-icon-button (click)="searchInput.value = null; resetSearchInput();">
 			<mat-icon>close</mat-icon>

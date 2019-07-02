@@ -12,6 +12,7 @@ import { scan, buffer, debounce, map, debounceTime } from 'rxjs/operators';
 export class UsersTableComponent implements OnInit {
   @ViewChild('searchInput') searchInput: ElementRef;
   @Output() onUserSelected: EventEmitter<User> = new EventEmitter<User>(null); 
+  private namePart: string ="";
   private filterInput: string;
   private isOnlineFilter: boolean;
   private users: User[] = [];
@@ -37,22 +38,20 @@ export class UsersTableComponent implements OnInit {
 
   ngAfterViewInit() {
 
-    this.searchStream = fromEvent(this.searchInput.nativeElement, 'input').pipe(
-      map((i: InputEvent) => i.data));
+    this.searchStream = fromEvent(this.searchInput.nativeElement, 'input');
     
     this.searchStream.pipe(
-      scan((acc, crr) => acc = crr),
-      debounceTime(50))
-      .forEach((searchInputText) => {
-        this.getUsers(searchInputText);
-      })
+      debounceTime(500))
+      .subscribe(() => {
+        debugger;
+        this.getUsers(this.namePart);
+      });
   }
 
   resetSearchInput() {
 		this.isSearchMode = false;
 		this.getUsers('');
   }
-  
   
   getUsers(filter: string) {
     this.isUsersLoading = true;
@@ -62,7 +61,7 @@ export class UsersTableComponent implements OnInit {
       setTimeout(() => {
         this.timeOutSearch = false;
         this.userService
-            .getUsersByNameStartsWith(filter, this.isOnlineUserFilterEnabled, new Page(0, 10000))
+            .getUsersByNameStartsWith(filter, this.isOnlineUserFilterEnabled, new Page(0, 10))
             .subscribe((users: PagedResult<User>) => {
               this.users = [];
               if(users) {
@@ -76,8 +75,4 @@ export class UsersTableComponent implements OnInit {
       }, 1000);
     }
   }
-}
-
-export interface InputEvent {
-  data: string;
 }
