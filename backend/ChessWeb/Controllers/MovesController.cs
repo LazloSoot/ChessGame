@@ -1,6 +1,7 @@
 ﻿using System.Threading.Tasks;
 using Chess.BusinessLogic.Interfaces;
 using Chess.Common.DTOs;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace ChessWeb.Controllers
@@ -8,6 +9,7 @@ namespace ChessWeb.Controllers
     [Route("[controller]")]
     [Produces("application/json")]
     [ApiController]
+    [Authorize]
     public class MovesController : ControllerBase
     {
         private readonly IChessMovesService service;

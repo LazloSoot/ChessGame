@@ -4,7 +4,7 @@ import * as firebase from 'firebase/app';
 import { tap, map, throttleTime, flatMap } from 'rxjs/operators';
 import { AngularFireDatabase } from '@angular/fire/database';
 import { Observable, Subscription, fromEvent, timer } from 'rxjs'
-import { PagedResult, User, Page } from '..';
+import { PagedResult, User, Page } from '../models';
 
 @Injectable({
   providedIn: 'root'
@@ -51,11 +51,10 @@ export class PresenceService {
 
   private updateOnConnect() {
     return this.database.object('.info/connected').valueChanges()
-      .pipe(tap(connected => {
+      .pipe(tap(async connected => {
         if (connected) {
           
-      this.getOnlineUsers(new Page(0,2));////////////////////////////////////////////////////////////////////////////////
-          this.initUserData();
+      this.initUserData();
         }
       }))
       .subscribe();
@@ -88,23 +87,41 @@ export class PresenceService {
       })).subscribe()
   }
 
-  public getOnlineUsers(page?: Page): PagedResult<User> {
-    debugger;
-    let a = firebase.database().ref('users/')
+  public async getFirstUsersSnapshots(usersCount: number): Promise<PagedResult<User>> {
+    return await firebase.database().ref('users/')
     .orderByChild("status")
-    //.startAt(page.pageIndex)
-    //.endAt(page.pageIndex + page.pageSize)
-    .once('value', function(snapshot) {
-      debugger;
+    .limitToFirst(usersCount)
+    .once('value', function(snapshot) {})
+    .then((snapshot) => {
+      let users: User[] = [];
+      let currentUser: any;
       snapshot.forEach(function(childSnapshot) { 
-        var childKey = childSnapshot.key;
-    var childData = childSnapshot.val();
-    console.log(childData);
-      })
-    }).then((data) => {
-      debugger; 
+        currentUser = childSnapshot.val();
+        users.push(new User(currentUser.name, undefined, undefined, undefined, new Date(currentUser.lastSeen), childSnapshot.key, currentUser.status !== 'offline'));
+      });
+      return new PagedResult<User>(0, 1, usersCount, usersCount, users);
     });
-    let b = firebase.database().ref('users/' + this.currentUser.uid);
-    return null;
+  }
+
+  public async getUserSnapshot(uid: string): Promise<User> {
+    if(uid) {
+      return await firebase.database().ref(`users/${uid}`)
+      .once('value', function(snapshot){})
+      .then((snapshot) => {
+        let user: User = new User('');
+        user.uid = uid;
+        let key;
+        snapshot.forEach(function(childSnapshot) {
+          key = childSnapshot.key;
+          if(key === 'status')
+            user.isOnline = childSnapshot.val() !== 'offline';
+          else if(key === 'lastSeen')
+            user.lastSeenDate = new Date(childSnapshot.val());
+          else
+            user[childSnapshot.key] = childSnapshot.val();
+        });
+        return user;
+      })
+    }
   }
 }
