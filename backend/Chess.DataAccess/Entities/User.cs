@@ -19,7 +19,8 @@ namespace Chess.DataAccess.Entities
             return new UserIndex()
             {
                 Id = this.Id.ToString(),
-                Name = this.Name
+                Name = this.Name,
+                Uid = Uid
             };
         }
     }
