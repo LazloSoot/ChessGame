@@ -1,0 +1,23 @@
+<div class="container">
+	<div class="chess-board" [ngStyle]="{'background-color': bgColor }">
+		<div class="chess-board__board chess-board__board--left"
+			[ngStyle]="{'background-image': 'url(' + baseBoardPath.value + ((this.gameSettings.options.selectedSide === 1) ? '/border_left_legend.png )' : '/border_left_legend_reverse.png )')}">
+		</div>
+
+		<div class="chess-board__wrapper">
+			<div class="chess-board__board chess-board__board--top"
+				[ngStyle]="{'background-image': 'url('+ baseBoardPath.value + '/border_top.png )'}"></div>
+			<div *ngFor="let square of squares" [ngStyle]="{'background-image':  getSquareImgUrlExpression(square) }"
+				class="square" (click)="selectSquare(square)">{{square.name}}
+				<!--<div *ngIf="square.piece" class="piece" [ngStyle]="{'background-image': 'url('+ getPiecePath(square.piece) + ')'}"></div>
+			   -->
+			</div>
+			<div class="chess-board__board chess-board__board--bottom"
+				[ngStyle]="{'background-image': 'url('+ baseBoardPath.value + ((this.gameSettings.options.selectedSide === 1) ? '/border_bottom_legend.png )' : '/border_bottom_legend_reverse.png )')}">
+			</div>
+		</div>
+
+		<div class="chess-board__board chess-board__board--right"
+			[ngStyle]="{'background-image': 'url('+ baseBoardPath.value + '/border_right.png )'}"></div>
+	</div>
+</div>

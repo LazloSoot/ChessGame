@@ -1,0 +1,66 @@
+<form (submit)="onLoginFormSubmit(user, form)" action="javascript:void(0)" #form="ngForm">
+
+    <button class="social-btn" mat-raised-button type="button" (click)="signInWithGoogle()"><img class="btn-logo" src="../../../../assets/images/googlelogo.png" alt="G" height="30">Sign In with Google</button>
+    <button class="social-btn" mat-raised-button color="primary" type="button" (click)="signInWithFacebook()"><img class="btn-logo" src="../../../../assets/images/facebooklogo.png" alt="F" height="30">Sign In with Facebook</button>
+   
+    <p class="devider">or</p>
+
+    <mat-form-field class="input-field">
+      <input id="login" name="login" type="login" [(ngModel)]="user.login" required matInput placeholder="Your Email"
+        #login="ngModel" autocomplete="on"
+        pattern="[a-z0-9!#$%&'*+/=?^_`{|}~-]+(?:\.[a-z0-9!#$%&'*+/=?^_`{|}~-]+)*@(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\.)+[a-z0-9](?:[a-z0-9-]*[a-z0-9])?"
+        maxlength="50">
+      <mat-error *ngIf="login.errors && login.errors.required">
+        Email is
+        <strong>required</strong>
+      </mat-error>
+  
+      <mat-error *ngIf="login.errors && login.errors.pattern">
+        Email is
+        <strong>not valid</strong>
+      </mat-error>
+  
+      <mat-error *ngIf="login.errors && login.errors.maxlength">
+        Email <strong>cannot</strong> be more than 50 characters long
+      </mat-error>
+    </mat-form-field>
+  
+    <mat-form-field class="input-field">
+      <input id="password" name="password" [type]="hide ? 'password' : 'text'" [(ngModel)]="user.password" required matInput placeholder="Your Password"
+        #password="ngModel"
+        maxlength="30">
+      <mat-icon class="finger" matSuffix (click)="hide = !hide">{{hide ? 'visibility' : 'visibility_off'}}</mat-icon>
+      <mat-error *ngIf="password.errors && password.errors.required">
+        Password is
+        <strong>required</strong>
+      </mat-error>
+  
+      <mat-error *ngIf="password.errors && password.errors.maxlength">
+        Password <strong>cannot</strong> be more than 30 characters long
+      </mat-error>
+    </mat-form-field>
+  <div class="forgot-box">
+      <mat-checkbox color="primary" [checked]="user.isRemember" (change)="user.isRemember = !user.isRemember">Remember me</mat-checkbox>
+      <a href="#" class="forgot-password" (click)="onForgotPasswordClick()"  color="primary">Forgot password?</a>
+  </div>
+    
+    <br>
+  
+    <mat-error class="firebase-error" *ngIf="firebaseError">
+      {{firebaseError}}
+      <div class="emailNotConfirmed-error" *ngIf="isEmailConfirmationRequired">
+        <button (click)="onResendConfirmation()" mat-stroked-button type="button">Resend</button>
+      </div>
+    </mat-error>
+    <mat-hint class="firebase-hint" *ngIf="firebaseHint">
+      {{firebaseHint}}
+    </mat-hint>
+  
+    
+    <button class="login-btn" mat-stroked-button type="submit">Log In</button>
+
+    <div class="signUp-container">
+        Not a member?
+        <a href="#" class="signUp" (click)="onSignUp()">Sign up</a>
+    </div>
+  </form>

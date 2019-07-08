@@ -1,0 +1,51 @@
+<div class="container">
+	<h4>Invite user</h4>
+	<mat-form-field class="users-search">
+		<input class="users-search__input" matInput placeholder="Search user" #searchInput
+		 name="searchInput" [(ngModel)]="namePart">
+		<mat-spinner *ngIf="timeOutSearch" [diameter]="20" matSuffix></mat-spinner>
+		<button matSuffix *ngIf="!timeOutSearch" mat-button mat-icon-button (click)="searchInput.value = null; resetSearchInput();">
+			<mat-icon>close</mat-icon>
+		</button>
+	</mat-form-field>
+	<div class="users-table__wrapper">
+		<!-- <div *ngIf="isUsersLoading" class="spinner-overlay">
+			 	<app-spinner-rect spinnerColor="#333"></app-spinner-rect> 
+		</div> -->
+		<p *ngIf="!isUsersLoading && users.length < 1">Not found</p>
+		<div class="table-template-container">
+			<div class="table-container">
+				<table mat-table [dataSource]="users">
+
+					<!-- Online status Column -->
+					<ng-container matColumnDef="online">
+						<th mat-header-cell *matHeaderCellDef> Is online </th>
+						<td mat-cell *matCellDef="let user"
+							[ngStyle]="{'color':  getColor(user.isOnline)}"
+						> {{(user.isOnline) ? 'online' : 'offline'}} </td>
+					</ng-container>
+
+					<!-- Name Column -->
+					<ng-container matColumnDef="name">
+						<th mat-header-cell *matHeaderCellDef> Name </th>
+						<td mat-cell *matCellDef="let user"> {{user.name}} </td>
+					</ng-container>
+
+					<!-- Invite Column -->
+					<ng-container matColumnDef="invite">
+						<th mat-header-cell *matHeaderCellDef> Invite </th>
+						<td mat-cell *matCellDef="let user">
+								<button (click)="trySelectUser(user);" *ngIf="user.isOnline" mat-button mat-icon-button aria-label="Invite user" disableRipple="true" matTooltip="Invite">
+										<mat-icon>person_add</mat-icon>
+									</button>
+								 </td>
+					</ng-container>
+
+
+					<!-- <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr> -->
+					<tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
+				</table>
+			</div>
+		</div>
+	</div>
+</div>

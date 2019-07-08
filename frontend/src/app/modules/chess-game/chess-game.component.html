@@ -1,0 +1,68 @@
+<button mat-button (click)="openNewGameDialog();">New game</button>
+<div class="container">
+	<div class="chess-board-container">
+
+		<div class="chess-board-container__wrapper">
+			<mat-card class="player-card player-card--oponent">
+				<a href="#">
+					<mat-card-header>
+						<div mat-card-avatar class="avatar avatar--opponent"
+							[ngStyle]="{'background-image':'url(' + getOpponentAvatarUrl() + ')'}">
+							<div *ngIf="isOpponentTurn" class="spinner-overlay">
+								<app-spinner-rect></app-spinner-rect>
+							</div>
+						</div>
+						<mat-card-title class="player-card__title">{{opponent.name}}</mat-card-title>
+						<mat-card-subtitle class="player-card__subtitle">{{(opponent.uid ? "user" : "robot")}}
+						</mat-card-subtitle>
+					</mat-card-header>
+				</a>
+				<div class="timer-container">
+					timer placeholder
+				</div>
+			</mat-card>
+
+			<app-chess-board *ngIf="isGameInitialized;else boardPlaceholder" [gameSettings]="gameSettings"
+				(moveRequest)="onMove($event)" (check)="onCheck($event)" (checkmate)="onCheckmate($event)">
+			</app-chess-board>
+			<ng-template #boardPlaceholder>
+				<img src="../../../assets/images/Chess/prev.jpg">
+			</ng-template>
+
+			<mat-card class="player-card player-card--player">
+				<a href="#">
+					<mat-card-header>
+						<div mat-card-avatar class="avatar avatar--player"
+							[ngStyle]="{'background-image':'url(' + player.avatarUrl + ')'}">
+						</div>
+						<mat-card-title class="player-card__title">{{player.name}}</mat-card-title>
+						<mat-card-subtitle class="player-card__subtitle">you</mat-card-subtitle>
+					</mat-card-header>
+				</a>
+				<div class="timer-container">
+					timer placeholder
+				</div>
+			</mat-card>
+		</div>
+		<div class="chess-board__options">
+			<button mat-icon-button aria-label="Open settings" disableRipple="true" matTooltip="Settings" matTooltipClass="options-tooltip">
+				<mat-icon class="icon">settings</mat-icon>
+			</button>
+			<button mat-icon-button aria-label="Enable focus mode" disableRipple="true" matTooltip="Focus mode" matTooltipClass="options-tooltip">
+				<mat-icon class="icon">fullscreen</mat-icon>
+			</button>
+			<button mat-icon-button aria-label="Drag for resize board" disableRipple="true" matTooltip="Drag for resize"
+			matTooltipClass="options-tooltip">
+				<mat-icon class="icon">open_with</mat-icon>
+			</button>
+			<button mat-icon-button aria-label="Flip board" disableRipple="true" matTooltip="Flip board"  matTooltipClass="options-tooltip">
+				<mat-icon class="icon">swap_vert</mat-icon>
+			</button>
+		</div>
+	</div>
+
+	<div class="move-tracker-container">
+		<app-move-tracker [moves]="commitedMoves" [opponent]="opponent">
+		</app-move-tracker>
+	</div>
+</div>
