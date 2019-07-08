@@ -9,7 +9,7 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace ChessWeb.Controllers
 {
-    //[Authorize]
+    [Authorize]
     [Route("[controller]")]
     [Produces("application/json")]
     [ApiController]
@@ -42,22 +42,6 @@ namespace ChessWeb.Controllers
             var user = await _service.GetCurrentUser();
             return user == null ? StatusCode(500) as IActionResult
                 : Ok(user);
-        }
-
-        // GET: Users/online
-        [HttpGet("online", Name ="GetOnlineUsers")]
-        public async Task<IActionResult> GetOnlineUsers([FromQuery(Name ="pageIndex")]int? pageIndex, [FromQuery(Name = "pageSize")]int? pageSize, [FromQuery(Name = "isOnline")]bool isOnline)
-        {
-            PagedResultDTO<UserDTO> users;
-            if(isOnline)
-            {
-                users = await _service.GetOnlineUsers(pageIndex, pageSize);
-            } else
-            {
-                users = await _service.GetListAsync(pageIndex, pageSize);
-            }
-            return users == null ? NotFound($"No available users!") as IActionResult
-                : Ok(users);
         }
 
         // GET: Users/

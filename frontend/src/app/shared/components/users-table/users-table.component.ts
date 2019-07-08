@@ -3,6 +3,7 @@ import { User, PagedResult, UserService, AppStateService, Page } from '../../../
 import { MatPaginator } from '@angular/material';
 import { Observable, fromEvent, interval } from 'rxjs';
 import { scan, buffer, debounce, map, debounceTime } from 'rxjs/operators';
+import { PresenceService } from '../../../core/services/presence.service';
 
 @Component({
   selector: 'app-users-table',
@@ -12,6 +13,7 @@ import { scan, buffer, debounce, map, debounceTime } from 'rxjs/operators';
 export class UsersTableComponent implements OnInit {
   @ViewChild('searchInput') searchInput: ElementRef;
   @Output() onUserSelected: EventEmitter<User> = new EventEmitter<User>(null); 
+  private namePart: string ="";
   private filterInput: string;
   private isOnlineFilter: boolean;
   private users: User[] = [];
@@ -22,13 +24,14 @@ export class UsersTableComponent implements OnInit {
 	private isSearchMode: boolean = false;
   private isUsersLoading: boolean = true;
   private totalUsersCount: number = 0;
-  private displayedColumns: string[] = ['online', 'name'];
+  private displayedColumns: string[] = ['online', 'name', 'invite'];
   private pageSizeOptions = [5, 10, 20, 50];
   private currentUid: string;
   private searchStream: Observable<any>;
   constructor(
     public userService: UserService,
-    public appStateService: AppStateService
+    public appStateService: AppStateService,
+    public presenceService: PresenceService
     ) { }
 
   ngOnInit() {
@@ -37,22 +40,20 @@ export class UsersTableComponent implements OnInit {
 
   ngAfterViewInit() {
 
-    this.searchStream = fromEvent(this.searchInput.nativeElement, 'input').pipe(
-      map((i: InputEvent) => i.data));
+    this.searchStream = fromEvent(this.searchInput.nativeElement, 'input');
     
     this.searchStream.pipe(
-      scan((acc, crr) => acc = crr),
-      debounceTime(50))
-      .forEach((searchInputText) => {
-        this.getUsers(searchInputText);
-      })
+      debounceTime(500))
+      .subscribe(() => {
+        this.getUsers(this.namePart);
+      });
   }
 
   resetSearchInput() {
+    this.users = [];
 		this.isSearchMode = false;
 		this.getUsers('');
   }
-  
   
   getUsers(filter: string) {
     this.isUsersLoading = true;
@@ -61,23 +62,49 @@ export class UsersTableComponent implements OnInit {
       this.timeOutSearch = true;
       setTimeout(() => {
         this.timeOutSearch = false;
-        this.userService
-            .getUsersByNameStartsWith(filter, this.isOnlineUserFilterEnabled, new Page(0, 10000))
-            .subscribe((users: PagedResult<User>) => {
+        if(filter) {
+          this.userService
+          .getUsersByNameStartsWith(filter, this.isOnlineUserFilterEnabled, new Page(0, 10))
+          .subscribe(async (users: PagedResult<User>) => {
+            this.users = [];
+            if(users) {
+              const currentId = this.appStateService.getCurrentUser().id;
+              this.users = users.dataRows.filter(u => u.id !== currentId);
+              await this.users.forEach(async user => {
+                const u = await this.presenceService.getUserSnapshot(user.uid);
+                if(u)
+                  user.isOnline = u.isOnline;
+              });
+              this.timeOutSearch = false;
+              this.isUsersLoading = false;
+              console.log(`elapsed milliseconds :  ${users.elapsedMilliseconds}`);
+            }
+          });
+        } else {
+          this.presenceService
+          .getFirstUsersSnapshots(10)
+            .then((users: PagedResult<User>) => {
               this.users = [];
               if(users) {
-                const currentId = this.appStateService.getCurrentUser().id;
-                this.users = users.dataRows.filter(u => u.id !== currentId);
+                const currentUid = this.appStateService.getCurrentUser().uid;
+                this.users = users.dataRows.filter(u => u.uid !== currentUid);
                 this.timeOutSearch = false;
                 this.isUsersLoading = false;
-                console.log(`elapsed milliseconds :  ${users.elapsedMilliseconds}`);
               }
             });
+        }
+        
       }, 1000);
     }
   }
-}
 
-export interface InputEvent {
-  data: string;
+  trySelectUser(user: User) {
+    if(user.isOnline) {
+      this.onUserSelected.emit(user);
+    }
+  }
+
+  getColor(isUserOnline: boolean): string {
+    return isUserOnline ? '#4EBE7D' : '#BF081B';
+  }
 }

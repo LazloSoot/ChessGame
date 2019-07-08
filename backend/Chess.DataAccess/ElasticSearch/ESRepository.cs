@@ -106,6 +106,7 @@ namespace Chess.DataAccess.ElasticSearch
             foreach (var post in data)
             {
                 var indexObject = post.GetIndexObject();
+                indexObject.UpdatedAt = DateTime.Now;
                 await _lowlevelClient.IndexAsync<StringResponse>(targetType, targetType,
                     indexObject.Id, PostData.Serializable(indexObject));
             }
