@@ -9,7 +9,7 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace ChessWeb.Controllers
 {
-    [Authorize]
+    //[Authorize]
     [Route("[controller]")]
     [Produces("application/json")]
     [ApiController]

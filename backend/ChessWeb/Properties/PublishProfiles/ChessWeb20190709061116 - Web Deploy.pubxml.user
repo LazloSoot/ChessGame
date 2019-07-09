@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+This file is used by the publish/package process of your Web project. You can customize the behavior of this process
+by editing this MSBuild file. In order to learn more about this please visit https://go.microsoft.com/fwlink/?LinkID=208121. 
+-->
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <TimeStampOfAssociatedLegacyPublishXmlFile />
+    <EncryptedPassword>AQAAANCMnd8BFdERjHoAwE/Cl+sBAAAAXe/W+z7+C0KQGok2+abb4AAAAAACAAAAAAAQZgAAAAEAACAAAADNO1Dp+8bzMFov0DblXktedDyO3TGg9rN8LH83B2qj/gAAAAAOgAAAAAIAACAAAACfycTxy2EHjvLlY5nDNJyOzti9CZ1lbFflNFhpUk4TL4AAAACe9IHynqcK3JvHlHE1KLIrCexHf2TUj8nbVinA4hi6iLlenHADijmmvz1m4AlGW3ag0vEuYpKYVG5CIGI74YE2VUorCQjv666MpKWAic4Z64yVIqnI3qFqC4I42bB75pQZBCd/94LL3FgQYqDKCibeZNZrpbBBYAwSoQHntJ71lEAAAAA2N5tklP+wRXfA2PrQED2yi68A+IeKeXScdlX2wlQL7U+UWqhMeti/bZSKBoQMqJfYBq+mg56zapUS4dRBHeed</EncryptedPassword>
+  </PropertyGroup>
+  <ItemGroup>
+    <DestinationConnectionStrings Include="ChessGameDb">
+      <Value>Server=DESKTOP-HM5HN5D%3bInitial Catalog=ChessGame%3bIntegrated Security=True%3bConnect Timeout=30%3bEncrypt=False%3bTrustServerCertificate=True%3bApplicationIntent=ReadWrite%3bMultiSubnetFailover=False</Value>
+    </DestinationConnectionStrings>
+  </ItemGroup>
+</Project>
