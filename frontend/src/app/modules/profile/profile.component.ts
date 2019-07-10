@@ -9,7 +9,7 @@ import { ActivatedRoute } from "@angular/router";
 })
 export class ProfileComponent implements OnInit {
   public userProfile: User;
-  private isActivitiesLoading: boolean = true;
+  public isActivitiesLoading: boolean = true;
 	constructor(
 		private route: ActivatedRoute,
 		public userService: UserService,

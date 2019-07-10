@@ -13,12 +13,12 @@ export class ChessBoardComponent implements OnInit {
 	@Output() moveRequest: EventEmitter<Move> = new EventEmitter<Move>(null);
 	@Output() check: EventEmitter<GameSide> = new EventEmitter<GameSide>(null);
 	@Output() checkmate: EventEmitter<GameSide> = new EventEmitter<GameSide>(null);
+	public baseBoardPath: BehaviorSubject<string> = new BehaviorSubject<string>(null);
+	public basePiecePath: BehaviorSubject<string> = new BehaviorSubject<string>(null);
 	private _signalRConnection: UserConnection;
 	private fen: string;// = 'rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1';
 	private previousFen: string;
-	private baseBoardPath: BehaviorSubject<string> = new BehaviorSubject<string>(null);
-	private basePiecePath: BehaviorSubject<string> = new BehaviorSubject<string>(null);
-	private bgColor = "#813A0D";
+	public bgColor = "#813A0D";
 	private _squares: Square[];
 	private selectedSquare: Square;
 	private availableMoves: string[] =[];

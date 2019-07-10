@@ -12,12 +12,11 @@ import { startWith, switchMap, map, catchError, concatMap, flatMap } from "rxjs/
 export class GamesHistoryComponent implements OnInit {
   @Input() targetUserId: number;
   @ViewChild(MatPaginator) paginator:MatPaginator;
+  public isGamesLoading: boolean = true;
+  public isInitialized: boolean = false;
   private currentPageGames: GameWithConclution[] = [];
   private loadedPages: PagedResult<GameWithConclution>[] = [];
   private prevPageSize: number;
-
-  private isGamesLoading: boolean = true;
-  private isInitialized: boolean = false;
   private isNoGamesToShow: boolean = true;
   private totalGamesCount: number = 0;
   private displayedColumns: string[] = ['date', 'side', 'status', 'result', 'opponent'];

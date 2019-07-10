@@ -8,5 +8,5 @@ export const environment = {
     storageBucket: "chess-zm.appspot.com",
     messagingSenderId: "297708221272"
   },
-  apiUrl: '/api'
+  apiUrl: 'https://chessgameweb.azurewebsites.net'
 };

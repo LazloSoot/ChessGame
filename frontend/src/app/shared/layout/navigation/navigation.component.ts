@@ -14,9 +14,9 @@ import { config } from "rxjs";
 })
 export class NavigationComponent implements OnInit {
 	mobileQuery: MediaQueryList;
+	public user: User;
+	public defaultAvatarUrl ="../../../../assets/images/anonAvatar.png";
 	private _mobileQueryListener: () => void;
-	private user: User;
-	private defaultAvatarUrl ="../../../../assets/images/anonAvatar.png";
 	private _isLoggedIn: boolean;
 	
 	constructor(

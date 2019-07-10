@@ -24,6 +24,8 @@ import { MatDialogRef } from "@angular/material";
 })
 export class NewGameDialogComponent implements OnInit {
 	@Output() onSettingsDefined: EventEmitter<GameSettings> = new EventEmitter<GameSettings>(null);
+	public selectedTab: number = 0;
+	
 	private boardColors: BoardColor[];
 	private boardColor: BoardColor = new BoardColor();
 	private pieceStyles: PieceStyle[];
@@ -31,7 +33,6 @@ export class NewGameDialogComponent implements OnInit {
 	private isEnPassantOn: boolean = true;
 	private side: GameSide = GameSide.Random;
 	private opponentType: OpponentType = OpponentType.Computer;
-	private selectedTab: number = 0;
 	private opponent: User;
 
 	private currentUser: User;
