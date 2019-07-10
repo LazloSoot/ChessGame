@@ -12,6 +12,7 @@ export class AppStateService {
 	private tokenSubject: BehaviorSubject<string> = new BehaviorSubject<string>("");
 	private currentUserSubject: BehaviorSubject<User> = new BehaviorSubject<User>(null);
 	private currentGameSubject: BehaviorSubject<GameSettings> = new BehaviorSubject<GameSettings>(null); 
+	private notificationsStateSubject: BehaviorSubject<boolean> = new BehaviorSubject<boolean>(false);
 	private _signalRConnection: UserConnection;
 	private signalRConnectionGroupName: string;
 	private _isRemember: boolean;
@@ -46,6 +47,18 @@ export class AppStateService {
 
 	public getCurrentGameObs(): Observable<GameSettings> {
 		return this.currentGameSubject.asObservable();
+	}
+
+	public get isNotificationsMuted(): boolean {
+		return this.notificationsStateSubject.value;
+	}
+
+	public set isNotificationsMuted(value: boolean) {
+		this.notificationsStateSubject.next(value);
+	}
+
+	public getNotificatonsMutedObs(): Observable<boolean> {
+		return this.notificationsStateSubject.asObservable();
 	}
 
 	constructor(
