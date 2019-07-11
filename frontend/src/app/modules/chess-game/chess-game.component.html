@@ -1,5 +1,5 @@
 <button mat-button (click)="openNewGameDialog();">New game</button>
-<div class="container">
+<div class="container" #boardContainer>
 	<div class="chess-board-container">
 
 		<div class="chess-board-container__wrapper">
@@ -51,10 +51,12 @@
 			<button mat-icon-button aria-label="Enable focus mode" disableRipple="true" matTooltip="Focus mode" matTooltipClass="options-tooltip">
 				<mat-icon class="icon">fullscreen</mat-icon>
 			</button>
-			<button mat-icon-button aria-label="Drag for resize board" disableRipple="true" matTooltip="Drag for resize"
+			<div #resizeBtn>
+				<button mat-icon-button aria-label="Drag for resize board" disableRipple="true" matTooltip="Drag for resize"
 			matTooltipClass="options-tooltip">
 				<mat-icon class="icon">open_with</mat-icon>
 			</button>
+			</div>
 			<button mat-icon-button aria-label="Flip board" disableRipple="true" matTooltip="Flip board"  matTooltipClass="options-tooltip">
 				<mat-icon class="icon">swap_vert</mat-icon>
 			</button>

@@ -1,4 +1,4 @@
-import { Component, OnInit, OnDestroy, ChangeDetectorRef, ChangeDetectionStrategy, NgZone } from "@angular/core";
+import { Component, OnInit, OnDestroy, ChangeDetectorRef, ChangeDetectionStrategy, NgZone, Renderer2, ViewChild, ElementRef } from "@angular/core";
 import {
 	ClientEvent,
 	Move,
@@ -27,7 +27,8 @@ import {
 } from "../../shared";
 import { Game } from "../../core/models/chess/game";
 import { Side } from "../../core/models/chess/side";
-import { BehaviorSubject } from "rxjs";
+import { BehaviorSubject, fromEvent } from "rxjs";
+import { skipUntil, takeUntil } from "rxjs/operators";
 
 @Component({
 	selector: "app-chess-game",
@@ -36,6 +37,8 @@ import { BehaviorSubject } from "rxjs";
 	changeDetection: ChangeDetectionStrategy.Default
 })
 export class ChessGameComponent implements OnInit {
+	@ViewChild('resizeBtn') resizeButton: ElementRef;
+	@ViewChild('boardContainer') boardContainer: ElementRef;
 	public isOpponentTurn = false;
 	public opponent: User = new User("", "../../../assets/images/anonAvatar.png");
 	public commitedMoves: Move[];
@@ -46,6 +49,10 @@ export class ChessGameComponent implements OnInit {
 	private invitationDialog: MatDialogRef<InvitationDialogComponent>;
 	private awaitedUserUid: BehaviorSubject<string> = new BehaviorSubject<string>(null);
 	private newGameId: number;
+	private sub:any;
+	private boardMouseUp: any;
+	private resizeBtnMouseDown: any;
+
 	constructor(
 		private cdRef:ChangeDetectorRef,
 		private dialog: MatDialog,
@@ -92,6 +99,10 @@ export class ChessGameComponent implements OnInit {
 		Promise.resolve().then(()=> this.openNewGameDialog());
 		this.cdRef.detectChanges();
 		
+		this.boardMouseUp = fromEvent(this.boardContainer.nativeElement, 'mouseup');
+		this.resizeBtnMouseDown = fromEvent(this.resizeButton.nativeElement, 'mousedown');
+		this.boardMouseUp.subscribe(() => this.register());
+		this.register();
 	}
 
 	ngOnDestroy() {
@@ -343,6 +354,29 @@ export class ChessGameComponent implements OnInit {
 			dialogRef.componentInstance.onSettingsDefined.unsubscribe();
 		});
 	}
+
+	register() {
+		try {
+		  this.sub.unsubscribe();
+		} catch (err) {
+		  
+		} finally {
+	
+		}
+	
+		let mousemove = fromEvent(this.boardContainer.nativeElement, 'mousemove');
+		mousemove = mousemove
+		.pipe(
+			takeUntil(this.boardMouseUp),
+			skipUntil(this.resizeBtnMouseDown)
+			);
+		this.sub = mousemove.subscribe((e: any) => {
+		
+		  let mouseX = e.clientX;
+		  let mouseY = e.clientY;
+		  console.log(mouseX);
+		})
+	  }
 }
 
 const AIOpponent: User = new User( "Bob", "../../../assets/images/AIavatar.png");
