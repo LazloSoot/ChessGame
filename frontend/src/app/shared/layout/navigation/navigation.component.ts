@@ -7,6 +7,7 @@ import { AppStateService, User, AuthService } from "../../../core";
 import { Router } from "@angular/router";
 import { Observable } from "rxjs";
 import { SnotifyService } from "ng-snotify";
+import { NotificationsService } from "../../../core/services";
 
 @Component({
 	selector: "app-navigation",
@@ -29,7 +30,8 @@ export class NavigationComponent implements OnInit {
 		private router: Router,
 		private appStateService: AppStateService,
 		private authService: AuthService,
-		private snotifyService: SnotifyService
+		private snotifyService: SnotifyService,
+		private notificationService: NotificationsService
 	) {
 	}
   
@@ -122,8 +124,7 @@ export class NavigationComponent implements OnInit {
 	}
 
 	onLogoutClick() {
-		//this.authService.logout();
-		this.getNotifications();
+		this.authService.logout();
 	}
 
 	getNotifications() {

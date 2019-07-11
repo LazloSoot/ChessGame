@@ -123,44 +123,7 @@ export class ChessGameComponent implements OnInit {
 		let side = rand > 54 ? GameSide.Black : GameSide.White;
 		return side;
 	}
-
-	private handleInvocation(invocation: Invocation) {
-		this.zone.run(() => {
-			this.invitationDialog = this.dialog.open(InvitationDialogComponent, {
-				data: invocation
-			});
-			});
-		
-		this.invitationDialog.afterClosed().subscribe(result => {
-			if (result) {
-						this.chessGameService.joinGame(invocation.gameId).subscribe(game => {
-							if (game) {
-								const selectedSide = game.sides.find(s => s.player.uid === this.appStateService.getCurrentUser().uid);
-								const gameOptions = new GameOptions(
-									true,
-									selectedSide.color,
-									OpponentType.Player,
-									game.sides.find(s => s.player.uid !== selectedSide.player.uid).player
-								);
-								let settings = new GameSettings(new StyleOptions(), gameOptions, game.fen);
-								settings.gameId = game.id;
-								const currentUid = this.appStateService.getCurrentUser().uid;
-								const players = game.sides.filter(s => s.player.uid !== currentUid);
-								if (players && players.length > 0 && players[0].player) {
-									this.opponent = players[0].player
-								}
-								this.commitedMoves = [];
-								this.initializeGame(settings);
-							} else {
-								throw new Error("User has not joined to game.ERROR")
-							}
-						});
-			} else {
-				this.appStateService.signalRConnection.dismissInvocation(invocation.inviter.uid);
-			}
-		});
-	}
-
+	
 	private async createGameWithFriend(settings: GameSettings): Promise<number> {
 		const config: MatDialogConfig = {
 			disableClose: true,
@@ -234,10 +197,7 @@ export class ChessGameComponent implements OnInit {
 	}
 
 	private subscribeSignalREvents() {
-		this.appStateService.signalRConnection.onInvocationReceived(
-			(invocation: Invocation) => {
-			this.handleInvocation(invocation);
-		});
+		
 		this.appStateService.signalRConnection.onInvocationAccepted(
 			(gameId) => {
 				if(gameId && this.newGameId && this.newGameId === gameId)
