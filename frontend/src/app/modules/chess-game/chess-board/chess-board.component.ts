@@ -46,6 +46,7 @@ export class ChessBoardComponent implements OnInit {
 	ngOnChanges(changes: SimpleChange) {
 		for (let propName in changes) {
 			if (propName === 'gameSettings') {
+				debugger;
 				this.previousFen = "";
 				this.fen = "";
 				this.lastMove = null;
@@ -321,35 +322,50 @@ export class ChessBoardComponent implements OnInit {
 	}
 
 	private subscribeSignalREvents() {
-		this._signalRConnection.on(
-			ClientEvent.MoveCommitted,
-			async () => {
-				await this.chessGameService.get(this.gameSettings.gameId)
-					.toPromise()
-					.then((game: Game) => {
-						if (game) {
-							if (this.fen !== game.fen) {
-								const lastMove = game.moves.sort((a, b) => b.id - a.id)[0];
-								this.lastMove = new LastMove(lastMove.moveNext.slice(1, 3), lastMove.moveNext.slice(3, 5));
-								this.moveRequest.emit(lastMove);
-								this.initBoard(game.fen);
-							}
-						}
-					})
+		this._signalRConnection.onMoveComitted(
+			async() => { 
+				await this.refreshBoard();
 			}
 		);
 
-		this._signalRConnection.on(ClientEvent.Check, (checkTo: GameSide) => {
-			if (this.gameSettings.options.selectedSide === checkTo) {
-				this.check.emit(checkTo);
-				// highlight king square
+		this._signalRConnection.onCheck(
+			(checkTo: GameSide) => {
+				this.doCheck(checkTo);
+			}
+		);
+
+		this._signalRConnection.onMate(
+			(mateTo: GameSide) => {
+				this.doMate(mateTo);
+			}
+		)
+	}
+
+	private async refreshBoard() {
+		await this.chessGameService.get(this.gameSettings.gameId)
+		.toPromise()
+		.then((game: Game) => {
+			if(game) {
+				if (this.fen !== game.fen) {
+					const lastMove = game.moves.sort((a, b) => b.id - a.id)[0];
+					this.lastMove = new LastMove(lastMove.moveNext.slice(1, 3), lastMove.moveNext.slice(3, 5));
+					this.moveRequest.emit(lastMove);
+					this.initBoard(game.fen);
+				}
 			}
 		});
+	}
 
-		this._signalRConnection.on(ClientEvent.Mate, (mateTo: GameSide) => {
-			this.checkmate.emit(mateTo);
+	private doCheck(checkTo: GameSide) {
+		if(this.gameSettings.options.selectedSide === checkTo) {
+			this.check.emit(checkTo);
 			// highlight king square
-		})
+		}
+	}
+
+	private doMate(mateTo: GameSide) {
+		this.checkmate.emit(mateTo);
+				// highlight king square
 	}
 }
 

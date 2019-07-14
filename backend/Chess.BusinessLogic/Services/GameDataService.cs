@@ -52,7 +52,7 @@ namespace Chess.BusinessLogic.Services
             var sides = game.Sides.ToList();
             var currentUserSide = sides.Where(s => s.Player == null).First();
             var opponent = sides.Where(s => s.Player != null).First().Player;
-            var currentUser = await _currentUserProvider.GetCurrentUserAsync();
+            var currentUser = await _currentUserProvider.GetCurrentDbUserAsync();
             currentUserSide.Player = mapper.Map<UserDTO>(currentUser);
             game.Sides = new List<SideDTO>()
             {
@@ -125,7 +125,7 @@ namespace Chess.BusinessLogic.Services
                 return null;
 
             var color = (hostSide.Color == DataAccess.Helpers.Color.Black) ? DataAccess.Helpers.Color.White : DataAccess.Helpers.Color.Black;
-            var currentDbUser = await _currentUserProvider.GetCurrentUserAsync();
+            var currentDbUser = await _currentUserProvider.GetCurrentDbUserAsync();
             if (currentDbUser == null)
                 return null;
 

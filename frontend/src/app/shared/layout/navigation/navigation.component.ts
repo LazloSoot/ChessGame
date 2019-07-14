@@ -5,7 +5,9 @@ import { MatDialog, MatDialogConfig } from "@angular/material";
 import { SignInDialogComponent , SignUpDialogComponent, InfoDialogComponent } from '../../dialogs';
 import { AppStateService, User, AuthService } from "../../../core";
 import { Router } from "@angular/router";
-import { config } from "rxjs";
+import { Observable } from "rxjs";
+import { SnotifyService } from "ng-snotify";
+import { NotificationsService } from "../../../core/services";
 
 @Component({
 	selector: "app-navigation",
@@ -27,7 +29,9 @@ export class NavigationComponent implements OnInit {
 		private dialog: MatDialog,
 		private router: Router,
 		private appStateService: AppStateService,
-		private authService: AuthService
+		private authService: AuthService,
+		private snotifyService: SnotifyService,
+		private notificationService: NotificationsService
 	) {
 	}
   
@@ -121,5 +125,44 @@ export class NavigationComponent implements OnInit {
 
 	onLogoutClick() {
 		this.authService.logout();
+	}
+
+	getNotifications() {
+		
+		const config = {
+			closeOnClick: true,
+			timeout: 5000,
+			showProgressBar: true
+		  }
+		const successAction = Observable.create(observer => {
+			setTimeout(() => {
+			  observer.next({
+				body: 'Still loading.....',
+			  });
+			}, 2000);
+	  
+			setTimeout(() => {
+			  observer.next({
+				title: 'Success',
+				body: 'Example. Data loaded!',
+				config: config
+			  });
+			  observer.complete();
+			}, 5000);
+		  });
+	  
+	   this.snotifyService.async('This will resolve with success', successAction, config);
+
+
+
+
+	   this.snotifyService.success('Example body content');
+		this.snotifyService.success('Example body content', 'Example Title');
+		this.snotifyService.success('Example body content', {
+  timeout: 2000,
+  showProgressBar: false,
+  closeOnClick: false,
+  pauseOnHover: true
+});
 	}
 }

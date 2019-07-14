@@ -17,12 +17,14 @@ import { SpinnerColorDirective } from './layout/spinners/directives/spinner-colo
 import { LastEntryDatePipe } from './pipes/last-entry-date.pipe';
 import { UsersTableComponent } from './components/users-table/users-table.component';
 import { InfoDialogComponent } from './dialogs/info-dialog/info-dialog.component';
+import { SnotifyModule, SnotifyService, ToastDefaults } from 'ng-snotify';
 
 @NgModule({
   imports: [
     CommonModule,
     MaterialModule,
-    FormsModule
+    FormsModule,
+    SnotifyModule
   ],
   
   exports: [
@@ -30,7 +32,8 @@ import { InfoDialogComponent } from './dialogs/info-dialog/info-dialog.component
     FormsModule,
     SpinnerRectComponent,
     SpinnerColorDirective,
-    LastEntryDatePipe
+    LastEntryDatePipe,
+    SnotifyModule
   ],
 
   declarations: [
@@ -49,7 +52,12 @@ import { InfoDialogComponent } from './dialogs/info-dialog/info-dialog.component
     UsersTableComponent,
     InfoDialogComponent
     ],
-    
+
+    providers: [
+      { provide: 'SnotifyToastConfig', useValue: ToastDefaults},
+      SnotifyService
+    ],
+
   entryComponents: [
     SignInDialogComponent,
     SignUpDialogComponent,

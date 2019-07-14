@@ -24,8 +24,8 @@ namespace Chess.Common.Mappings
                 cfg.CreateMap<Move, MoveDTO>();
                 cfg.CreateMap<MoveDTO, Move>();
 
-                cfg.CreateMap<User, UserDTO>()
-                .ForMember(p => p.Uid, opt => opt.UseValue(string.Empty));
+                cfg.CreateMap<User, UserDTO>();
+                //.ForMember(p => p.Uid, opt => opt.UseValue(string.Empty));
                 cfg.CreateMap<UserDTO, User>();
                 cfg.CreateMap<UserIndex, UserDTO>();
 

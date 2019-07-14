@@ -4,17 +4,11 @@ import {
 	Move,
 	ChessGameService,
 	GameSettings,
-	SignalRService,
 	AppStateService,
-	Group,
-	Hub,
 	GameSide,
 	Invocation,
-	ServerAction,
 	StyleOptions,
 	GameOptions,
-	MovesService,
-	MoveRequest,
 	OpponentType,
 	User
 } from "../../core";
@@ -29,6 +23,7 @@ import { Game } from "../../core/models/chess/game";
 import { Side } from "../../core/models/chess/side";
 import { BehaviorSubject, fromEvent } from "rxjs";
 import { skipUntil, takeUntil } from "rxjs/operators";
+import { NotificationsService } from "../../core/services/notifications.service";
 
 @Component({
 	selector: "app-chess-game",
@@ -46,8 +41,7 @@ export class ChessGameComponent implements OnInit {
 	public isGameInitialized = false;
 	private gameSettings: GameSettings = new GameSettings();
 	private waitingDialog: MatDialogRef<WaitingDialogComponent>;
-	private invitationDialog: MatDialogRef<InvitationDialogComponent>;
-	private awaitedUserUid: BehaviorSubject<string> = new BehaviorSubject<string>(null);
+	private awaitedUser: BehaviorSubject<User> = new BehaviorSubject<User>(null);
 	private newGameId: number;
 	private sub:any;
 	private boardMouseUp: any;
@@ -73,8 +67,9 @@ export class ChessGameComponent implements OnInit {
 	constructor(
 		private cdRef:ChangeDetectorRef,
 		private dialog: MatDialog,
-		private chessGame: ChessGameService,
+		private chessGameService: ChessGameService,
 		private appStateService: AppStateService,
+		private notificationService: NotificationsService,
 		private zone : NgZone
 	) {}
 
@@ -82,7 +77,14 @@ export class ChessGameComponent implements OnInit {
 		this.subscribeSignalREvents();
 
 		this.player = this.appStateService.getCurrentUser();
-		this.awaitedUserUid.subscribe((value) => {
+		this.appStateService.getCurrentGameObs()
+		.subscribe((gameSettings: GameSettings) => {
+			if(gameSettings)
+			{
+				this.gameSettings = gameSettings;
+			}
+		});
+		this.awaitedUser.subscribe((value) => {
 			if(!value && this.waitingDialog)
 			{
 				this.waitingDialog.close(true);
@@ -92,7 +94,7 @@ export class ChessGameComponent implements OnInit {
 		let currentGame = this.appStateService.currentGame;
 		if(currentGame && currentGame.gameId)
 		{
-			this.chessGame.get(currentGame.gameId)
+			this.chessGameService.get(currentGame.gameId)
 			.subscribe((game) => {
 				if(game) {
 					currentGame.startFen = game.fen;
@@ -157,53 +159,13 @@ export class ChessGameComponent implements OnInit {
 		let side = rand > 54 ? GameSide.Black : GameSide.White;
 		return side;
 	}
-
-	private handleInvocation(invocation: Invocation) {
-		this.zone.run(() => {
-			this.invitationDialog = this.dialog.open(InvitationDialogComponent, {
-				data: invocation
-			});
-			});
-		
-		this.invitationDialog.afterClosed().subscribe(result => {
-			if (result) {
-						this.chessGame.joinGame(invocation.gameId).subscribe(game => {
-							if (game) {
-								const selectedSide = game.sides.find(s => s.player.uid === this.appStateService.getCurrentUser().uid);
-								const gameOptions = new GameOptions(
-									true,
-									selectedSide.color,
-									OpponentType.Player,
-									game.sides.find(s => s.player.uid !== selectedSide.player.uid).player
-								);
-								let settings = new GameSettings(new StyleOptions(), gameOptions, game.fen);
-								settings.gameId = game.id;
-								const currentUid = this.appStateService.getCurrentUser().uid;
-								const players = game.sides.filter(s => s.player.uid !== currentUid);
-								if (players && players.length > 0 && players[0].player) {
-									this.opponent = players[0].player
-								}
-								this.commitedMoves = [];
-								this.initializeGame(settings);
-							} else {
-								throw new Error("User has not joined to game.ERROR")
-							}
-						});
-			} else {
-				this.appStateService.signalRConnection.send(
-					ServerAction.DismissInvocation,
-					`${Group.User}${invocation.inviter.uid}`
-				);
-			}
-		});
-	}
-
+	
 	private async createGameWithFriend(settings: GameSettings): Promise<number> {
 		const config: MatDialogConfig = {
 			disableClose: true,
 			closeOnNavigation: true
 		};
-		this.awaitedUserUid.next(settings.options.opponent.uid);
+		this.awaitedUser.next(settings.options.opponent);
 		const sides: Side[] = [
 			new Side(settings.options.selectedSide),
 			new Side(
@@ -215,7 +177,7 @@ export class ChessGameComponent implements OnInit {
 			)
 		];
 		const newGame = new Game(settings.startFen, sides);
-		return await this.chessGame
+		return await this.chessGameService
 			.createGameWithFriend(newGame)
 			.toPromise()
 			.then(async game => {
@@ -232,10 +194,8 @@ export class ChessGameComponent implements OnInit {
 							(isCanceled) => {
 								if (isCanceled) {
 									this.appStateService.signalRConnection
-										.send(
-											ServerAction.CancelInvocation,
-											`${Group.User}${this.awaitedUserUid.value}`);
-									this.awaitedUserUid.next(null);
+										.cancelInvocation(this.awaitedUser.value.uid);
+									this.awaitedUser.next(null);
 									return -1;
 								} else {
 									this.gameSettings.gameId = game.id;
@@ -256,7 +216,7 @@ export class ChessGameComponent implements OnInit {
 		];
 
 		const newGame = new Game(settings.startFen, sides);
-		return await this.chessGame
+		return await this.chessGameService
 			.createGameVersusAI(newGame)
 			.toPromise()
 			.then(game => {
@@ -273,23 +233,17 @@ export class ChessGameComponent implements OnInit {
 	}
 
 	private subscribeSignalREvents() {
-		this.appStateService.signalRConnection.on(
-			ClientEvent.InvocationReceived,
-			(invocation: Invocation) => {
-				this.handleInvocation(invocation);
-			}
-		);
-		this.appStateService.signalRConnection.on(
-			ClientEvent.InvocationAccepted,
+		
+		this.appStateService.signalRConnection.onInvocationAccepted(
 			(gameId) => {
 				if(gameId && this.newGameId && this.newGameId === gameId)
 				{
 					this.newGameId = undefined;
 					this.waitingDialog.close();
 					this.waitingDialog = null;
-					this.awaitedUserUid.next(null);
+					this.awaitedUser.next(null);
 					// вывод инфо о начале игры
-					this.chessGame.get(gameId)
+					this.chessGameService.get(gameId)
 					.subscribe((game) => {
 						const currentUid = this.appStateService.getCurrentUser().uid;
 						this.opponent = game.sides.filter(s => s.player.uid !== currentUid)[0].player;
@@ -298,26 +252,23 @@ export class ChessGameComponent implements OnInit {
 				}
 			}
 		);
-		this.appStateService.signalRConnection.on(
-			ClientEvent.InvocationDismissed,
-			byUserWithUid => {
+		this.appStateService.signalRConnection.onInvocationDismissed(
+			(byUserWithUid) => {
 				if (
-					this.awaitedUserUid.value &&
+					this.awaitedUser.value &&
 					byUserWithUid &&
-					this.awaitedUserUid.value === byUserWithUid
+					this.awaitedUser.value.uid === byUserWithUid
 				) {
-					this.awaitedUserUid.next(null);
-					// вывод инфо об отказе
+					const userName = this.awaitedUser.value.name;
+					this.awaitedUser.next(null);
+					this.notificationService.showInfo("Invitation rejected", `User ${userName} has declined your invitation.`);
 				}
 			}
 		);
-		this.appStateService.signalRConnection.on(
-			ClientEvent.InvocationCanceled,
+
+		this.appStateService.signalRConnection.onInvocationCanceled(
 			() => {
-				if(this.invitationDialog)
-				{
-					this.invitationDialog.close();
-				}
+				this.notificationService.closeLastToast();
 			}
 		);
 	}
