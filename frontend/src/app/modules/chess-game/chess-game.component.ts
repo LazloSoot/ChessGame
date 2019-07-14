@@ -23,6 +23,7 @@ import { Game } from "../../core/models/chess/game";
 import { Side } from "../../core/models/chess/side";
 import { BehaviorSubject, fromEvent } from "rxjs";
 import { skipUntil, takeUntil } from "rxjs/operators";
+import { NotificationsService } from "../../core/services/notifications.service";
 
 @Component({
 	selector: "app-chess-game",
@@ -40,8 +41,7 @@ export class ChessGameComponent implements OnInit {
 	public isGameInitialized = false;
 	private gameSettings: GameSettings = new GameSettings();
 	private waitingDialog: MatDialogRef<WaitingDialogComponent>;
-	private invitationDialog: MatDialogRef<InvitationDialogComponent>;
-	private awaitedUserUid: BehaviorSubject<string> = new BehaviorSubject<string>(null);
+	private awaitedUser: BehaviorSubject<User> = new BehaviorSubject<User>(null);
 	private newGameId: number;
 	private sub:any;
 	private boardMouseUp: any;
@@ -69,6 +69,7 @@ export class ChessGameComponent implements OnInit {
 		private dialog: MatDialog,
 		private chessGameService: ChessGameService,
 		private appStateService: AppStateService,
+		private notificationService: NotificationsService,
 		private zone : NgZone
 	) {}
 
@@ -76,7 +77,14 @@ export class ChessGameComponent implements OnInit {
 		this.subscribeSignalREvents();
 
 		this.player = this.appStateService.getCurrentUser();
-		this.awaitedUserUid.subscribe((value) => {
+		this.appStateService.getCurrentGameObs()
+		.subscribe((gameSettings: GameSettings) => {
+			if(gameSettings)
+			{
+				this.gameSettings = gameSettings;
+			}
+		});
+		this.awaitedUser.subscribe((value) => {
 			if(!value && this.waitingDialog)
 			{
 				this.waitingDialog.close(true);
@@ -157,7 +165,7 @@ export class ChessGameComponent implements OnInit {
 			disableClose: true,
 			closeOnNavigation: true
 		};
-		this.awaitedUserUid.next(settings.options.opponent.uid);
+		this.awaitedUser.next(settings.options.opponent);
 		const sides: Side[] = [
 			new Side(settings.options.selectedSide),
 			new Side(
@@ -186,8 +194,8 @@ export class ChessGameComponent implements OnInit {
 							(isCanceled) => {
 								if (isCanceled) {
 									this.appStateService.signalRConnection
-										.cancelInvocation(this.awaitedUserUid.value);
-									this.awaitedUserUid.next(null);
+										.cancelInvocation(this.awaitedUser.value.uid);
+									this.awaitedUser.next(null);
 									return -1;
 								} else {
 									this.gameSettings.gameId = game.id;
@@ -233,7 +241,7 @@ export class ChessGameComponent implements OnInit {
 					this.newGameId = undefined;
 					this.waitingDialog.close();
 					this.waitingDialog = null;
-					this.awaitedUserUid.next(null);
+					this.awaitedUser.next(null);
 					// вывод инфо о начале игры
 					this.chessGameService.get(gameId)
 					.subscribe((game) => {
@@ -247,22 +255,20 @@ export class ChessGameComponent implements OnInit {
 		this.appStateService.signalRConnection.onInvocationDismissed(
 			(byUserWithUid) => {
 				if (
-					this.awaitedUserUid.value &&
+					this.awaitedUser.value &&
 					byUserWithUid &&
-					this.awaitedUserUid.value === byUserWithUid
+					this.awaitedUser.value.uid === byUserWithUid
 				) {
-					this.awaitedUserUid.next(null);
-					// вывод инфо об отказе
+					const userName = this.awaitedUser.value.name;
+					this.awaitedUser.next(null);
+					this.notificationService.showInfo("Invitation rejected", `User ${userName} has declined your invitation.`);
 				}
 			}
 		);
 
 		this.appStateService.signalRConnection.onInvocationCanceled(
 			() => {
-				if(this.invitationDialog)
-				{
-					this.invitationDialog.close();
-				}
+				this.notificationService.closeLastToast();
 			}
 		);
 	}

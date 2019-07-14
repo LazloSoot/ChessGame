@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { SnotifyService, SnotifyToast } from 'ng-snotify';
+import { SnotifyService, SnotifyToast, SnotifyToastConfig } from 'ng-snotify';
 import { AppStateService } from './app-state.service';
 import { Invocation, UserConnection } from '../models/signalR';
 import { Observable } from 'rxjs';
@@ -15,6 +15,7 @@ export class NotificationsService {
   private invocationsRecieved: Invocation[] = [];
   private invocationsSent: Invocation[] = [];
   private unreadNotificationsCount: number = 0;
+  private currentToastId: number;
 
   constructor(
     private snotifyService: SnotifyService,
@@ -73,15 +74,17 @@ export class NotificationsService {
           }
         });
 
+        this.currentToastId = null;
         this.snotifyService.remove(toast.id);
       }
 
       const noAction = (toast: SnotifyToast) => {
         this.appStateService.signalRConnection.dismissInvocation(invocation.inviter.uid);
+        this.currentToastId = null;
         this.snotifyService.remove(toast.id) // default
       }
 
-      this.snotifyService.confirm(`${invocation.inviter.name} invited you to a game of chess!`, 'Invitation', {
+      this.currentToastId = this.snotifyService.confirm(`${invocation.inviter.name} invited you to a game of chess!`, 'Invitation', {
         timeout: 120000,
         showProgressBar: true,
         closeOnClick: false,
@@ -90,8 +93,7 @@ export class NotificationsService {
           { text: 'Accept', action: yesAction, bold: true },
           { text: 'Dismiss', action: noAction },
         ]
-      });
-
+      }).id;
 
     }
     // добавить invocation в список
@@ -118,5 +120,25 @@ export class NotificationsService {
   notifyInvocationCanceled() {
     // удалить snotify
     // добавить в notifcationWindow информацию о том что данное приглашение отменено
+  }
+
+  showInfo(title:string, body: string) {
+    if (!this.appStateService.isNotificationsMuted) {
+      this.currentToastId = this.snotifyService.info(body, title, {
+        timeout: 7000,
+        showProgressBar: false,
+        closeOnClick: false,
+        pauseOnHover: true,
+        titleMaxLength: 25
+      }).id;
+    }
+  }
+
+  closeLastToast() {
+    if(this.currentToastId)
+    {
+      this.snotifyService.remove(this.currentToastId);
+      this.currentToastId = null;
+    }
   }
 }
