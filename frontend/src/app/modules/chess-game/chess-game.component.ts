@@ -1,4 +1,4 @@
-import { Component, OnInit, OnDestroy, ChangeDetectorRef, ChangeDetectionStrategy, NgZone } from "@angular/core";
+import { Component, OnInit, OnDestroy, ChangeDetectorRef, ChangeDetectionStrategy, NgZone, Renderer2, ViewChild, ElementRef } from "@angular/core";
 import {
 	ClientEvent,
 	Move,
@@ -12,7 +12,7 @@ import {
 	OpponentType,
 	User
 } from "../../core";
-import { MatDialog, MatDialogConfig, MatDialogRef } from "@angular/material";
+import { MatDialog, MatDialogConfig, MatDialogRef, MatDivider } from "@angular/material";
 import {
 	NewGameDialogComponent,
 	InvitationDialogComponent,
@@ -21,7 +21,8 @@ import {
 } from "../../shared";
 import { Game } from "../../core/models/chess/game";
 import { Side } from "../../core/models/chess/side";
-import { BehaviorSubject, Observable } from "rxjs";
+import { BehaviorSubject, fromEvent } from "rxjs";
+import { skipUntil, takeUntil } from "rxjs/operators";
 
 @Component({
 	selector: "app-chess-game",
@@ -30,6 +31,8 @@ import { BehaviorSubject, Observable } from "rxjs";
 	changeDetection: ChangeDetectionStrategy.Default
 })
 export class ChessGameComponent implements OnInit {
+	@ViewChild('resizeBtn') resizeButton: ElementRef;
+	@ViewChild('boardContainer') boardContainer: ElementRef;
 	public isOpponentTurn = false;
 	public opponent: User = new User("", "../../../assets/images/anonAvatar.png");
 	public commitedMoves: Move[];
@@ -40,6 +43,27 @@ export class ChessGameComponent implements OnInit {
 	private invitationDialog: MatDialogRef<InvitationDialogComponent>;
 	private awaitedUserUid: BehaviorSubject<string> = new BehaviorSubject<string>(null);
 	private newGameId: number;
+	private sub:any;
+	private boardMouseUp: any;
+	private resizeBtnMouseDown: any;
+	private _boardSize: number = 380;
+	private readonly minBoardSize = 310;
+	private readonly maxBoardSize = 500;
+	public set boardSize(value: number) {
+		if(value < this.minBoardSize)
+		{
+			this._boardSize = this.minBoardSize;
+		} else if(value > this.maxBoardSize)
+		{
+			this._boardSize = this.maxBoardSize;
+		} else {
+			this._boardSize = value;
+		}
+	}
+	public get boardSize() {
+		return this._boardSize;
+	}
+
 	constructor(
 		private cdRef:ChangeDetectorRef,
 		private dialog: MatDialog,
@@ -86,6 +110,10 @@ export class ChessGameComponent implements OnInit {
 		Promise.resolve().then(()=> this.openNewGameDialog());
 		this.cdRef.detectChanges();
 		
+		this.boardMouseUp = fromEvent(this.boardContainer.nativeElement, 'mouseup');
+		this.resizeBtnMouseDown = fromEvent(this.resizeButton.nativeElement, 'mousedown');
+		this.boardMouseUp.subscribe(() => this.registerBoardResizing());
+		this.registerBoardResizing();
 	}
 
 	ngOnDestroy() {
@@ -288,6 +316,30 @@ export class ChessGameComponent implements OnInit {
 			dialogRef.componentInstance.onSettingsDefined.unsubscribe();
 		});
 	}
+
+	registerBoardResizing() {
+		try {
+		  this.sub.unsubscribe();
+		} catch (err) {
+		  
+		} finally {
+	
+		}
+	
+		let mousemove = fromEvent(this.boardContainer.nativeElement, 'mousemove');
+		mousemove = mousemove
+		.pipe(
+			takeUntil(this.boardMouseUp),
+			skipUntil(this.resizeBtnMouseDown)
+			);
+		this.sub = mousemove.subscribe((e: any) => {
+		
+		  let mouseX = e.clientX;
+		  const buttonX = this.resizeButton.nativeElement.offsetLeft + 15;
+		  let newWidth = this.boardSize + (mouseX - buttonX) * 1.5;
+		  this.boardSize = newWidth;
+		})
+	  }
 }
 
 const AIOpponent: User = new User( "Bob", "../../../assets/images/AIavatar.png");

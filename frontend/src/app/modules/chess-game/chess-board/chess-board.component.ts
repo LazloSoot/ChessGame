@@ -1,4 +1,4 @@
-import { Component, OnInit, Input, Output, SimpleChange, EventEmitter, OnDestroy } from '@angular/core';
+import { Component, OnInit, Input, Output, SimpleChange, EventEmitter, OnDestroy, ViewChild, ElementRef } from '@angular/core';
 import { PieceType, BoardTextureType, Square, Move, GameSettings, GameSide, MoveRequest, MovesService, ChessGameService, SquareCoord, AppStateService, ClientEvent, SignalRService, UserConnection, Group, Hub, Game, Side } from '../../../core';
 import { BehaviorSubject, timer } from 'rxjs';
 
@@ -9,6 +9,7 @@ import { BehaviorSubject, timer } from 'rxjs';
 })
 export class ChessBoardComponent implements OnInit {
 	@Input() gameSettings: GameSettings;
+	@Input() boardSize: number;
 	@Output() error: EventEmitter<Error> = new EventEmitter<Error>(null);
 	@Output() moveRequest: EventEmitter<Move> = new EventEmitter<Move>(null);
 	@Output() check: EventEmitter<GameSide> = new EventEmitter<GameSide>(null);
@@ -21,8 +22,10 @@ export class ChessBoardComponent implements OnInit {
 	public bgColor = "#813A0D";
 	private _squares: Square[];
 	private selectedSquare: Square;
-	private availableMoves: string[] =[];
+	private availableMoves: string[] = [];
 	private lastMove: LastMove;
+	private readonly minBoardSize = 310;
+	private readonly maxBoardSize = 500;
 
 	get squares(): Square[] {
 		return this._squares;
@@ -57,19 +60,19 @@ export class ChessBoardComponent implements OnInit {
 				}
 				this.chessGameService.initializeGame(this.gameSettings);
 				let signalRPipelinePromise: Promise<void>;
-				if(changes[propName].previousValue && this._signalRConnection) {
+				if (changes[propName].previousValue && this._signalRConnection) {
 					signalRPipelinePromise = new Promise((resolve, reject) => {
 						setTimeout(() => {
 							this._signalRConnection.offAll();
 							this._signalRConnection.leaveGroup(`${Group.Game}${changes[propName].previousValue.gameId}`);
-						resolve();
+							resolve();
 						}, 100);
 					});
 				} else {
 					signalRPipelinePromise = new Promise((resolve, reject) => {
 						setTimeout(() => {
 							resolve();
-						  }, 100);
+						}, 100);
 					});
 				}
 
@@ -81,13 +84,20 @@ export class ChessBoardComponent implements OnInit {
 					);
 					this.subscribeSignalREvents();
 				},
-				e => {
-					debugger;
-				});
+					e => {
+						debugger;
+					});
 
 				signalRPipelinePromise.catch((e) => {
 					debugger;
 				});
+			} else if (propName === "boardSize") {
+				if (changes[propName].currentValue < this.minBoardSize) {
+					this.boardSize = this.minBoardSize;
+				}
+				else if (changes[propName].currentValue > this.maxBoardSize) {
+					this.boardSize = this.maxBoardSize;
+				}
 			}
 		}
 
@@ -98,7 +108,7 @@ export class ChessBoardComponent implements OnInit {
 		let increment;
 		let currentRow;
 		let correspondingCharCode;
-		if(this.gameSettings.options.selectedSide === GameSide.White) {
+		if (this.gameSettings.options.selectedSide === GameSide.White) {
 			currentRow = 8;
 			increment = -1;
 			correspondingCharCode = 97;
@@ -131,7 +141,7 @@ export class ChessBoardComponent implements OnInit {
 
 		const lines = parts[0].split('/');
 		let baseNum;
-		if(this.gameSettings.options.selectedSide === GameSide.White) {
+		if (this.gameSettings.options.selectedSide === GameSide.White) {
 			baseNum = 0;
 		}
 		else {
@@ -157,11 +167,11 @@ export class ChessBoardComponent implements OnInit {
 	initLine(lineIndex: number, fenPart: string, baseNum: number) {
 		console.log("Line " + lineIndex + " initing");
 		let currentSkipCount: number;
-		for(let x = 0, currentFenX = 0; x < 8; x++) {
+		for (let x = 0, currentFenX = 0; x < 8; x++) {
 			currentSkipCount = Number(fenPart[currentFenX]);
 			if (currentSkipCount) {
 				currentFenX++;
-				
+
 				for (; currentSkipCount > 0; currentSkipCount--) {
 					this._squares[Math.abs(baseNum - (lineIndex * 8 + x))].piece = undefined;
 					x++;
@@ -205,19 +215,18 @@ export class ChessBoardComponent implements OnInit {
 			if (square.piece && this.chessGameService.canISelectPiece(square.piece)) {
 				this.selectedSquare = square;
 				this.chessGameService.GetAllValidMovesForFigureAt(square.name)
-				.subscribe((availableMoves) => this.highlightMoves(this.selectedSquare, availableMoves), error => {});
+					.subscribe((availableMoves) => this.highlightMoves(this.selectedSquare, availableMoves), error => { });
 			}
 			return;
 		} else {
-			if (this.selectedSquare.name == square.name)
-				{
-					this.selectedSquare = null;
-					this.availableMoves = [];
-					return;
-				}
+			if (this.selectedSquare.name == square.name) {
+				this.selectedSquare = null;
+				this.availableMoves = [];
+				return;
+			}
 
 			const move = Object.keys(PieceType).find(key => PieceType[key] === this.selectedSquare.piece)[0]
-			+ this.selectedSquare.name + square.name;
+				+ this.selectedSquare.name + square.name;
 			//this.moveRequest.emit(new MoveRequest(move, this.gameSettings.gameId));
 
 			// let fenParts = this.fen.split(' ');
@@ -240,22 +249,21 @@ export class ChessBoardComponent implements OnInit {
 
 	async tryMove(moveRequest: MoveRequest) {
 		await this.chessGameService.commitMove(moveRequest)
-		.toPromise()
-		.then((move) => {
-			if(move) {
-				this.initBoard(move.fenAfterMove);
-				this.availableMoves = [];
-				this.lastMove = new LastMove(move.moveNext.slice(1,3), move.moveNext.slice(3,5));
-				this.moveRequest.emit(move);
-			}
-		}, error => {
+			.toPromise()
+			.then((move) => {
+				if (move) {
+					this.initBoard(move.fenAfterMove);
+					this.availableMoves = [];
+					this.lastMove = new LastMove(move.moveNext.slice(1, 3), move.moveNext.slice(3, 5));
+					this.moveRequest.emit(move);
+				}
+			}, error => {
 
-		});
+			});
 	}
 
 	highlightMoves(targetSquare: Square, availableMoves: string[]) {
-		if(this.selectedSquare === targetSquare)
-		{
+		if (this.selectedSquare === targetSquare) {
 			this.availableMoves = availableMoves;
 		} else {
 			this.availableMoves = [];
@@ -269,15 +277,14 @@ export class ChessBoardComponent implements OnInit {
 	}
 
 	getSquareMask(square: Square): string {
-		if(this.lastMove) {
-			if(square.name === this.lastMove.to) {
+		if (this.lastMove) {
+			if (square.name === this.lastMove.to) {
 				return `url(${this.getLastMoveToMaskUrl()}),`;
-			} else if(square.name === this.lastMove.from) {
+			} else if (square.name === this.lastMove.from) {
 				return `url(${this.getLastMoveFromMaskUrl()}),`;
 			}
 		}
-		if(this.availableMoves.find(m => m === square.name))
-		{
+		if (this.availableMoves.find(m => m === square.name)) {
 			return (square.piece) ? `url(${this.getAvailableKillMaskUrl()}),` : `url(${this.getAvailableMoveMaskUrl()}),`;
 		} else {
 			return (this.selectedSquare && (square.name === this.selectedSquare.name)) ? `url(${this.getSquareSelectionMaskUrl()}),` : '';
@@ -371,5 +378,5 @@ const colors =
 }
 
 export class LastMove {
-	constructor(public from:string, public to: string) { }
+	constructor(public from: string, public to: string) { }
 }
