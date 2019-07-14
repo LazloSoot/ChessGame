@@ -22,7 +22,9 @@
 				</div>
 			</mat-card>
 
-			<app-chess-board *ngIf="isGameInitialized;else boardPlaceholder" [gameSettings]="gameSettings"
+			<app-chess-board #chessBoard *ngIf="isGameInitialized;else boardPlaceholder" 
+			[gameSettings]="gameSettings"
+			[boardSize]="boardSize"
 				(moveRequest)="onMove($event)" (check)="onCheck($event)" (checkmate)="onCheckmate($event)">
 			</app-chess-board>
 			<ng-template #boardPlaceholder>

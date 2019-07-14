@@ -18,7 +18,7 @@ import {
 	OpponentType,
 	User
 } from "../../core";
-import { MatDialog, MatDialogConfig, MatDialogRef } from "@angular/material";
+import { MatDialog, MatDialogConfig, MatDialogRef, MatDivider } from "@angular/material";
 import {
 	NewGameDialogComponent,
 	InvitationDialogComponent,
@@ -52,6 +52,23 @@ export class ChessGameComponent implements OnInit {
 	private sub:any;
 	private boardMouseUp: any;
 	private resizeBtnMouseDown: any;
+	private _boardSize: number = 380;
+	private readonly minBoardSize = 310;
+	private readonly maxBoardSize = 500;
+	public set boardSize(value: number) {
+		if(value < this.minBoardSize)
+		{
+			this._boardSize = this.minBoardSize;
+		} else if(value > this.maxBoardSize)
+		{
+			this._boardSize = this.maxBoardSize;
+		} else {
+			this._boardSize = value;
+		}
+	}
+	public get boardSize() {
+		return this._boardSize;
+	}
 
 	constructor(
 		private cdRef:ChangeDetectorRef,
@@ -101,8 +118,8 @@ export class ChessGameComponent implements OnInit {
 		
 		this.boardMouseUp = fromEvent(this.boardContainer.nativeElement, 'mouseup');
 		this.resizeBtnMouseDown = fromEvent(this.resizeButton.nativeElement, 'mousedown');
-		this.boardMouseUp.subscribe(() => this.register());
-		this.register();
+		this.boardMouseUp.subscribe(() => this.registerBoardResizing());
+		this.registerBoardResizing();
 	}
 
 	ngOnDestroy() {
@@ -355,7 +372,7 @@ export class ChessGameComponent implements OnInit {
 		});
 	}
 
-	register() {
+	registerBoardResizing() {
 		try {
 		  this.sub.unsubscribe();
 		} catch (err) {
@@ -373,8 +390,9 @@ export class ChessGameComponent implements OnInit {
 		this.sub = mousemove.subscribe((e: any) => {
 		
 		  let mouseX = e.clientX;
-		  let mouseY = e.clientY;
-		  console.log(mouseX);
+		  const buttonX = this.resizeButton.nativeElement.offsetLeft + 15;
+		  let newWidth = this.boardSize + (mouseX - buttonX) * 1.5;
+		  this.boardSize = newWidth;
 		})
 	  }
 }
