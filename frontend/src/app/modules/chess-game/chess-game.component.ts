@@ -34,12 +34,12 @@ import { NotificationsService } from "../../core/services/notifications.service"
 export class ChessGameComponent implements OnInit {
 	@ViewChild('resizeBtn') resizeButton: ElementRef;
 	@ViewChild('boardContainer') boardContainer: ElementRef;
-	public isOpponentTurn = false;
+	public isOpponentTurn: boolean;
 	public opponent: User = new User("", "../../../assets/images/anonAvatar.png");
 	public commitedMoves: Move[];
 	public player: User;
 	public isGameInitialized = false;
-	private gameSettings: GameSettings = new GameSettings();
+	public gameSettings: GameSettings = new GameSettings();
 	private waitingDialog: MatDialogRef<WaitingDialogComponent>;
 	private awaitedUser: BehaviorSubject<User> = new BehaviorSubject<User>(null);
 	private newGameId: number;
@@ -49,6 +49,7 @@ export class ChessGameComponent implements OnInit {
 	private _boardSize: number = 380;
 	private readonly minBoardSize = 310;
 	private readonly maxBoardSize = 500;
+	private i = 0;
 	public set boardSize(value: number) {
 		if(value < this.minBoardSize)
 		{
@@ -70,20 +71,13 @@ export class ChessGameComponent implements OnInit {
 		private chessGameService: ChessGameService,
 		private appStateService: AppStateService,
 		private notificationService: NotificationsService,
-		private zone : NgZone
+		private cd: ChangeDetectorRef
 	) {}
 
 	ngOnInit() {
 		this.subscribeSignalREvents();
 
 		this.player = this.appStateService.getCurrentUser();
-		this.appStateService.getCurrentGameObs()
-		.subscribe((gameSettings: GameSettings) => {
-			if(gameSettings)
-			{
-				this.gameSettings = gameSettings;
-			}
-		});
 		this.awaitedUser.subscribe((value) => {
 			if(!value && this.waitingDialog)
 			{
@@ -122,6 +116,19 @@ export class ChessGameComponent implements OnInit {
 		this.resizeBtnMouseDown = fromEvent(this.resizeButton.nativeElement, 'mousedown');
 		this.boardMouseUp.subscribe(() => this.registerBoardResizing());
 		this.registerBoardResizing();
+		this.appStateService.getCurrentGameObs()
+		.subscribe((gameSettings: GameSettings) => {
+			if(gameSettings)
+			{
+				this.gameSettings = Object.create(gameSettings);
+			}
+		});
+	}
+
+	ngAfterContentInit() {
+		this.chessGameService.isMyTurnObs.subscribe(isMyTurn => {
+			this.isOpponentTurn = !isMyTurn;
+		  });
 	}
 
 	ngOnDestroy() {

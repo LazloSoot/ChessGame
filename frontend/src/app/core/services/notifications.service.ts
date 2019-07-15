@@ -42,7 +42,6 @@ export class NotificationsService {
   }
 
   notifyInvocationReceived(invocation: Invocation) {
-    debugger;
     this.invocationsRecieved.push(invocation);
     if (!this.appStateService.isNotificationsMuted) {
 
