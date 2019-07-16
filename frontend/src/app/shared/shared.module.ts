@@ -33,7 +33,8 @@ import { SnotifyModule, SnotifyService, ToastDefaults } from 'ng-snotify';
     SpinnerRectComponent,
     SpinnerColorDirective,
     LastEntryDatePipe,
-    SnotifyModule
+    SnotifyModule,
+    UsersTableComponent
   ],
 
   declarations: [

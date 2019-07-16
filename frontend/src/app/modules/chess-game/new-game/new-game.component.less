@@ -1,0 +1,83 @@
+.tab-container {
+    height: 310px;
+    overflow: hidden;
+
+    table {
+        table-layout:fixed;
+    }
+    tr, td {
+        height: 40px;
+      //  outline: 1px solid black;
+    }
+}
+
+.enPassant-chkbx {
+    cursor: pointer;
+}
+
+.game-mode {
+    height: 96px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.game-mode__toggle {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    width: 100%;
+
+    .game-mode__btn {
+        &--computer {
+            width: 30%;
+        }
+        &--player {
+            width: 69.2%;
+        }
+        &--friend {
+            width: 100%;
+        }
+    }
+}
+
+
+.theme-container {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    align-content: flex-start;
+    flex-wrap: wrap;
+
+    h4 {
+        width: 100%;
+    }
+}
+
+.theme-container__select {
+    width: 125px;
+
+}
+
+
+.options-container, 
+.options__toggle {
+    margin-bottom: 10px;
+}
+
+.users-search,
+table {
+    width: 95%;
+  }
+
+.users-table__wrapper {
+    overflow: auto;
+    height: 205px;
+
+    tr {
+        cursor: pointer;
+        &:hover {
+            background-color: #F5F5F5;
+        }
+    }
+}
