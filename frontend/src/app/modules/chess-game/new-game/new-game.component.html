@@ -1,67 +1,73 @@
 <section class="tab-container new-game__container">
+  <section class="new-game__tab-container">
     <mat-tab-group [selectedIndex]="selectedTab">
-        <mat-tab label="New game">
-          <ng-template matTabContent>
-              <section class="tab-container options-container">
-                
-                  <h2>New game</h2>
-                  <table>
-                    <tr>
-                      <td>Your side: </td>
-                      <td>
-                        <mat-button-toggle-group class="options__toggle" [(value)]="side" name="side" aria-label="Side">
-                          <mat-button-toggle [value]="1" class="side__btn side__btn--white">White</mat-button-toggle>
-                          <mat-button-toggle [value]="0" class="side__btn side__btn--random">Random</mat-button-toggle>
-                          <mat-button-toggle [value]="2" class="side__btn side__btn--black">Black</mat-button-toggle>
-                        </mat-button-toggle-group>
-                      </td>
-                    </tr>
-                    <tr>
-                      <td >
-                        Play vs.
-                      </td>
-                      <td >
-                        <div class="game-mode">
-                            <div *ngIf="!opponent; else playerMode">
-                                <mat-button-toggle-group class="game-mode__toggle" [(value)]="opponentType" name="mode" aria-label="Game mode">
-                                  <mat-button-toggle [value]="0" class="game-mode__btn game-mode__btn--computer">AI</mat-button-toggle>
-                                  <mat-button-toggle [value]="1" class="game-mode__btn game-mode__btn--player">Player</mat-button-toggle>
-                                  <mat-button-toggle [value]="2" (click)="selectedTab=1; opponentType=0" class="game-mode__btn game-mode__btn--friend">Friend</mat-button-toggle>
-                                </mat-button-toggle-group>
-                              </div>
-                              <ng-template #playerMode>
-                                  <mat-chip-list>
-                                  <mat-chip [removable]="true" (removed)="removeOpponent()">
-                                      {{opponent.name}}
-                                      <mat-icon matChipRemove>cancel</mat-icon>
-                                    </mat-chip>
-                                    </mat-chip-list>
-                              </ng-template>
-                        </div>
-                        
-                      </td>
-                    </tr>
-                    <tr (click)="isEnPassantOn = !isEnPassantOn" class="enPassant-chkbx">
-                        <td>
-                          en passant
-                        </td>
-                        <td>
-                          <mat-checkbox [(checked)]="isEnPassantOn" [color]="primary"></mat-checkbox>
-                        </td>
-                      </tr>
-                  </table>
-                </section>
-          </ng-template>
-        </mat-tab>
-        <mat-tab label="Player invitation">
-          <ng-template matTabContent>
-              <section class="tab-container invite-container">
-                  <app-users-table 
-                    (onUserSelected)="selectUser($event)"
-                  ></app-users-table>
-                </section>
-          </ng-template>
-        </mat-tab>
-      </mat-tab-group>
-</section>
+      <mat-tab label="New game">
+        <ng-template matTabContent>
+          <section class="tab-container options-container">
 
+            <h2>New game</h2>
+            <table>
+              <tr>
+                <td>Your side: </td>
+                <td>
+                  <mat-button-toggle-group class="options__toggle" [(value)]="side" name="side" aria-label="Side">
+                    <mat-button-toggle [value]="0" class="side__btn side__btn--random">Random</mat-button-toggle>
+                    <mat-button-toggle [value]="1" class="side__btn side__btn--white">White</mat-button-toggle>
+                    <mat-button-toggle [value]="2" class="side__btn side__btn--black">Black</mat-button-toggle>
+                  </mat-button-toggle-group>
+                </td>
+              </tr>
+              <tr>
+                <td>
+                  Play vs.
+                </td>
+                <td>
+                  <div class="game-mode">
+                    <div *ngIf="!opponent; else playerMode">
+                      <mat-button-toggle-group class="game-mode__toggle" [(value)]="opponentType" name="mode"
+                        aria-label="Game mode">
+                        <mat-button-toggle [value]="0" class="game-mode__btn game-mode__btn--computer">AI
+                        </mat-button-toggle>
+                        <mat-button-toggle [value]="1" class="game-mode__btn game-mode__btn--player">Player
+                        </mat-button-toggle>
+                        <mat-button-toggle [value]="2" (click)="selectedTab=1;"
+                          class="game-mode__btn game-mode__btn--friend">Friend</mat-button-toggle>
+                      </mat-button-toggle-group>
+                    </div>
+                    <ng-template #playerMode>
+                      <mat-chip-list>
+                        <mat-chip [removable]="true" (removed)="removeOpponent()">
+                          {{opponent.name}}
+                          <mat-icon matChipRemove>cancel</mat-icon>
+                        </mat-chip>
+                      </mat-chip-list>
+                    </ng-template>
+                  </div>
+
+                </td>
+              </tr>
+              <tr (click)="isEnPassantOn = !isEnPassantOn" class="enPassant-chkbx">
+                <td>
+                  en passant
+                </td>
+                <td>
+                  <mat-checkbox [(checked)]="isEnPassantOn" [color]="primary"></mat-checkbox>
+                </td>
+              </tr>
+            </table>
+          </section>
+        </ng-template>
+      </mat-tab>
+      <mat-tab label="Player invitation">
+        <ng-template matTabContent>
+          <section class="invite-container">
+            <app-users-table (onUserSelected)="selectUser($event)"></app-users-table>
+          </section>
+        </ng-template>
+      </mat-tab>
+    </mat-tab-group>
+  </section>
+  <mat-toolbar class="toolbar">
+    <button *ngIf="selectedTab === 0" mat-stroked-button (click)="start()" tabindex="0">Start</button>
+  </mat-toolbar>
+</section>

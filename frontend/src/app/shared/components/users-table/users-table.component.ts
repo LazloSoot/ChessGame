@@ -64,7 +64,7 @@ export class UsersTableComponent implements OnInit {
         this.timeOutSearch = false;
         if(filter) {
           this.userService
-          .getUsersByNameStartsWith(filter, this.isOnlineUserFilterEnabled, new Page(0, 10))
+          .getUsersByNameStartsWith(filter, this.isOnlineUserFilterEnabled, new Page(0, 100))
           .subscribe(async (users: PagedResult<User>) => {
             this.users = [];
             if(users) {
@@ -94,7 +94,7 @@ export class UsersTableComponent implements OnInit {
             });
         }
         
-      }, 1000);
+      }, 1200);
     }
   }
 

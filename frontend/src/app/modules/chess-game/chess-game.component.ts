@@ -331,6 +331,42 @@ export class ChessGameComponent implements OnInit {
 		});
 	}
 
+	async startNewGame(options: GameOptions) {
+		this.selectedTabIndex = 0;
+		if (options) {
+			let settings = new GameSettings(new StyleOptions(), options);
+			//settings.startFen = 'rnbqkbnr/p5pp/1B1P4/3ppK2/1p3p2/R2pB2R/PPP1PPPP/1N1Q2N1 w kq - 0 1';
+			if (settings.options.selectedSide === GameSide.Random) {
+				settings.options.selectedSide = this.getRandomSide();
+			}
+			
+			let gameId: number;
+			switch (settings.options.opponentType) {
+				case (OpponentType.Player): {
+					gameId = await this.createGameVersusRandPlayer(settings);
+					break;
+				}
+				case (OpponentType.Friend): {
+					gameId = await this.createGameWithFriend(settings);
+					break;
+				}
+				default: {
+					gameId = await this.createGameVersusComputer(settings);
+					break;
+				}
+			}
+			if(gameId < 0)
+			{
+				return;
+			}
+			settings.gameId = gameId;
+			this.commitedMoves = [];
+			this.initializeGame(settings);
+		} else {
+			//throw new Error("Game settings is invlid!ERROR")
+		}
+	}
+
 	registerBoardResizing() {
 		try {
 		  this.sub.unsubscribe();

@@ -1,5 +1,6 @@
 .tab-container {
-    height: 310px;
+    height: 450px;
+    width: 400px;
     overflow: hidden;
 
     table {
@@ -11,36 +12,60 @@
     }
 }
 
+.options-container{
+    width: auto;
+    height: auto;
+}
+
+h2 {
+    text-align: center;
+}
+
+.new-game__tab-container {
+    height: 370px;
+    overflow: hidden;
+}
 .enPassant-chkbx {
     cursor: pointer;
 }
 
-.game-mode {
-    height: 96px;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-}
+//.game-mode {
+//    height: 96px;
+//    display: flex;
+//    justify-content: center;
+//    align-items: center;
+//}
 
-.game-mode__toggle {
+//.game-mode__toggle {
+//    .game-mode__btn {
+//        &--computer {
+//            width: 30%;
+//        }
+//        &--player {
+//            width: 69.2%;
+//        }
+//        &--friend {
+//            width: 100%;
+//        }
+//    }
+//}
+
+.game-mode__toggle,
+.options__toggle {
     display: flex;
     flex-wrap: wrap;
     justify-content: center;
-    width: 100%;
-
-    .game-mode__btn {
-        &--computer {
-            width: 30%;
-        }
-        &--player {
-            width: 69.2%;
-        }
-        &--friend {
-            width: 100%;
-        }
-    }
 }
 
+.side__btn,
+.game-mode__btn {
+    flex-grow: 1;
+    font-size: 12px;
+}
+
+.side__btn--random {
+    width: 100%;
+}
 
 .theme-container {
     display: flex;
@@ -65,6 +90,10 @@
     margin-bottom: 10px;
 }
 
+.game-mode__toggle,
+.options__toggle {
+    flex-wrap: nowrap;
+}
 .users-search,
 table {
     width: 95%;
@@ -80,4 +109,9 @@ table {
             background-color: #F5F5F5;
         }
     }
+}
+
+.toolbar {
+    display: flex;
+    justify-content: flex-end;
 }

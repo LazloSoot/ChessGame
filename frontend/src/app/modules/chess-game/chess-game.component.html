@@ -70,7 +70,7 @@
 	</div>
 
 	<div class="game-settings-container">
-		<mat-tab-group [selectedIndex]="selectedTabIndex">
+		<mat-tab-group [(selectedIndex)]="selectedTabIndex">
 			<mat-tab label="Game">
 				<ng-template matTabContent>
 					<app-move-tracker [moves]="commitedMoves" [opponent]="opponent"></app-move-tracker>
@@ -78,7 +78,7 @@
 			</mat-tab>
 			<mat-tab label="Play">
 				<ng-template matTabContent>
-					<app-new-game></app-new-game>
+					<app-new-game (onStart)="startNewGame($event)"></app-new-game>
 				</ng-template>
 			</mat-tab>
 			<mat-tab>

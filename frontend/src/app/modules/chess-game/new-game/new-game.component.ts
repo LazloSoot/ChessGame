@@ -1,5 +1,5 @@
-import { Component, OnInit } from '@angular/core';
-import { User, GameSide, OpponentType } from '../../../core';
+import { Component, OnInit, Output, EventEmitter } from '@angular/core';
+import { User, GameSide, OpponentType, GameOptions } from '../../../core';
 
 @Component({
   selector: 'app-new-game',
@@ -7,10 +7,12 @@ import { User, GameSide, OpponentType } from '../../../core';
   styleUrls: ['./new-game.component.less']
 })
 export class NewGameComponent implements OnInit {
+  @Output() onStart: EventEmitter<GameOptions> = new EventEmitter();
   public selectedTab: number = 0;
+  public isEnPassantOn = true;
   private opponent: User;
   private side: GameSide = GameSide.Random;
-	private opponentType: OpponentType = OpponentType.Computer;
+  private opponentType: OpponentType = OpponentType.Computer;
   constructor() { }
 
   ngOnInit() {
@@ -29,9 +31,18 @@ export class NewGameComponent implements OnInit {
 			this.selectedTab = 0;
 		}
   }
-  
+
   removeOpponent() {
 		this.opponent = undefined;
 		this.opponentType = OpponentType.Computer;
-	}
+  }
+  
+  start() {
+    this.onStart.emit(new GameOptions(
+      this.isEnPassantOn,
+      this.side,
+      this.opponentType,
+      this.opponent
+    ));
+  }
 }
