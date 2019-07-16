@@ -46,7 +46,6 @@ export class ChessBoardComponent implements OnInit {
 	ngOnChanges(changes: SimpleChange) {
 		for (let propName in changes) {
 			if (propName === 'gameSettings') {
-				debugger;
 				this.previousFen = "";
 				this.fen = "";
 				this.lastMove = null;

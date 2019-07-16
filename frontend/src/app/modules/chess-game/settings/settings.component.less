@@ -1,0 +1,63 @@
+.tab-container {
+    height: 310px;
+
+    table {
+        table-layout:fixed;
+    }
+    tr, td {
+        height: 40px;
+      //  outline: 1px solid black;
+    }
+}
+
+.pieces-prev,
+.board-prev {
+    background-repeat: no-repeat;
+    background-size: contain;
+    width: 125px; 
+    height: 62.5px;
+}
+
+.side__btn{
+    font-size: 0;
+    height: 40px;
+    width: 40px;
+    background-repeat: no-repeat;
+    background-size: cover;
+
+    &--white {
+        background-image: url('../../../../assets/images/Chess/Symbols/Stone/QueenW.png');
+    }
+
+    &--black {
+        background-image: url('../../../../assets/images/Chess/Symbols/Stone/QueenB.png');
+    }
+
+    &--random {
+        background-image: url('../../../../assets/images/Chess/Symbols/Stone/QueenWB.png');
+    }
+}
+
+.theme-container {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    align-content: flex-start;
+    flex-wrap: wrap;
+    padding: 20px;
+
+    h4 {
+        width: 100%;
+    }
+}
+
+.theme-container__select {
+    width: 125px;
+
+}
+
+.toolbar {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+}

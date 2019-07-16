@@ -46,7 +46,7 @@ export class ChessGameComponent implements OnInit {
 	private sub:any;
 	private boardMouseUp: any;
 	private resizeBtnMouseDown: any;
-	private _boardSize: number = 380;
+	private _boardSize: number = 410;
 	private readonly minBoardSize = 310;
 	private readonly maxBoardSize = 500;
 	private i = 0;
@@ -109,8 +109,8 @@ export class ChessGameComponent implements OnInit {
 
 	ngAfterViewInit() {
 		// ExpressionChangedAfterItHasBeenCheckedError   workaround
-		Promise.resolve().then(()=> this.openNewGameDialog());
-		this.cdRef.detectChanges();
+		//Promise.resolve().then(()=> this.openNewGameDialog());
+		//this.cdRef.detectChanges();
 		
 		this.boardMouseUp = fromEvent(this.boardContainer.nativeElement, 'mouseup');
 		this.resizeBtnMouseDown = fromEvent(this.resizeButton.nativeElement, 'mousedown');

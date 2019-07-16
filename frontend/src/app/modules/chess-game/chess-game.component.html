@@ -67,8 +67,27 @@
 		</div>
 	</div>
 
-	<div class="move-tracker-container">
-		<app-move-tracker [moves]="commitedMoves" [opponent]="opponent">
-		</app-move-tracker>
+	<div class="game-settings-container">
+			<mat-tab-group>
+					<mat-tab label="Game">
+					  <ng-template matTabContent>
+							<app-move-tracker [moves]="commitedMoves" [opponent]="opponent"></app-move-tracker>
+					  </ng-template>
+					</mat-tab>
+					<mat-tab label="Play">
+					  <ng-template matTabContent>
+						<app-new-game></app-new-game>
+					  </ng-template>
+					</mat-tab>
+					<mat-tab>
+							<ng-template mat-tab-label>
+							<mat-icon class="styles-tab-icon">color_lens</mat-icon>
+							Settings
+						  </ng-template>
+							<ng-template matTabContent>
+							  <app-settings></app-settings>
+							</ng-template>
+						  </mat-tab>
+				  </mat-tab-group>
 	</div>
 </div>
