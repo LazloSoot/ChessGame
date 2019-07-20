@@ -1,4 +1,4 @@
-import { Component, OnInit, OnDestroy, ChangeDetectorRef, ChangeDetectionStrategy, NgZone, Renderer2, ViewChild, ElementRef } from "@angular/core";
+import { Component, OnInit, OnDestroy, ChangeDetectorRef, ChangeDetectionStrategy, NgZone, Renderer2, ViewChild, ElementRef, ViewEncapsulation } from "@angular/core";
 import {
 	ClientEvent,
 	Move,
@@ -29,7 +29,8 @@ import { NotificationsService } from "../../core/services/notifications.service"
 	selector: "app-chess-game",
 	templateUrl: "./chess-game.component.html",
 	styleUrls: ["./chess-game.component.less"],
-	changeDetection: ChangeDetectionStrategy.Default
+	changeDetection: ChangeDetectionStrategy.Default,
+	encapsulation: ViewEncapsulation.None
 })
 export class ChessGameComponent implements OnInit {
 	@ViewChild('resizeBtn') resizeButton: ElementRef;

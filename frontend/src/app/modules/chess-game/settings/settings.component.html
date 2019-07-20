@@ -1,27 +1,31 @@
-<section class="tab-container theme-container">
+<section class="tab-container">
+  <section class="settings__tab-container">
+    <h2>Game settings</h2>
     <h4>Board and pieces</h4>
-  <section class="theme-container__board">
-    <div class="board-prev" [ngStyle]="{'background-image': 'url(' + getBoardUrlPrev() + ')'}"></div>
-    <mat-form-field class="theme-container__select">
-      <mat-select placeholder="Board colors" [(value)]="boardColor.value">
-        <mat-option *ngFor="let bc of boardColors" [value]="bc.value">
-          {{bc.viewValue}}
-        </mat-option>
-      </mat-select>
-    </mat-form-field>
-  </section>
-  <section class="theme-container__pieces">
-    <div class="pieces-prev" [ngStyle]="{'background-image': 'url(' + getPieceUrlPrev() + '), url(' + getBoardUrlPrev() + ')'}"></div>
-    <mat-form-field class="theme-container__select">
-      <mat-select placeholder="Pieces style" [(value)]="pieceStyle.value">
-        <mat-option *ngFor="let ps of pieceStyles" [value]="ps.value">
-          {{ps.viewValue}}
-        </mat-option>
-      </mat-select>
-    </mat-form-field>
+    <section class="theme-container theme-container__board">
+      <div class="board-prev" [ngStyle]="{'background-image': 'url(' + getBoardUrlPrev() + ')'}"></div>
+      <mat-form-field class="theme-container__select">
+        <mat-select placeholder="Board colors" [(value)]="boardColor.value">
+          <mat-option *ngFor="let bc of boardColors" [value]="bc.value">
+            {{bc.viewValue}}
+          </mat-option>
+        </mat-select>
+      </mat-form-field>
+    </section>
+    <section class="theme-container theme-container__pieces">
+      <div class="pieces-prev"
+        [ngStyle]="{'background-image': 'url(' + getPieceUrlPrev() + '), url(' + getBoardUrlPrev() + ')'}"></div>
+      <mat-form-field class="theme-container__select">
+        <mat-select placeholder="Pieces style" [(value)]="pieceStyle.value">
+          <mat-option *ngFor="let ps of pieceStyles" [value]="ps.value">
+            {{ps.viewValue}}
+          </mat-option>
+        </mat-select>
+      </mat-form-field>
+    </section>
   </section>
 
-  <mat-toolbar class="toolbar">
-      <button mat-stroked-button (click)="apply()">Apply</button>
+  <mat-toolbar class="actions-toolbar">
+    <button mat-stroked-button (click)="apply()">Apply</button>
   </mat-toolbar>
 </section>
