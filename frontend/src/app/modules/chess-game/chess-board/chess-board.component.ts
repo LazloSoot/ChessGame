@@ -46,51 +46,22 @@ export class ChessBoardComponent implements OnInit {
 	ngOnChanges(changes: SimpleChange) {
 		for (let propName in changes) {
 			if (propName === 'gameSettings') {
-				this.previousFen = "";
-				this.fen = "";
-				this.lastMove = null;
-				this.initSquares();
-				this.initBoard(this.gameSettings.startFen);
-				this.previousFen = this.gameSettings.startFen;
-				this.baseBoardPath.next(imgsUrl + this.gameSettings.style.boardColor);
-				this.basePiecePath.next(this.getPieceBasePath());
-				let colorKey = Object.keys(BoardTextureType).find(key => BoardTextureType[key] === this.gameSettings.style.boardColor);
-				if (colorKey && colors[colorKey]) {
-					this.bgColor = colors[colorKey];
-				}
-				this.chessGameService.initializeGame(this.gameSettings);
-				let signalRPipelinePromise: Promise<void>;
-				if (changes[propName].previousValue && this._signalRConnection) {
-					signalRPipelinePromise = new Promise((resolve, reject) => {
-						setTimeout(() => {
-							this._signalRConnection.offAll();
-							this._signalRConnection.leaveGroup(`${Group.Game}${changes[propName].previousValue.gameId}`);
-							resolve();
-						}, 100);
-					});
-				} else {
-					signalRPipelinePromise = new Promise((resolve, reject) => {
-						setTimeout(() => {
-							resolve();
-						}, 100);
-					});
-				}
-
-				signalRPipelinePromise.then(() => {
-					this._signalRConnection = this.signalRService.connect(
-						`${Group.Game}${this.gameSettings.gameId}`,
-						Hub.ChessGame,
-						this.appStateService.token
-					);
-					this.subscribeSignalREvents();
-				},
-					e => {
-						debugger;
-					});
-
-				signalRPipelinePromise.catch((e) => {
+				if(changes[propName].previousValue) {
 					debugger;
-				});
+					const isOptionsChanged: boolean = changes[propName].currentValue.options && changes[propName].previousValue.options !== changes[propName].currentValue.options;
+					const isFenChanged: boolean = changes[propName].currentValue.startFen && changes[propName].previousValue.startFen !== changes[propName].currentValue.startFen;
+					const isStylesChanged: boolean = changes[propName].currentValue.style;
+					if (isOptionsChanged || isFenChanged) {
+						this.initNewGame(changes[propName].previousValue.gameId);
+					}
+					if (isStylesChanged) {
+						this.initNewBoardStyles();
+					}
+				} else {
+					this.initNewGame();
+					this.initNewBoardStyles();
+				}
+
 			} else if (propName === "boardSize") {
 				if (changes[propName].currentValue < this.minBoardSize) {
 					this.boardSize = this.minBoardSize;
@@ -101,6 +72,56 @@ export class ChessBoardComponent implements OnInit {
 			}
 		}
 
+	}
+
+	initNewGame(previousGameId?: number) {
+		this.previousFen = "";
+		this.fen = "";
+		this.lastMove = null;
+		this.initSquares();
+		this.initBoard(this.gameSettings.startFen);
+		this.previousFen = this.gameSettings.startFen;
+		let signalRPipelinePromise: Promise<void>;
+		if (previousGameId && this._signalRConnection) {
+			signalRPipelinePromise = new Promise((resolve, reject) => {
+				setTimeout(() => {
+					this._signalRConnection.offAll();
+					this._signalRConnection.leaveGroup(`${Group.Game}${previousGameId}`);
+					resolve();
+				}, 100);
+			});
+		} else {
+			signalRPipelinePromise = new Promise((resolve, reject) => {
+				setTimeout(() => {
+					resolve();
+				}, 100);
+			});
+		}
+		this.chessGameService.initializeGame(this.gameSettings);
+		signalRPipelinePromise.then(() => {
+			this._signalRConnection = this.signalRService.connect(
+				`${Group.Game}${this.gameSettings.gameId}`,
+				Hub.ChessGame,
+				this.appStateService.token
+			);
+			this.subscribeSignalREvents();
+		},
+			e => {
+				debugger;
+			});
+
+		signalRPipelinePromise.catch((e) => {
+			debugger;
+		});
+	}
+
+	initNewBoardStyles() {
+		this.baseBoardPath.next(imgsUrl + this.gameSettings.style.boardColor);
+		this.basePiecePath.next(this.getPieceBasePath());
+		let colorKey = Object.keys(BoardTextureType).find(key => BoardTextureType[key] === this.gameSettings.style.boardColor);
+		if (colorKey && colors[colorKey]) {
+			this.bgColor = colors[colorKey];
+		}
 	}
 
 	initSquares() {
@@ -322,7 +343,7 @@ export class ChessBoardComponent implements OnInit {
 
 	private subscribeSignalREvents() {
 		this._signalRConnection.onMoveComitted(
-			async() => { 
+			async () => {
 				await this.refreshBoard();
 			}
 		);
@@ -342,21 +363,21 @@ export class ChessBoardComponent implements OnInit {
 
 	private async refreshBoard() {
 		await this.chessGameService.get(this.gameSettings.gameId)
-		.toPromise()
-		.then((game: Game) => {
-			if(game) {
-				if (this.fen !== game.fen) {
-					const lastMove = game.moves.sort((a, b) => b.id - a.id)[0];
-					this.lastMove = new LastMove(lastMove.moveNext.slice(1, 3), lastMove.moveNext.slice(3, 5));
-					this.moveRequest.emit(lastMove);
-					this.initBoard(game.fen);
+			.toPromise()
+			.then((game: Game) => {
+				if (game) {
+					if (this.fen !== game.fen) {
+						const lastMove = game.moves.sort((a, b) => b.id - a.id)[0];
+						this.lastMove = new LastMove(lastMove.moveNext.slice(1, 3), lastMove.moveNext.slice(3, 5));
+						this.moveRequest.emit(lastMove);
+						this.initBoard(game.fen);
+					}
 				}
-			}
-		});
+			});
 	}
 
 	private doCheck(checkTo: GameSide) {
-		if(this.gameSettings.options.selectedSide === checkTo) {
+		if (this.gameSettings.options.selectedSide === checkTo) {
 			this.check.emit(checkTo);
 			// highlight king square
 		}
@@ -364,7 +385,7 @@ export class ChessBoardComponent implements OnInit {
 
 	private doMate(mateTo: GameSide) {
 		this.checkmate.emit(mateTo);
-				// highlight king square
+		// highlight king square
 	}
 }
 

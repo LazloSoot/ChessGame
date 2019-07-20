@@ -368,6 +368,14 @@ export class ChessGameComponent implements OnInit {
 		}
 	}
 
+	restyleBoard(newStyles: StyleOptions) {
+		debugger;
+		let currentGame = this.appStateService.currentGame;
+		currentGame.style = newStyles;
+		this.appStateService.currentGame = currentGame;
+		this.gameSettings = Object.assign({}, currentGame);
+	}
+	
 	registerBoardResizing() {
 		try {
 		  this.sub.unsubscribe();

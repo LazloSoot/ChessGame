@@ -79,7 +79,7 @@ export class AppStateService {
 			this.currentGameSubject.next(currentGame);
 		}
 		this.currentGameSubject.subscribe((settings) => {
-			if(settings)
+			if(settings && this.isRemember)
 			{
 				localStorage.setItem("chess-zm-currentGame", JSON.stringify(settings));
 			}

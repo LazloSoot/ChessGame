@@ -1,21 +1,23 @@
-import { Component, OnInit } from '@angular/core';
-import { BoardColor, PieceStyle, BoardTextureType, PiecesTextureType } from '../../../core';
+import { Component, OnInit, Output, EventEmitter, Input } from '@angular/core';
+import { BoardColor, PieceStyle, BoardTextureType, PiecesTextureType, StyleOptions } from '../../../core';
 
 @Component({
-  selector: 'app-settings',
-  templateUrl: './settings.component.html',
-  styleUrls: ['./settings.component.less']
+	selector: 'app-settings',
+	templateUrl: './settings.component.html',
+	styleUrls: ['./settings.component.less']
 })
 export class SettingsComponent implements OnInit {
-  private boardColors: BoardColor[];
-	private boardColor: BoardColor = new BoardColor();
+	@Output() onSettingsDefined: EventEmitter<StyleOptions> = new EventEmitter<StyleOptions>(null);
+	@Input() styles: StyleOptions;
+	private boardColors: BoardColor[];
+	private boardColor: BoardColor;
 	private pieceStyles: PieceStyle[];
-  private pieceStyle: PieceStyle = new PieceStyle();
-  
-  constructor() { }
+	private pieceStyle: PieceStyle;
 
-  ngOnInit() {
-    let keys = Object.keys(BoardTextureType);
+	constructor() { }
+
+	ngOnInit() {
+		let keys = Object.keys(BoardTextureType);
 		this.boardColors = Array(keys.length)
 			.fill({})
 			.map((x, i) => {
@@ -28,13 +30,16 @@ export class SettingsComponent implements OnInit {
 			.map((x, i) => {
 				return new PieceStyle(PiecesTextureType[keys[i]], keys[i]);
 			});
-  }
+			
+		this.boardColor = this.boardColors.filter(e => e.value === this.styles.boardColor)[0];
+		this.pieceStyle = this.pieceStyles.filter(e => e.value === this.styles.piecesStyle)[0];
+	}
 
-  apply() {
-    
-  }
+	apply() {
+		this.onSettingsDefined.emit(new StyleOptions(this.boardColor.value, this.pieceStyle.value));
+	}
 
-  getBoardUrlPrev() {
+	getBoardUrlPrev() {
 		return `${imgsUrl}${this.boardColor.value}/prev.jpg`;
 	}
 
