@@ -9,6 +9,7 @@ import { Move,User, ChessGameService } from '../../../core';
 export class MoveTrackerComponent implements OnInit {
   @Input() moves: Move[];
   @Input() opponent: User;
+  @Input() isMovesSwitchOn: boolean;
   private isOpponentTurn: boolean;
   public fullMoves: FullMove[];
   constructor(

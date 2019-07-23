@@ -42,6 +42,7 @@ export class ChessGameComponent implements OnInit {
 	public isGameInitialized = false;
 	public gameSettings: GameSettings = new GameSettings();
 	public selectedTabIndex = 0;
+	public isGameWithAi = false;
 	private waitingDialog: MatDialogRef<WaitingDialogComponent>;
 	private awaitedUser: BehaviorSubject<User> = new BehaviorSubject<User>(null);
 	private newGameId: number;

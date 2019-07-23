@@ -1,26 +1,26 @@
-<button mat-button (click)="openNewGameDialog();">New game</button>
-<button mat-button (click)="getNotifications();">Get notifications</button>
 <div class="container" #boardContainer>
 
 	<div class="chess-board-container">
 
 		<div class="chess-board-container__wrapper">
-			<mat-card class="player-card player-card--oponent">
-				<a href="#">
-					<mat-card-header>
-						<div mat-card-avatar class="avatar avatar--opponent"
-							[ngStyle]="{'background-image':'url(' + getOpponentAvatarUrl() + ')'}">
-							<div *ngIf="isOpponentTurn" class="spinner-overlay">
-								<app-spinner-rect></app-spinner-rect>
+			<mat-card>
+				<div class="player-card player-card--oponent">
+						<a href="#">
+								<mat-card-header>
+									<div mat-card-avatar class="avatar avatar--opponent"
+										[ngStyle]="{'background-image':'url(' + getOpponentAvatarUrl() + ')'}">
+										<div *ngIf="isOpponentTurn" class="spinner-overlay">
+											<app-spinner-rect></app-spinner-rect>
+										</div>
+									</div>
+									<mat-card-title class="player-card__title">{{opponent.name}}</mat-card-title>
+									<mat-card-subtitle class="player-card__subtitle">{{(opponent.uid ? "user" : "robot")}}
+									</mat-card-subtitle>
+								</mat-card-header>
+							</a>
+							<div class="timer-container">
+								timer placeholder
 							</div>
-						</div>
-						<mat-card-title class="player-card__title">{{opponent.name}}</mat-card-title>
-						<mat-card-subtitle class="player-card__subtitle">{{(opponent.uid ? "user" : "robot")}}
-						</mat-card-subtitle>
-					</mat-card-header>
-				</a>
-				<div class="timer-container">
-					timer placeholder
 				</div>
 			</mat-card>
 
@@ -32,18 +32,20 @@
 				<img src="../../../assets/images/Chess/prev.jpg">
 			</ng-template>
 
-			<mat-card class="player-card player-card--player">
-				<a href="#">
-					<mat-card-header>
-						<div mat-card-avatar class="avatar avatar--player"
-							[ngStyle]="{'background-image':'url(' + player.avatarUrl + ')'}">
-						</div>
-						<mat-card-title class="player-card__title">{{player.name}}</mat-card-title>
-						<mat-card-subtitle class="player-card__subtitle">you</mat-card-subtitle>
-					</mat-card-header>
-				</a>
-				<div class="timer-container">
-					timer placeholder
+			<mat-card>
+				<div class="player-card player-card--player">
+						<a href="#">
+								<mat-card-header>
+									<div mat-card-avatar class="avatar avatar--player"
+										[ngStyle]="{'background-image':'url(' + player.avatarUrl + ')'}">
+									</div>
+									<mat-card-title class="player-card__title">{{player.name}}</mat-card-title>
+									<mat-card-subtitle class="player-card__subtitle">you</mat-card-subtitle>
+								</mat-card-header>
+							</a>
+							<div class="timer-container">
+								timer placeholder
+							</div>
 				</div>
 			</mat-card>
 		</div>
@@ -73,7 +75,7 @@
 		<mat-tab-group [(selectedIndex)]="selectedTabIndex">
 			<mat-tab label="Game">
 				<ng-template matTabContent>
-					<app-move-tracker [moves]="commitedMoves" [opponent]="opponent"></app-move-tracker>
+					<app-move-tracker [moves]="commitedMoves" [opponent]="opponent" [isMovesSwitchOn]="isGameWithAi"></app-move-tracker>
 				</ng-template>
 			</mat-tab>
 			<mat-tab label="Play">

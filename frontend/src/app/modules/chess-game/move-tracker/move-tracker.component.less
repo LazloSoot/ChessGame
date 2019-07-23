@@ -10,23 +10,6 @@
 	overflow: hidden;
 }
 
-.opponent__card {
-	min-height: 35px;
-    background-color: #d0d2d7;
-    a {
-        text-decoration: none;
-    }
-}
-
-.opponent__avatar {
-    position: relative;
-	height: 60px;
-	width: 60px;
-	border: 2px solid #eaeaea;
-	background-position: center;
-	background-size: cover;
-}
-
 .game-info-container {
 	display: flex;
     flex-direction: column;
@@ -87,4 +70,20 @@ ul {
 .actions-toolbar {
 	flex-wrap: wrap;
 	justify-content: space-between;
+
+	button {
+		min-width: 30px;
+		font-size: 12px;
+	}
+
+	.icon {
+		font-size: 22px;
+	}
+
+	.game-actions-container {
+		button {
+			width: 30px;
+			padding: 0;
+		}
+	}
 }

@@ -1,19 +1,5 @@
 <div class="tab-container">
 	<section class="move-tracker__tab-container">
-		<mat-card class="opponent__card">
-			<a *ngIf="opponent" routerLinkActive="active" [routerLink]="['/profile', opponent.id]">
-				<mat-card-header>
-					<div mat-card-avatar class="opponent__avatar"
-						[ngStyle]="{'background-image':'url(' + getOpponentAvatarUrl() + ')'}">
-						<div *ngIf="isOpponentTurn" class="spinner-overlay">
-							<app-spinner-rect></app-spinner-rect>
-						</div>
-					</div>
-					<mat-card-title>{{opponent.name}}</mat-card-title>
-					<mat-card-subtitle>{{(opponent.uid ? "user" : "robot")}}</mat-card-subtitle>
-				</mat-card-header>
-			</a>
-		</mat-card>
 		<section class="game-info-container">
 			<div class="evaluation-value-container">
 				+45
@@ -42,19 +28,28 @@
 	<mat-toolbar class="actions-toolbar">
 		<section class="end-game-actions-container">
 			<button mat-stroked-button>
-				<mat-icon aria-label="Draw button">favorite</mat-icon>Draw
+				<mat-icon class="icon" aria-label="Draw button">sentiment_neutral</mat-icon>Draw
 			</button>
 			<button mat-stroked-button>
-				<mat-icon aria-label="Resign button">favorite</mat-icon>Resign
+				<mat-icon class="icon" aria-label="Resign button">flag</mat-icon>Resign
 			</button>
 		</section>
 		<section class="game-actions-container">
-			<button mat-stroked-button>
-				<mat-icon aria-label="Example icon-button with a heart icon">favorite</mat-icon>
+			<button mat-stroked-button [disabled]="!isMovesSwitchOn">
+				<mat-icon class="icon" aria-label="Example icon-button with a heart icon">first_page</mat-icon>
 			</button>
-			<button mat-stroked-button>Basic</button>
-			<button mat-stroked-button>Basic</button>
-			<button mat-stroked-button>Basic</button>
+			<button mat-stroked-button [disabled]="!isMovesSwitchOn">
+				<mat-icon class="icon" aria-label="Example icon-button with a heart icon">navigate_before</mat-icon>
+			</button>
+			<button mat-stroked-button [disabled]="!isMovesSwitchOn">
+				<mat-icon class="icon" aria-label="Example icon-button with a heart icon">navigate_next</mat-icon>
+			</button>
+			<button mat-stroked-button [disabled]="!isMovesSwitchOn">
+				<mat-icon class="icon" aria-label="Example icon-button with a heart icon">last_page</mat-icon>
+			</button>
+			<button mat-stroked-button>
+				<mat-icon class="icon" aria-label="Example icon-button with a heart icon">settings</mat-icon>
+			</button>
 		</section>
 	</mat-toolbar>
 </div>
