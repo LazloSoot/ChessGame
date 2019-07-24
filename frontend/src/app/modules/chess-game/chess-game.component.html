@@ -29,7 +29,8 @@
 				(moveRequest)="onMove($event)" 
 				(check)="onCheck($event)"
 				(checkmate)="onCheckmate($event)"
-				(resign)="onResign($event)">
+				(resign)="onResign($event)"
+				(draw)="onDraw($event)">
 			</app-chess-board>
 			<ng-template #boardPlaceholder>
 				<img src="../../../assets/images/Chess/prev.jpg">

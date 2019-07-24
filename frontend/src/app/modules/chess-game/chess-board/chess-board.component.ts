@@ -15,6 +15,7 @@ export class ChessBoardComponent implements OnInit {
 	@Output() check: EventEmitter<GameSide> = new EventEmitter<GameSide>(null);
 	@Output() checkmate: EventEmitter<GameSide> = new EventEmitter<GameSide>(null);
 	@Output() resign: EventEmitter<GameSide> = new EventEmitter<GameSide>(null);
+	@Output() draw: EventEmitter<number> = new EventEmitter<number>(null);
 	public baseBoardPath: BehaviorSubject<string> = new BehaviorSubject<string>(null);
 	public basePiecePath: BehaviorSubject<string> = new BehaviorSubject<string>(null);
 	private _signalRConnection: UserConnection;
@@ -359,11 +360,17 @@ export class ChessBoardComponent implements OnInit {
 			(mateTo: GameSide) => {
 				this.doMate(mateTo);
 			}
-		)
+		);
 
 		this._signalRConnection.onResign(
 			(resignedSide: GameSide) => {
 				this.doResign(resignedSide);
+			}
+		);
+
+		this._signalRConnection.onDraw(
+			(gameId: number) => {
+				this.doDraw(gameId);
 			}
 		)
 	}
@@ -397,6 +404,10 @@ export class ChessBoardComponent implements OnInit {
 
 	private doResign(resignedSide: GameSide) {
 		this.resign.emit(resignedSide);
+	}
+
+	private doDraw(gameId: number) {
+		this.draw.emit(gameId);
 	}
 }
 

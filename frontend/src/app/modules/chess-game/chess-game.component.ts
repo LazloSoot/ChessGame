@@ -170,6 +170,10 @@ export class ChessGameComponent implements OnInit {
 		this.onCheckmate(resignedSide);
 	}
 
+	onDraw(p) {
+		debugger;
+	}
+
 	private getRandomSide() {
 		let rand = Math.random() * 100;
 		let side = rand > 54 ? GameSide.Black : GameSide.White;
