@@ -18,6 +18,7 @@ import { LastEntryDatePipe } from './pipes/last-entry-date.pipe';
 import { UsersTableComponent } from './components/users-table/users-table.component';
 import { InfoDialogComponent } from './dialogs/info-dialog/info-dialog.component';
 import { SnotifyModule, SnotifyService, ToastDefaults } from 'ng-snotify';
+import { ConfirmationDialogComponent } from './dialogs/confirmation-dialog/confirmation-dialog.component';
 
 @NgModule({
   imports: [
@@ -51,7 +52,8 @@ import { SnotifyModule, SnotifyService, ToastDefaults } from 'ng-snotify';
     SpinnerColorDirective,
     LastEntryDatePipe,
     UsersTableComponent,
-    InfoDialogComponent
+    InfoDialogComponent,
+    ConfirmationDialogComponent
     ],
 
     providers: [
@@ -67,7 +69,8 @@ import { SnotifyModule, SnotifyService, ToastDefaults } from 'ng-snotify';
     InvitationDialogComponent,
     WaitingDialogComponent,
     CheckmateDialogComponent,
-    InfoDialogComponent
+    InfoDialogComponent,
+    ConfirmationDialogComponent
   ]
 })
 export class SharedModule { }

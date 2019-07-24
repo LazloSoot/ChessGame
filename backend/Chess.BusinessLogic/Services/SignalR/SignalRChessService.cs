@@ -31,6 +31,23 @@ namespace Chess.BusinessLogic.Services.SignalR
                 .SendAsync(ClientEvent.Mate.GetStringValue(), mateTo == Color.White ? 1 : 2);
         }
 
+        public async Task EmitResign(int gameId, Color resignedSide)
+        {
+            await _hubContext
+                .Clients
+                .Group($"{HubGroup.Game.GetStringValue()}{gameId}")
+                .SendAsync(ClientEvent.Resign.GetStringValue(), resignedSide);
+        }
+
+
+        public async Task EmitDraw(int gameId, Color side)
+        {
+            await _hubContext
+                .Clients
+                .Groups($"{HubGroup.Game.GetStringValue()}{gameId}")
+                .SendAsync(ClientEvent.Draw.GetStringValue(), side);
+        }
+
         public async Task EmitСheck(int gameId, Color checkTo)
         {
             await _hubContext

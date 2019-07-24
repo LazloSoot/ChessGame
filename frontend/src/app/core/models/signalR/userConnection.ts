@@ -165,6 +165,13 @@ export class UserConnection {
         );
     }
 
+    onResign(newMethod: (resignedSide: GameSide)=> void) {
+        this.on(
+            ClientEvent.Resign,
+            newMethod
+        );
+    }
+
     off(methodName: string): void {
         if (this.connection) {
             this.connection.off(methodName);

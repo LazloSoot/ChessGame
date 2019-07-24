@@ -15,6 +15,10 @@
         [StringValue("check")]
         Check,
         [StringValue("mate")]
-        Mate
+        Mate,
+        [StringValue("resign")]
+        Resign,
+        [StringValue("draw")]
+        Draw
     }
 }

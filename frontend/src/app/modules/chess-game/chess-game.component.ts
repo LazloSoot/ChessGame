@@ -17,7 +17,8 @@ import {
 	NewGameDialogComponent,
 	InvitationDialogComponent,
 	WaitingDialogComponent,
-	CheckmateDialogComponent
+	CheckmateDialogComponent,
+	ConfirmationDialogComponent
 } from "../../shared";
 import { Game } from "../../core/models/chess/game";
 import { Side } from "../../core/models/chess/side";
@@ -162,6 +163,11 @@ export class ChessGameComponent implements OnInit {
 				this.openNewGameDialog();
 			}
 		});
+	}
+
+	onResign(resignedSide: GameSide) {
+		// TEMPORALLY!!!=====================================================================================
+		this.onCheckmate(resignedSide);
 	}
 
 	private getRandomSide() {
@@ -399,6 +405,44 @@ export class ChessGameComponent implements OnInit {
 		  let newWidth = this.boardSize + (mouseX - buttonX) * 1.5;
 		  this.boardSize = newWidth;
 		})
+	  }
+
+	  draw(p) {
+		const confirmationDialog = this.dialog.open(ConfirmationDialogComponent, 
+			{
+				width: '350px',
+				data: `Are you sure you want to offer a draw to ${this.appStateService.currentGame.options.opponent.name}?`
+			});
+
+			confirmationDialog.afterClosed()
+			.subscribe((result) => {
+				if(result) {
+					this.chessGameService
+					.draw(this.appStateService.currentGame.gameId)
+					.subscribe((game) => {
+						debugger;
+					});
+				}
+			});
+	  }
+
+	  resign(p) {
+		  const confirmationDialog = this.dialog.open(ConfirmationDialogComponent, 
+			{
+				width: '350px',
+				data: 'Are you sure you want to resign?'
+			});
+
+			confirmationDialog.afterClosed()
+			.subscribe((result) => {
+				if(result) {
+					this.chessGameService
+					.resign(this.appStateService.currentGame.gameId)
+					.subscribe((game) => {
+						debugger;
+					});
+				}
+			});
 	  }
 }
 

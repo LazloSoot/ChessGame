@@ -27,10 +27,10 @@
 	</section>
 	<mat-toolbar class="actions-toolbar">
 		<section class="end-game-actions-container">
-			<button mat-stroked-button>
+			<button mat-stroked-button (click)="draw()">
 				<mat-icon class="icon" aria-label="Draw button">sentiment_neutral</mat-icon>Draw
 			</button>
-			<button mat-stroked-button>
+			<button mat-stroked-button (click)="resign()">
 				<mat-icon class="icon" aria-label="Resign button">flag</mat-icon>Resign
 			</button>
 		</section>

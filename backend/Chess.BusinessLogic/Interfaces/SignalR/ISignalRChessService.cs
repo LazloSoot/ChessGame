@@ -8,5 +8,7 @@ namespace Chess.BusinessLogic.Interfaces.SignalR
         Task CommitMove(int gameId);
         Task EmitMate(int gameId, Color mateTo);
         Task EmitСheck(int gameId, Color checkTo);
+        Task EmitResign(int gameId, Color resignedSide);
+        Task EmitDraw(int gameId, Color side);
     }
 }

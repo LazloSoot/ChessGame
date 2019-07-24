@@ -1,4 +1,4 @@
-import { Component, OnInit, Input, SimpleChange } from '@angular/core';
+import { Component, OnInit, Input, SimpleChange, Output, EventEmitter } from '@angular/core';
 import { Move,User, ChessGameService } from '../../../core';
 
 @Component({
@@ -10,6 +10,8 @@ export class MoveTrackerComponent implements OnInit {
   @Input() moves: Move[];
   @Input() opponent: User;
   @Input() isMovesSwitchOn: boolean;
+  @Output() onResign: EventEmitter<boolean> = new EventEmitter<boolean>(null);
+  @Output() onDraw: EventEmitter<boolean> = new EventEmitter<boolean>(null);
   private isOpponentTurn: boolean;
   public fullMoves: FullMove[];
   constructor(
@@ -59,6 +61,14 @@ export class MoveTrackerComponent implements OnInit {
 
   getOpponentAvatarUrl() {
     return (this.opponent.avatarUrl) ? this.opponent.avatarUrl : '../../../../assets/images/anonAvatar.png' ;
+  }
+
+  public draw() {
+    this.onDraw.emit(true);
+  }
+
+  public resign() {
+    this.onResign.emit(true);
   }
 }
 
