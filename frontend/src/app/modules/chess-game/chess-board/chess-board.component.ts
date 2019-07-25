@@ -10,6 +10,7 @@ import { BehaviorSubject, timer } from 'rxjs';
 export class ChessBoardComponent implements OnInit {
 	@Input() gameSettings: GameSettings;
 	@Input() boardSize: number;
+	@Input() boardFlipped: boolean;
 	@Output() error: EventEmitter<Error> = new EventEmitter<Error>(null);
 	@Output() moveRequest: EventEmitter<Move> = new EventEmitter<Move>(null);
 	@Output() check: EventEmitter<GameSide> = new EventEmitter<GameSide>(null);
@@ -17,7 +18,7 @@ export class ChessBoardComponent implements OnInit {
 	public baseBoardPath: BehaviorSubject<string> = new BehaviorSubject<string>(null);
 	public basePiecePath: BehaviorSubject<string> = new BehaviorSubject<string>(null);
 	private _signalRConnection: UserConnection;
-	private fen: string;// = 'rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1';
+	private currentFen: string;// = 'rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1';
 	private previousFen: string;
 	public bgColor = "#813A0D";
 	private _squares: Square[];
@@ -47,7 +48,6 @@ export class ChessBoardComponent implements OnInit {
 		for (let propName in changes) {
 			if (propName === 'gameSettings') {
 				if(changes[propName].previousValue) {
-					debugger;
 					const isOptionsChanged: boolean = changes[propName].currentValue.options && changes[propName].previousValue.options !== changes[propName].currentValue.options;
 					const isFenChanged: boolean = changes[propName].currentValue.startFen && changes[propName].previousValue.startFen !== changes[propName].currentValue.startFen;
 					const isStylesChanged: boolean = changes[propName].currentValue.style;
@@ -69,6 +69,15 @@ export class ChessBoardComponent implements OnInit {
 				else if (changes[propName].currentValue > this.maxBoardSize) {
 					this.boardSize = this.maxBoardSize;
 				}
+			} else if (propName === "boardFlipped" && !changes[propName].firstChange) {
+				this.initSquares();
+				// initBoard push new prevFen and currentFen values, so we need avoid it
+				const prevFenTemp = this.previousFen;
+				const currentFenTemp = this.currentFen;
+				// getChangedLinesIndexes cheks if fen was changed, so we need change currentFen
+				this.currentFen = "";
+				this.initBoard(currentFenTemp);
+				this.previousFen = prevFenTemp;
 			}
 		}
 
@@ -76,7 +85,7 @@ export class ChessBoardComponent implements OnInit {
 
 	initNewGame(previousGameId?: number) {
 		this.previousFen = "";
-		this.fen = "";
+		this.currentFen = "";
 		this.lastMove = null;
 		this.initSquares();
 		this.initBoard(this.gameSettings.startFen);
@@ -129,7 +138,7 @@ export class ChessBoardComponent implements OnInit {
 		let increment;
 		let currentRow;
 		let correspondingCharCode;
-		if (this.gameSettings.options.selectedSide === GameSide.White) {
+		if (this.gameSettings.options.selectedSide === GameSide.White && !this.boardFlipped) {
 			currentRow = 8;
 			increment = -1;
 			correspondingCharCode = 97;
@@ -162,7 +171,7 @@ export class ChessBoardComponent implements OnInit {
 
 		const lines = parts[0].split('/');
 		let baseNum;
-		if (this.gameSettings.options.selectedSide === GameSide.White) {
+		if (this.gameSettings.options.selectedSide === GameSide.White && !this.boardFlipped) {
 			baseNum = 0;
 		}
 		else {
@@ -173,8 +182,8 @@ export class ChessBoardComponent implements OnInit {
 			currentIndex = changedLinesIndexes[y];
 			this.initLine(currentIndex, lines[currentIndex], baseNum);
 		}
-		this.previousFen = this.fen;
-		this.fen = fen;
+		this.previousFen = this.currentFen;
+		this.currentFen = fen;
 		const currentTurnSide = parts[1].trim().toLowerCase();
 		if ((currentTurnSide === 'w' && this.gameSettings.options.selectedSide === GameSide.White) ||
 			currentTurnSide === 'b' && this.gameSettings.options.selectedSide === GameSide.Black) {
@@ -213,8 +222,8 @@ export class ChessBoardComponent implements OnInit {
 	}
 
 	getChangedLinesIndexes(lines: string[]): number[] {
-		if (this.fen) {
-			const currentLines = this.fen.split(' ')[0].split('/');
+		if (this.currentFen) {
+			const currentLines = this.currentFen.split(' ')[0].split('/');
 			let changedLinesIndexes: number[] = [];
 			for (let i = 0; i < currentLines.length; i++) {
 				if (currentLines[i] !== lines[i]) {
@@ -366,7 +375,7 @@ export class ChessBoardComponent implements OnInit {
 			.toPromise()
 			.then((game: Game) => {
 				if (game) {
-					if (this.fen !== game.fen) {
+					if (this.currentFen !== game.fen) {
 						const lastMove = game.moves.sort((a, b) => b.id - a.id)[0];
 						this.lastMove = new LastMove(lastMove.moveNext.slice(1, 3), lastMove.moveNext.slice(3, 5));
 						this.moveRequest.emit(lastMove);

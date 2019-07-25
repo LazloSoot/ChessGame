@@ -5,28 +5,28 @@
 		<div class="chess-board-container__wrapper">
 			<mat-card>
 				<div class="player-card player-card--oponent">
-						<a href="#">
-								<mat-card-header>
-									<div mat-card-avatar class="avatar avatar--opponent"
-										[ngStyle]="{'background-image':'url(' + getOpponentAvatarUrl() + ')'}">
-										<div *ngIf="isOpponentTurn" class="spinner-overlay">
-											<app-spinner-rect></app-spinner-rect>
-										</div>
-									</div>
-									<mat-card-title class="player-card__title">{{opponent.name}}</mat-card-title>
-									<mat-card-subtitle class="player-card__subtitle">{{(opponent.uid ? "user" : "robot")}}
-									</mat-card-subtitle>
-								</mat-card-header>
-							</a>
-							<div class="timer-container">
-								timer placeholder
+					<a href="#">
+						<mat-card-header>
+							<div mat-card-avatar class="avatar avatar--opponent"
+								[ngStyle]="{'background-image':'url(' + getOpponentAvatarUrl() + ')'}">
+								<div *ngIf="isOpponentTurn" class="spinner-overlay">
+									<app-spinner-rect></app-spinner-rect>
+								</div>
 							</div>
+							<mat-card-title class="player-card__title">{{opponent.name}}</mat-card-title>
+							<mat-card-subtitle class="player-card__subtitle">{{(opponent.uid ? "user" : "robot")}}
+							</mat-card-subtitle>
+						</mat-card-header>
+					</a>
+					<div class="timer-container">
+						timer placeholder
+					</div>
 				</div>
 			</mat-card>
 
 			<app-chess-board #chessBoard *ngIf="isGameInitialized;else boardPlaceholder" [gameSettings]="gameSettings"
-				[boardSize]="boardSize" (moveRequest)="onMove($event)" (check)="onCheck($event)"
-				(checkmate)="onCheckmate($event)">
+				[boardFlipped]="boardFlipped" [boardSize]="boardSize" (moveRequest)="onMove($event)"
+				(check)="onCheck($event)" (checkmate)="onCheckmate($event)">
 			</app-chess-board>
 			<ng-template #boardPlaceholder>
 				<img src="../../../assets/images/Chess/prev.jpg">
@@ -34,18 +34,18 @@
 
 			<mat-card>
 				<div class="player-card player-card--player">
-						<a href="#">
-								<mat-card-header>
-									<div mat-card-avatar class="avatar avatar--player"
-										[ngStyle]="{'background-image':'url(' + player.avatarUrl + ')'}">
-									</div>
-									<mat-card-title class="player-card__title">{{player.name}}</mat-card-title>
-									<mat-card-subtitle class="player-card__subtitle">you</mat-card-subtitle>
-								</mat-card-header>
-							</a>
-							<div class="timer-container">
-								timer placeholder
+					<a href="#">
+						<mat-card-header>
+							<div mat-card-avatar class="avatar avatar--player"
+								[ngStyle]="{'background-image':'url(' + player.avatarUrl + ')'}">
 							</div>
+							<mat-card-title class="player-card__title">{{player.name}}</mat-card-title>
+							<mat-card-subtitle class="player-card__subtitle">you</mat-card-subtitle>
+						</mat-card-header>
+					</a>
+					<div class="timer-container">
+						timer placeholder
+					</div>
 				</div>
 			</mat-card>
 		</div>
@@ -65,7 +65,7 @@
 				</button>
 			</div>
 			<button mat-icon-button aria-label="Flip board" disableRipple="true" matTooltip="Flip board"
-				matTooltipClass="options-tooltip">
+				(click)="boardFlipped=!boardFlipped;" matTooltipClass="options-tooltip">
 				<mat-icon class="icon">swap_vert</mat-icon>
 			</button>
 		</div>
@@ -75,7 +75,8 @@
 		<mat-tab-group [(selectedIndex)]="selectedTabIndex">
 			<mat-tab label="Game">
 				<ng-template matTabContent>
-					<app-move-tracker [moves]="commitedMoves" [opponent]="opponent" [isMovesSwitchOn]="isGameWithAi"></app-move-tracker>
+					<app-move-tracker [moves]="commitedMoves" [opponent]="opponent" [isMovesSwitchOn]="isGameWithAi">
+					</app-move-tracker>
 				</ng-template>
 			</mat-tab>
 			<mat-tab label="Play">
@@ -89,7 +90,8 @@
 					Settings
 				</ng-template>
 				<ng-template matTabContent>
-					<app-settings (onSettingsDefined)="restyleBoard($event)" [styles]="gameSettings.style"></app-settings>
+					<app-settings (onSettingsDefined)="restyleBoard($event)" [styles]="gameSettings.style">
+					</app-settings>
 				</ng-template>
 			</mat-tab>
 		</mat-tab-group>
