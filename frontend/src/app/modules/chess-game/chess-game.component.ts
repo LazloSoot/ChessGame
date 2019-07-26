@@ -35,7 +35,6 @@ import { NotificationsService } from "../../core/services/notifications.service"
 export class ChessGameComponent implements OnInit {
 	@ViewChild('resizeBtn') resizeButton: ElementRef;
 	@ViewChild('boardContainer') boardContainer: ElementRef;
-	public isOpponentTurn: boolean;
 	public opponent: User = new User("", "../../../assets/images/anonAvatar.png");
 	public commitedMoves: Move[];
 	public player: User;
@@ -43,6 +42,7 @@ export class ChessGameComponent implements OnInit {
 	public gameSettings: GameSettings = new GameSettings();
 	public selectedTabIndex = 0;
 	public isGameWithAi = false;
+	public boardFlipped = false;
 	private waitingDialog: MatDialogRef<WaitingDialogComponent>;
 	private awaitedUser: BehaviorSubject<User> = new BehaviorSubject<User>(null);
 	private newGameId: number;
@@ -128,11 +128,11 @@ export class ChessGameComponent implements OnInit {
 		});
 	}
 
-	ngAfterContentInit() {
-		this.chessGameService.isMyTurnObs.subscribe(isMyTurn => {
-			this.isOpponentTurn = !isMyTurn;
-		  });
-	}
+	//ngAfterContentInit() {
+	//	this.chessGameService.isMyTurnObs.subscribe(isMyTurn => {
+	//		this.isOpponentTurn = !isMyTurn;
+	//	  });
+	//}
 
 	ngOnDestroy() {
 		this.appStateService.signalRConnection.off(
