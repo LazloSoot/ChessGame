@@ -2,14 +2,14 @@
 
 	<div class="chess-board-container">
 
-		<div class="chess-board-container__wrapper">
+		<div class="chess-board-container__wrapper" [ngStyle]="{'flex-direction' : boardFlipped ? 'column-reverse' : 'column'}">
 			<mat-card>
 				<div class="player-card player-card--oponent">
 					<a href="#">
 						<mat-card-header>
 							<div mat-card-avatar class="avatar avatar--opponent"
 								[ngStyle]="{'background-image':'url(' + getOpponentAvatarUrl() + ')'}">
-								<div *ngIf="isOpponentTurn" class="spinner-overlay">
+								<div *ngIf="!chessGameService.isMyTurn" class="spinner-overlay">
 									<app-spinner-rect></app-spinner-rect>
 								</div>
 							</div>

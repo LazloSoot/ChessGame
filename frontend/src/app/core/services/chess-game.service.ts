@@ -24,11 +24,13 @@ export class ChessGameService {
 	private _apiUrl: string = "/games";
 	private _gameSettings: GameSettings;
 	private fen: string;
-	private _isMyTurn: BehaviorSubject<boolean> = new BehaviorSubject<boolean>(
-		null
-	);
+	private _isMyTurn: BehaviorSubject<boolean> = new BehaviorSubject<boolean>(null);
 	public get isMyTurnObs(): Observable<boolean> {
 		return this._isMyTurn.asObservable();
+	}
+
+	public get isMyTurn() {
+		return this._isMyTurn.value;
 	}
 
 	public set isMyTurn(value: boolean) {

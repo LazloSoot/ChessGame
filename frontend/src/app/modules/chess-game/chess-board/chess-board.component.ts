@@ -138,7 +138,7 @@ export class ChessBoardComponent implements OnInit {
 		let increment;
 		let currentRow;
 		let correspondingCharCode;
-		if (this.gameSettings.options.selectedSide === GameSide.White && !this.boardFlipped) {
+		if ((this.gameSettings.options.selectedSide === GameSide.White && !this.boardFlipped) || (this.gameSettings.options.selectedSide === GameSide.Black && this.boardFlipped)) {
 			currentRow = 8;
 			increment = -1;
 			correspondingCharCode = 97;
@@ -171,7 +171,7 @@ export class ChessBoardComponent implements OnInit {
 
 		const lines = parts[0].split('/');
 		let baseNum;
-		if (this.gameSettings.options.selectedSide === GameSide.White && !this.boardFlipped) {
+		if ((this.gameSettings.options.selectedSide === GameSide.White && !this.boardFlipped) || (this.gameSettings.options.selectedSide === GameSide.Black && this.boardFlipped)) {
 			baseNum = 0;
 		}
 		else {
