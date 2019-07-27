@@ -184,14 +184,6 @@ export class ChessBoardComponent implements OnInit {
 		}
 		this.previousFen = this.currentFen;
 		this.currentFen = fen;
-		const currentTurnSide = parts[1].trim().toLowerCase();
-		if ((currentTurnSide === 'w' && this.gameSettings.options.selectedSide === GameSide.White) ||
-			currentTurnSide === 'b' && this.gameSettings.options.selectedSide === GameSide.Black) {
-			this.chessGameService.isMyTurn = true;
-		}
-		else {
-			this.chessGameService.isMyTurn = false;
-		}
 	}
 
 	initLine(lineIndex: number, fenPart: string, baseNum: number) {
@@ -279,7 +271,6 @@ export class ChessBoardComponent implements OnInit {
 
 	async tryMove(moveRequest: MoveRequest) {
 		await this.chessGameService.commitMove(moveRequest)
-			.toPromise()
 			.then((move) => {
 				if (move) {
 					this.initBoard(move.fenAfterMove);

@@ -9,7 +9,7 @@
 						<mat-card-header>
 							<div mat-card-avatar class="avatar avatar--opponent"
 								[ngStyle]="{'background-image':'url(' + getOpponentAvatarUrl() + ')'}">
-								<div *ngIf="!chessGameService.isMyTurn" class="spinner-overlay">
+								<div *ngIf="isOpponentTurn" class="spinner-overlay">
 									<app-spinner-rect></app-spinner-rect>
 								</div>
 							</div>

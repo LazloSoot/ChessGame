@@ -1,4 +1,4 @@
-import { Injectable } from "@angular/core";
+import { Injectable, EventEmitter } from "@angular/core";
 import {
 	GameSettings,
 	User,
@@ -33,10 +33,6 @@ export class ChessGameService {
 		return this._isMyTurn.value;
 	}
 
-	public set isMyTurn(value: boolean) {
-		this._isMyTurn.next(value);
-	}
-
 	constructor(
 		private httpService: HttpService,
 		private moveService: MovesService
@@ -50,12 +46,15 @@ export class ChessGameService {
 				.split(" ")[1]
 				.trim()
 				.toLowerCase();
-			this._isMyTurn.next(
-				(currentTurn === "w" &&
-					settings.options.selectedSide === GameSide.White) ||
-					(currentTurn === "b" &&
-						settings.options.selectedSide === GameSide.Black)
-			);
+				
+				setTimeout(() => {
+					this._isMyTurn.next(
+						(currentTurn === "w" &&
+							settings.options.selectedSide === GameSide.White) ||
+							(currentTurn === "b" &&
+								settings.options.selectedSide === GameSide.Black)
+					);
+				});
 		} else {
 			throw new Error("Fen is not valid!");
 		}
@@ -114,8 +113,23 @@ export class ChessGameService {
 		);
 	}
 
-	public commitMove(moveRequest: MoveRequest): Observable<Move> {
-		return this.moveService.commitMove(moveRequest);
+	public commitMove(moveRequest: MoveRequest): Promise<Move> {
+		return this.moveService.commitMove(moveRequest)
+		.toPromise()
+		.then((move)=> {
+			if(move) {
+				const parts = move.fenAfterMove.split(' ');
+				const currentTurnSide = parts[1].trim().toLowerCase();
+				if ((currentTurnSide === 'w' && this._gameSettings.options.selectedSide === GameSide.White) ||
+					currentTurnSide === 'b' && this._gameSettings.options.selectedSide === GameSide.Black) {
+					this._isMyTurn.next(true);
+				}
+				else {
+					this._isMyTurn.next(false);
+				}
+			}
+			return move;
+		});
 	}
 
 	public GetAllValidMovesForFigureAt(

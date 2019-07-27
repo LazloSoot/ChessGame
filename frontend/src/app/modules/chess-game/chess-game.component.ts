@@ -21,7 +21,7 @@ import {
 } from "../../shared";
 import { Game } from "../../core/models/chess/game";
 import { Side } from "../../core/models/chess/side";
-import { BehaviorSubject, fromEvent } from "rxjs";
+import { BehaviorSubject, fromEvent, timer } from "rxjs";
 import { skipUntil, takeUntil } from "rxjs/operators";
 import { NotificationsService } from "../../core/services/notifications.service";
 
@@ -43,6 +43,7 @@ export class ChessGameComponent implements OnInit {
 	public selectedTabIndex = 0;
 	public isGameWithAi = false;
 	public boardFlipped = false;
+	public isOpponentTurn: boolean;
 	private waitingDialog: MatDialogRef<WaitingDialogComponent>;
 	private awaitedUser: BehaviorSubject<User> = new BehaviorSubject<User>(null);
 	private newGameId: number;
@@ -128,13 +129,14 @@ export class ChessGameComponent implements OnInit {
 				this.gameSettings = Object.create(gameSettings);
 			}
 		});
+	
 	}
 
-	//ngAfterContentInit() {
-	//	this.chessGameService.isMyTurnObs.subscribe(isMyTurn => {
-	//		this.isOpponentTurn = !isMyTurn;
-	//	  });
-	//}
+	ngAfterContentInit() {
+		this.chessGameService.isMyTurnObs.subscribe(isMyTurn => {
+			this.isOpponentTurn = !isMyTurn;
+		  });
+	}
 
 	ngOnDestroy() {
 		this.appStateService.signalRConnection.off(
