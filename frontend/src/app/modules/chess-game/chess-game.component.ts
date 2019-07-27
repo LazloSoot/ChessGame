@@ -53,6 +53,7 @@ export class ChessGameComponent implements OnInit {
 	private readonly minBoardSize = 310;
 	private readonly maxBoardSize = 500;
 	private i = 0;
+	private isFocusModeEnabled = false;
 	public set boardSize(value: number) {
 		if(value < this.minBoardSize)
 		{
@@ -74,7 +75,8 @@ export class ChessGameComponent implements OnInit {
 		private chessGameService: ChessGameService,
 		private appStateService: AppStateService,
 		private notificationService: NotificationsService,
-		private cd: ChangeDetectorRef
+		private cd: ChangeDetectorRef,
+		private renderer: Renderer2
 	) {}
 
 	ngOnInit() {
@@ -400,6 +402,72 @@ export class ChessGameComponent implements OnInit {
 		  this.boardSize = newWidth;
 		})
 	  }
+
+	flipBoard() {
+		this.boardFlipped=!this.boardFlipped;
+		// chess-board-container__wrapper has display: grid;
+		this.setBoardOrientation();
+	}
+
+	toggleFocusMode() {
+		if(this.isFocusModeEnabled) {
+			this.renderer.removeClass(this.boardContainer.nativeElement, 'focused');
+			this.renderer.setStyle(this.boardContainer.nativeElement, 'justify-content', 'flex-start');
+		} else {
+			this.renderer.addClass(this.boardContainer.nativeElement, 'focused');
+			this.renderer.setStyle(this.boardContainer.nativeElement, 'justify-content', 'center');
+		}
+		this.isFocusModeEnabled = !this.isFocusModeEnabled;
+		this.setBoardOrientation();
+	}
+
+	setBoardOrientation() {
+		let playerCard2, playerCard1;
+		// chess-board-container__wrapper has display: grid;
+		if(this.isFocusModeEnabled) {
+			if(this.boardFlipped) {
+				playerCard1 = this.boardContainer.nativeElement.querySelector('.player-card--player');
+				playerCard2 = this.boardContainer.nativeElement.querySelector('.player-card--oponent');
+			} else {
+				playerCard1 = this.boardContainer.nativeElement.querySelector('.player-card--oponent');
+				playerCard2 = this.boardContainer.nativeElement.querySelector('.player-card--player');
+			}
+			this.renderer.setStyle(playerCard1, 'grid-area', 'player1');
+			this.renderer.setStyle(playerCard1, 'align-self', 'start');
+			this.renderer.setStyle(playerCard2, 'grid-area', 'player2');
+			this.renderer.setStyle(playerCard2, 'align-self', 'end');
+		} 
+		// .chess-board-container__wrapper has display: flex;
+		else {
+			if(this.boardFlipped) {
+				this.renderer.setStyle(this.boardContainer.nativeElement.querySelector('.chess-board-container__wrapper'), 'flex-direction', 'column-reverse');
+			} else {
+				this.renderer.setStyle(this.boardContainer.nativeElement.querySelector('.chess-board-container__wrapper'), 'flex-direction', 'column');
+			}
+			playerCard1 = this.boardContainer.nativeElement.querySelector('.player-card--player');
+			playerCard2 = this.boardContainer.nativeElement.querySelector('.player-card--oponent');
+			this.renderer.setStyle(playerCard1, 'grid-area', 'unset');
+			this.renderer.setStyle(playerCard1, 'align-self', 'unset');
+			this.renderer.setStyle(playerCard2, 'grid-area', 'unset');
+			this.renderer.setStyle(playerCard2, 'align-self', 'unset');
+		}
+	}
+
+	setPlayerCardsOrientation() {
+		
+		let player2, player1;
+			if(this.boardFlipped) {
+				player1 = this.boardContainer.nativeElement.querySelector('.player-card--player');
+				player2 = this.boardContainer.nativeElement.querySelector('.player-card--oponent');
+			} else {
+				player1 = this.boardContainer.nativeElement.querySelector('.player-card--oponent');
+				player2 = this.boardContainer.nativeElement.querySelector('.player-card--player');
+			}
+			this.renderer.setStyle(player1, 'grid-area', 'player1');
+			this.renderer.setStyle(player1, 'align-self', 'start');
+			this.renderer.setStyle(player2, 'grid-area', 'player2');
+			this.renderer.setStyle(player2, 'align-self', 'end');
+	}
 }
 
 const AIOpponent: User = new User( "Bob", "../../../assets/images/AIavatar.png");
