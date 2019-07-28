@@ -3,63 +3,61 @@
 	<div class="chess-board-container">
 
 		<div class="chess-board-container__wrapper">
-			<mat-card>
-				<div class="player-card player-card--oponent">
-						<a href="#">
-								<mat-card-header>
-									<div mat-card-avatar class="avatar avatar--opponent"
-										[ngStyle]="{'background-image':'url(' + getOpponentAvatarUrl() + ')'}">
-										<div *ngIf="isOpponentTurn" class="spinner-overlay">
-											<app-spinner-rect></app-spinner-rect>
-										</div>
-									</div>
-									<mat-card-title class="player-card__title">{{opponent.name}}</mat-card-title>
-									<mat-card-subtitle class="player-card__subtitle">{{(opponent.uid ? "user" : "robot")}}
-									</mat-card-subtitle>
-								</mat-card-header>
-							</a>
-							<div class="timer-container">
-								timer placeholder
+			<mat-card class="player-card player-card--oponent">
+				<div class="player-card-wrapper">
+					<a href="#">
+						<mat-card-header>
+							<div mat-card-avatar class="avatar avatar--opponent"
+								[ngStyle]="{'background-image':'url(' + getOpponentAvatarUrl() + ')'}">
+								<div *ngIf="isOpponentTurn" class="spinner-overlay">
+									<app-spinner-rect></app-spinner-rect>
+								</div>
 							</div>
+							<mat-card-title class="player-card__title">{{opponent.name}}</mat-card-title>
+							<mat-card-subtitle class="player-card__subtitle">{{(opponent.uid ? "user" : "robot")}}
+							</mat-card-subtitle>
+						</mat-card-header>
+					</a>
+					<div class="timer-container">
+						timer placeholder
+					</div>
 				</div>
 			</mat-card>
 
 			<app-chess-board #chessBoard *ngIf="isGameInitialized;else boardPlaceholder" [gameSettings]="gameSettings"
-				[boardSize]="boardSize" 
-				(moveRequest)="onMove($event)" 
-				(check)="onCheck($event)"
-				(checkmate)="onCheckmate($event)"
-				(resign)="onResign($event)"
+				[boardFlipped]="boardFlipped" [boardSize]="boardSize" (moveRequest)="onMove($event)"
+				(check)="onCheck($event)" (checkmate)="onCheckmate($event)" (resign)="onResign($event)"
 				(draw)="onDraw($event)">
+
 			</app-chess-board>
 			<ng-template #boardPlaceholder>
 				<img src="../../../assets/images/Chess/prev.jpg">
 			</ng-template>
 
-			<mat-card>
-				<div class="player-card player-card--player">
-						<a href="#">
-								<mat-card-header>
-									<div mat-card-avatar class="avatar avatar--player"
-										[ngStyle]="{'background-image':'url(' + player.avatarUrl + ')'}">
-									</div>
-									<mat-card-title class="player-card__title">{{player.name}}</mat-card-title>
-									<mat-card-subtitle class="player-card__subtitle">you</mat-card-subtitle>
-								</mat-card-header>
-							</a>
-							<div class="timer-container">
-								timer placeholder
+			<mat-card class="player-card player-card--player">
+				<div class="player-card-wrapper">
+					<a href="#">
+						<mat-card-header>
+							<div mat-card-avatar class="avatar avatar--player"
+								[ngStyle]="{'background-image':'url(' + player.avatarUrl + ')'}">
 							</div>
+							<mat-card-title class="player-card__title">{{player.name}}</mat-card-title>
+							<mat-card-subtitle class="player-card__subtitle">you</mat-card-subtitle>
+						</mat-card-header>
+					</a>
+					<div class="timer-container">
+						timer placeholder
+					</div>
 				</div>
 			</mat-card>
 		</div>
 		<div class="chess-board__options">
 			<button mat-icon-button aria-label="Open settings" disableRipple="true" matTooltip="Settings"
-				matTooltipClass="options-tooltip">
+				matTooltipClass="options-tooltip" disabled="true">
 				<mat-icon class="icon">settings</mat-icon>
 			</button>
 			<button mat-icon-button aria-label="Enable focus mode" disableRipple="true" matTooltip="Focus mode"
-				matTooltipClass="options-tooltip">
+				matTooltipClass="options-tooltip" (click)="toggleFocusMode();">
 				<mat-icon class="icon">fullscreen</mat-icon>
 			</button>
 			<div #resizeBtn>
@@ -69,7 +67,7 @@
 				</button>
 			</div>
 			<button mat-icon-button aria-label="Flip board" disableRipple="true" matTooltip="Flip board"
-				matTooltipClass="options-tooltip">
+				(click)="flipBoard();" matTooltipClass="options-tooltip">
 				<mat-icon class="icon">swap_vert</mat-icon>
 			</button>
 		</div>
@@ -79,17 +77,14 @@
 		<mat-tab-group [(selectedIndex)]="selectedTabIndex">
 			<mat-tab label="Game">
 				<ng-template matTabContent>
-					<app-move-tracker 
-					[moves]="commitedMoves" 
-					[opponent]="opponent" 
-					[isMovesSwitchOn]="isGameWithAi"
-					(onDraw)="draw($event)"
-					(onResign)="resign($event)"></app-move-tracker>
+					<app-move-tracker [moves]="commitedMoves" [opponent]="opponent" [isMovesSwitchOn]="isGameWithAi"
+						(onDraw)="draw($event)" (onResign)="resign($event)">
+					</app-move-tracker>
 				</ng-template>
 			</mat-tab>
 			<mat-tab label="Play">
 				<ng-template matTabContent>
-					<app-new-game (onStart)="startNewGame($event)"></app-new-game>
+					<app-new-game (onStart)="startNewGame($event); cd.detectChanges();"></app-new-game>
 				</ng-template>
 			</mat-tab>
 			<mat-tab>
@@ -98,7 +93,8 @@
 					Settings
 				</ng-template>
 				<ng-template matTabContent>
-					<app-settings (onSettingsDefined)="restyleBoard($event)" [styles]="gameSettings.style"></app-settings>
+					<app-settings (onSettingsDefined)="restyleBoard($event)" [styles]="gameSettings.style">
+					</app-settings>
 				</ng-template>
 			</mat-tab>
 		</mat-tab-group>

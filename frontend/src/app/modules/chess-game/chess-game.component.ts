@@ -22,7 +22,7 @@ import {
 } from "../../shared";
 import { Game } from "../../core/models/chess/game";
 import { Side } from "../../core/models/chess/side";
-import { BehaviorSubject, fromEvent } from "rxjs";
+import { BehaviorSubject, fromEvent, timer } from "rxjs";
 import { skipUntil, takeUntil } from "rxjs/operators";
 import { NotificationsService } from "../../core/services/notifications.service";
 
@@ -36,7 +36,6 @@ import { NotificationsService } from "../../core/services/notifications.service"
 export class ChessGameComponent implements OnInit {
 	@ViewChild('resizeBtn') resizeButton: ElementRef;
 	@ViewChild('boardContainer') boardContainer: ElementRef;
-	public isOpponentTurn: boolean;
 	public opponent: User = new User("", "../../../assets/images/anonAvatar.png");
 	public commitedMoves: Move[];
 	public player: User;
@@ -44,6 +43,8 @@ export class ChessGameComponent implements OnInit {
 	public gameSettings: GameSettings = new GameSettings();
 	public selectedTabIndex = 0;
 	public isGameWithAi = false;
+	public boardFlipped = false;
+	public isOpponentTurn: boolean;
 	private waitingDialog: MatDialogRef<WaitingDialogComponent>;
 	private awaitedUser: BehaviorSubject<User> = new BehaviorSubject<User>(null);
 	private newGameId: number;
@@ -54,6 +55,7 @@ export class ChessGameComponent implements OnInit {
 	private readonly minBoardSize = 310;
 	private readonly maxBoardSize = 500;
 	private i = 0;
+	private isFocusModeEnabled = false;
 	public set boardSize(value: number) {
 		if(value < this.minBoardSize)
 		{
@@ -75,7 +77,8 @@ export class ChessGameComponent implements OnInit {
 		private chessGameService: ChessGameService,
 		private appStateService: AppStateService,
 		private notificationService: NotificationsService,
-		private cd: ChangeDetectorRef
+		private cd: ChangeDetectorRef,
+		private renderer: Renderer2
 	) {}
 
 	ngOnInit() {
@@ -112,10 +115,6 @@ export class ChessGameComponent implements OnInit {
 	}
 
 	ngAfterViewInit() {
-		// ExpressionChangedAfterItHasBeenCheckedError   workaround
-		//Promise.resolve().then(()=> this.openNewGameDialog());
-		//this.cdRef.detectChanges();
-		
 		this.boardMouseUp = fromEvent(this.boardContainer.nativeElement, 'mouseup');
 		this.resizeBtnMouseDown = fromEvent(this.resizeButton.nativeElement, 'mousedown');
 		this.boardMouseUp.subscribe(() => this.registerBoardResizing());
@@ -124,9 +123,22 @@ export class ChessGameComponent implements OnInit {
 		.subscribe((gameSettings: GameSettings) => {
 			if(gameSettings)
 			{
-				this.gameSettings = Object.create(gameSettings);
+				this.chessGameService.get(gameSettings.gameId)
+				.subscribe((game) => {
+					if(game){
+						this.gameSettings = Object.create(gameSettings);
+						if(game.moves && game.moves.length > 0)
+						{
+							this.commitedMoves = game.moves;
+						} else {
+							this.commitedMoves = [];
+						}
+						
+					}
+				});
 			}
 		});
+	
 	}
 
 	ngAfterContentInit() {
@@ -380,7 +392,6 @@ export class ChessGameComponent implements OnInit {
 	}
 
 	restyleBoard(newStyles: StyleOptions) {
-		debugger;
 		let currentGame = this.appStateService.currentGame;
 		currentGame.style = newStyles;
 		this.appStateService.currentGame = currentGame;
@@ -448,6 +459,72 @@ export class ChessGameComponent implements OnInit {
 				}
 			});
 	  }
+
+	flipBoard() {
+		this.boardFlipped=!this.boardFlipped;
+		// chess-board-container__wrapper has display: grid;
+		this.setBoardOrientation();
+	}
+
+	toggleFocusMode() {
+		if(this.isFocusModeEnabled) {
+			this.renderer.removeClass(this.boardContainer.nativeElement, 'focused');
+			this.renderer.setStyle(this.boardContainer.nativeElement, 'justify-content', 'flex-start');
+		} else {
+			this.renderer.addClass(this.boardContainer.nativeElement, 'focused');
+			this.renderer.setStyle(this.boardContainer.nativeElement, 'justify-content', 'center');
+		}
+		this.isFocusModeEnabled = !this.isFocusModeEnabled;
+		this.setBoardOrientation();
+	}
+
+	setBoardOrientation() {
+		let playerCard2, playerCard1;
+		// chess-board-container__wrapper has display: grid;
+		if(this.isFocusModeEnabled) {
+			if(this.boardFlipped) {
+				playerCard1 = this.boardContainer.nativeElement.querySelector('.player-card--player');
+				playerCard2 = this.boardContainer.nativeElement.querySelector('.player-card--oponent');
+			} else {
+				playerCard1 = this.boardContainer.nativeElement.querySelector('.player-card--oponent');
+				playerCard2 = this.boardContainer.nativeElement.querySelector('.player-card--player');
+			}
+			this.renderer.setStyle(playerCard1, 'grid-area', 'player1');
+			this.renderer.setStyle(playerCard1, 'align-self', 'start');
+			this.renderer.setStyle(playerCard2, 'grid-area', 'player2');
+			this.renderer.setStyle(playerCard2, 'align-self', 'end');
+		} 
+		// .chess-board-container__wrapper has display: flex;
+		else {
+			if(this.boardFlipped) {
+				this.renderer.setStyle(this.boardContainer.nativeElement.querySelector('.chess-board-container__wrapper'), 'flex-direction', 'column-reverse');
+			} else {
+				this.renderer.setStyle(this.boardContainer.nativeElement.querySelector('.chess-board-container__wrapper'), 'flex-direction', 'column');
+			}
+			playerCard1 = this.boardContainer.nativeElement.querySelector('.player-card--player');
+			playerCard2 = this.boardContainer.nativeElement.querySelector('.player-card--oponent');
+			this.renderer.setStyle(playerCard1, 'grid-area', 'unset');
+			this.renderer.setStyle(playerCard1, 'align-self', 'unset');
+			this.renderer.setStyle(playerCard2, 'grid-area', 'unset');
+			this.renderer.setStyle(playerCard2, 'align-self', 'unset');
+		}
+	}
+
+	setPlayerCardsOrientation() {
+		
+		let player2, player1;
+			if(this.boardFlipped) {
+				player1 = this.boardContainer.nativeElement.querySelector('.player-card--player');
+				player2 = this.boardContainer.nativeElement.querySelector('.player-card--oponent');
+			} else {
+				player1 = this.boardContainer.nativeElement.querySelector('.player-card--oponent');
+				player2 = this.boardContainer.nativeElement.querySelector('.player-card--player');
+			}
+			this.renderer.setStyle(player1, 'grid-area', 'player1');
+			this.renderer.setStyle(player1, 'align-self', 'start');
+			this.renderer.setStyle(player2, 'grid-area', 'player2');
+			this.renderer.setStyle(player2, 'align-self', 'end');
+	}
 }
 
 const AIOpponent: User = new User( "Bob", "../../../assets/images/AIavatar.png");
