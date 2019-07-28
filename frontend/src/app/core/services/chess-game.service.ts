@@ -22,8 +22,6 @@ import { AppStateService } from "./app-state.service";
 })
 export class ChessGameService {
 	private _apiUrl: string = "/games";
-	private _gameSettings: GameSettings;
-	private fen: string;
 	private _isMyTurn: BehaviorSubject<boolean> = new BehaviorSubject<boolean>(null);
 	public get isMyTurnObs(): Observable<boolean> {
 		return this._isMyTurn.asObservable();
@@ -35,14 +33,15 @@ export class ChessGameService {
 
 	constructor(
 		private httpService: HttpService,
-		private moveService: MovesService
+		private moveService: MovesService,
+		private appStateService: AppStateService
 	) {}
 
-	public initializeGame(settings: GameSettings = new GameSettings()) {
-		this._gameSettings = settings;
-		if (this.isFenValid(settings.startFen)) {
-			this.fen = settings.startFen;
-			const currentTurn = this.fen
+	/// move game logic there from views! this object shouldnt get fen as param, it should get updated data
+	// from server instead!
+	public initializeGame(fen: string) {
+		if (this.isFenValid(fen)) {
+			const currentTurn = fen
 				.split(" ")[1]
 				.trim()
 				.toLowerCase();
@@ -50,9 +49,9 @@ export class ChessGameService {
 				setTimeout(() => {
 					this._isMyTurn.next(
 						(currentTurn === "w" &&
-							settings.options.selectedSide === GameSide.White) ||
+						this.appStateService.currentGame.options.selectedSide === GameSide.White) ||
 							(currentTurn === "b" &&
-								settings.options.selectedSide === GameSide.Black)
+							this.appStateService.currentGame.options.selectedSide === GameSide.Black)
 					);
 				});
 		} else {
@@ -120,8 +119,8 @@ export class ChessGameService {
 			if(move) {
 				const parts = move.fenAfterMove.split(' ');
 				const currentTurnSide = parts[1].trim().toLowerCase();
-				if ((currentTurnSide === 'w' && this._gameSettings.options.selectedSide === GameSide.White) ||
-					currentTurnSide === 'b' && this._gameSettings.options.selectedSide === GameSide.Black) {
+				if ((currentTurnSide === 'w' && this.appStateService.currentGame.options.selectedSide === GameSide.White) ||
+					currentTurnSide === 'b' && this.appStateService.currentGame.options.selectedSide === GameSide.Black) {
 					this._isMyTurn.next(true);
 				}
 				else {
@@ -137,13 +136,13 @@ export class ChessGameService {
 	): Observable<string[]> {
 		return this.httpService.sendRequest(
 			RequestMethod.Get,
-			`${this._apiUrl}/${this._gameSettings.gameId}/moves/available`,
+			`${this._apiUrl}/${this.appStateService.currentGame.gameId}/moves/available`,
 			squareName
 		);
 	}
 
 	public canISelectPiece(piece: PieceType): boolean {
-		switch (this._gameSettings.options.opponentType) {
+		switch (this.appStateService.currentGame.options.opponentType) {
 			case OpponentType.Computer: {
 				return true;
 			}
@@ -156,9 +155,9 @@ export class ChessGameService {
 	private isItMyPiece(piece: PieceType): boolean {
 		const pieceName = piece.split(".")[0];
 		return (
-			(this._gameSettings.options.selectedSide === GameSide.White &&
+			(this.appStateService.currentGame.options.selectedSide === GameSide.White &&
 				pieceName[pieceName.length - 1] === "W") ||
-			(this._gameSettings.options.selectedSide === GameSide.Black &&
+			(this.appStateService.currentGame.options.selectedSide === GameSide.Black &&
 				pieceName[pieceName.length - 1] === "B")
 		);
 	}

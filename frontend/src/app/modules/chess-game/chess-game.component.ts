@@ -114,10 +114,6 @@ export class ChessGameComponent implements OnInit {
 	}
 
 	ngAfterViewInit() {
-		// ExpressionChangedAfterItHasBeenCheckedError   workaround
-		//Promise.resolve().then(()=> this.openNewGameDialog());
-		//this.cdRef.detectChanges();
-		
 		this.boardMouseUp = fromEvent(this.boardContainer.nativeElement, 'mouseup');
 		this.resizeBtnMouseDown = fromEvent(this.resizeButton.nativeElement, 'mousedown');
 		this.boardMouseUp.subscribe(() => this.registerBoardResizing());
@@ -126,7 +122,19 @@ export class ChessGameComponent implements OnInit {
 		.subscribe((gameSettings: GameSettings) => {
 			if(gameSettings)
 			{
-				this.gameSettings = Object.create(gameSettings);
+				this.chessGameService.get(gameSettings.gameId)
+				.subscribe((game) => {
+					if(game){
+						this.gameSettings = Object.create(gameSettings);
+						if(game.moves && game.moves.length > 0)
+						{
+							this.commitedMoves = game.moves;
+						} else {
+							this.commitedMoves = [];
+						}
+						
+					}
+				});
 			}
 		});
 	
@@ -374,7 +382,6 @@ export class ChessGameComponent implements OnInit {
 	}
 
 	restyleBoard(newStyles: StyleOptions) {
-		debugger;
 		let currentGame = this.appStateService.currentGame;
 		currentGame.style = newStyles;
 		this.appStateService.currentGame = currentGame;

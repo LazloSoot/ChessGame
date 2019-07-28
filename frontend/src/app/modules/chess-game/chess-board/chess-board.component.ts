@@ -106,7 +106,7 @@ export class ChessBoardComponent implements OnInit {
 				}, 100);
 			});
 		}
-		this.chessGameService.initializeGame(this.gameSettings);
+		this.chessGameService.initializeGame(this.gameSettings.startFen);
 		signalRPipelinePromise.then(() => {
 			this._signalRConnection = this.signalRService.connect(
 				`${Group.Game}${this.gameSettings.gameId}`,
@@ -367,10 +367,11 @@ export class ChessBoardComponent implements OnInit {
 			.then((game: Game) => {
 				if (game) {
 					if (this.currentFen !== game.fen) {
+						this.chessGameService.initializeGame(game.fen);
 						const lastMove = game.moves.sort((a, b) => b.id - a.id)[0];
 						this.lastMove = new LastMove(lastMove.moveNext.slice(1, 3), lastMove.moveNext.slice(3, 5));
-						this.moveRequest.emit(lastMove);
 						this.initBoard(game.fen);
+						this.moveRequest.emit(lastMove);
 					}
 				}
 			});

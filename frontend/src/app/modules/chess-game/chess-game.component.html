@@ -81,7 +81,7 @@
 			</mat-tab>
 			<mat-tab label="Play">
 				<ng-template matTabContent>
-					<app-new-game (onStart)="startNewGame($event)"></app-new-game>
+					<app-new-game (onStart)="startNewGame($event); cd.detectChanges();"></app-new-game>
 				</ng-template>
 			</mat-tab>
 			<mat-tab>
