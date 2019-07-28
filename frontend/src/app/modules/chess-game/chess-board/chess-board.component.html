@@ -1,7 +1,7 @@
-<div class="container">
+<div class="container" [ngStyle]="{ 'width': boardSize +'px', 'height': boardSize + 'px'}">
 	<div class="chess-board" [ngStyle]="{'background-color': bgColor }">
 		<div class="chess-board__board chess-board__board--left"
-			[ngStyle]="{'background-image': 'url(' + baseBoardPath.value + ((this.gameSettings.options.selectedSide === 1) ? '/border_left_legend.png )' : '/border_left_legend_reverse.png )')}">
+			[ngStyle]="{'background-image': 'url(' + baseBoardPath.value + ((this.gameSettings.options.selectedSide === 1 && !this.boardFlipped) ? '/border_left_legend.png )' : '/border_left_legend_reverse.png )')}">
 		</div>
 
 		<div class="chess-board__wrapper">
@@ -13,7 +13,7 @@
 			   -->
 			</div>
 			<div class="chess-board__board chess-board__board--bottom"
-				[ngStyle]="{'background-image': 'url('+ baseBoardPath.value + ((this.gameSettings.options.selectedSide === 1) ? '/border_bottom_legend.png )' : '/border_bottom_legend_reverse.png )')}">
+				[ngStyle]="{'background-image': 'url('+ baseBoardPath.value + ((this.gameSettings.options.selectedSide === 1 && !this.boardFlipped) ? '/border_bottom_legend.png )' : '/border_bottom_legend_reverse.png )')}">
 			</div>
 		</div>
 

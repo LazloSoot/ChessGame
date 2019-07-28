@@ -1,24 +1,13 @@
-.container {
-	height: 100%;
+.tab-container {
+	height: 450px;
+    width: 400px;
 	display: flex;
     flex-direction: column;
 }
 
-.opponent__card {
-	min-height: 35px;
-    background-color: #d0d2d7;
-    a {
-        text-decoration: none;
-    }
-}
-
-.opponent__avatar {
-    position: relative;
-	height: 60px;
-	width: 60px;
-	border: 2px solid #eaeaea;
-	background-position: center;
-	background-size: cover;
+.move-tracker__tab-container {
+	height: 370px;
+	overflow: hidden;
 }
 
 .game-info-container {
@@ -35,7 +24,8 @@
 .moves-container {
 	flex: 2 0 auto;
 	padding: 16px;
-	overflow: visible;
+	overflow: overlay;
+    height: 320px;
 }
 
 ul {
@@ -76,4 +66,25 @@ ul {
     border-radius: 50%;
 	background-color: rgba(39, 62, 84, 0.5);
 	box-sizing: border-box;
+}
+
+.actions-toolbar {
+	flex-wrap: wrap;
+	justify-content: space-between;
+
+	button {
+		min-width: 30px;
+		font-size: 12px;
+	}
+
+	.icon {
+		font-size: 22px;
+	}
+
+	.game-actions-container {
+		button {
+			width: 30px;
+			padding: 0;
+		}
+	}
 }

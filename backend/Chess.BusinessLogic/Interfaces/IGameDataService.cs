@@ -14,6 +14,10 @@ namespace Chess.BusinessLogic.Interfaces
 
         Task<GameFullDTO> JoinToGame(int gameId);
 
+        Task<GameFullDTO> ResignGame(int gameId);
+
+        Task<GameFullDTO> SetDraw(int gameId);
+
         Task<GameFullDTO> SuspendGame(int gameId);
     }
 }

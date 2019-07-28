@@ -12,8 +12,9 @@ export class SignUpDialogComponent implements OnInit {
   @Output() onSuccessSignUp = new EventEmitter<any>();
   @Output() onVerificationEmailSent = new EventEmitter<string>();
   public firebaseError: string;
-  private user: any; 
-  private hide = true;
+  public repeatPass;
+  public user: any; 
+  public hide = true;
   
   constructor(
     private dialogRef: MatDialogRef<SignUpDialogComponent>,

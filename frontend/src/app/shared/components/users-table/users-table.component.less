@@ -1,6 +1,8 @@
 .container {
-	position: relative;
+	display: flex;
+    flex-direction: column;
 	text-align: center;
+	padding: 5px;
 }
 
 .table-template-container,
@@ -11,8 +13,12 @@ table {
 
 .table-container {
 	min-height: 110px;
-	width: 280px;
+	//width: 280px;
 	overflow: auto;
+}
+
+.users-search {
+	width: 100%;
 }
 
 tr {
@@ -28,7 +34,7 @@ tr {
 	}
 }
 .users-table__wrapper {
-    max-height: 200px;
+    max-height: 230px;
 	overflow: auto;
 	
 	p {

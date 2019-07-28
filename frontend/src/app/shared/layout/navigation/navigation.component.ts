@@ -5,7 +5,9 @@ import { MatDialog, MatDialogConfig } from "@angular/material";
 import { SignInDialogComponent , SignUpDialogComponent, InfoDialogComponent } from '../../dialogs';
 import { AppStateService, User, AuthService } from "../../../core";
 import { Router } from "@angular/router";
-import { config } from "rxjs";
+import { Observable } from "rxjs";
+import { SnotifyService } from "ng-snotify";
+import { NotificationsService } from "../../../core/services";
 
 @Component({
 	selector: "app-navigation",
@@ -14,9 +16,9 @@ import { config } from "rxjs";
 })
 export class NavigationComponent implements OnInit {
 	mobileQuery: MediaQueryList;
+	public user: User;
+	public defaultAvatarUrl ="../../../../assets/images/anonAvatar.png";
 	private _mobileQueryListener: () => void;
-	private user: User;
-	private defaultAvatarUrl ="../../../../assets/images/anonAvatar.png";
 	private _isLoggedIn: boolean;
 	
 	constructor(
@@ -27,7 +29,9 @@ export class NavigationComponent implements OnInit {
 		private dialog: MatDialog,
 		private router: Router,
 		private appStateService: AppStateService,
-		private authService: AuthService
+		private authService: AuthService,
+		private snotifyService: SnotifyService,
+		private notificationService: NotificationsService
 	) {
 	}
   

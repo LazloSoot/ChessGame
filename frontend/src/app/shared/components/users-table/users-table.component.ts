@@ -13,18 +13,18 @@ import { PresenceService } from '../../../core/services/presence.service';
 export class UsersTableComponent implements OnInit {
   @ViewChild('searchInput') searchInput: ElementRef;
   @Output() onUserSelected: EventEmitter<User> = new EventEmitter<User>(null); 
-  private namePart: string ="";
+  public namePart: string ="";
+  public timeOutSearch: boolean = false;
+  public isUsersLoading: boolean = true;
+  public users: User[] = [];
+  public displayedColumns: string[] = ['online', 'name', 'invite'];
   private filterInput: string;
   private isOnlineFilter: boolean;
-  private users: User[] = [];
   private loadedPages: PagedResult<User>[] = [];
   private prevPageSize: number;
-  private timeOutSearch: boolean = false;
   private isOnlineUserFilterEnabled: boolean = false;
 	private isSearchMode: boolean = false;
-  private isUsersLoading: boolean = true;
   private totalUsersCount: number = 0;
-  private displayedColumns: string[] = ['online', 'name', 'invite'];
   private pageSizeOptions = [5, 10, 20, 50];
   private currentUid: string;
   private searchStream: Observable<any>;
@@ -64,7 +64,7 @@ export class UsersTableComponent implements OnInit {
         this.timeOutSearch = false;
         if(filter) {
           this.userService
-          .getUsersByNameStartsWith(filter, this.isOnlineUserFilterEnabled, new Page(0, 10))
+          .getUsersByNameStartsWith(filter, this.isOnlineUserFilterEnabled, new Page(0, 100))
           .subscribe(async (users: PagedResult<User>) => {
             this.users = [];
             if(users) {
@@ -94,7 +94,7 @@ export class UsersTableComponent implements OnInit {
             });
         }
         
-      }, 1000);
+      }, 1200);
     }
   }
 

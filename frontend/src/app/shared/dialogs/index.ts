@@ -6,3 +6,4 @@ export * from './invitation-dialog/invitation-dialog.component';
 export * from './waiting-dialog/waiting-dialog.component';
 export * from './checkmate-dialog/checkmate-dialog.component';
 export * from './info-dialog/info-dialog.component';
+export * from './confirmation-dialog/confirmation-dialog.component';

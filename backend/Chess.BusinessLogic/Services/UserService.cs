@@ -44,6 +44,17 @@ namespace Chess.BusinessLogic.Services
 
             var currentDbUser = await uow.GetRepository<User>()
                 .GetOneAsync(u => string.Equals(u.Uid, currentUser.Uid));
+            if (currentDbUser == null)
+            {
+                currentDbUser = await uow.GetRepository<User>()
+                    .AddAsync(new User()
+                    {
+                        AvatarUrl = currentUser.AvatarUrl,
+                        Name = currentUser.Name,
+                        RegistrationDate = currentUser.RegistrationDate,
+                         Uid = currentUser.Uid
+                    });
+            }
             var currentUserDTO = mapper.Map<UserDTO>(currentUser);
             currentUserDTO.Uid = currentUser.Uid;
             currentUserDTO.Id = currentDbUser.Id;

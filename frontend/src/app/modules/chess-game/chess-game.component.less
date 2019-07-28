@@ -2,10 +2,17 @@
     display: flex;
     flex-direction: row;
     justify-content: space-between;
+    padding: 0.1vh 5vw;
+}
+
+.chess-board-container {
+    margin-right: 30px;
 }
 
 .chess-board-container__wrapper {
     float: left;
+    display: flex;
+    flex-direction: column;
 }
 
 .chess-board__options {
@@ -32,9 +39,10 @@
     font-size: 16px;
 }
 
-.player-card {
+.player-card-wrapper {
     margin: 5px 0;
     display: flex;
+    flex-wrap: nowrap;
     flex-direction: row;
     justify-content: space-between;
     padding-right: 0;
@@ -51,4 +59,43 @@
 
 .timer-container {
     width: 100px;
+}
+
+.avatar {
+    background-color: burlywood;
+}
+
+.game-settings-container {
+    width: 400px;
+}
+
+.game-settings-container .mat-tab-label {
+    padding: 0;
+    min-width: 133px;
+}
+
+.focused {
+    .game-settings-container,
+    .player-card__title,
+    .player-card__subtitle {
+        content: '';
+        display: none !important;
+        font-size: 0;
+    }
+
+    .chess-board-container__wrapper {
+        display: grid;
+        grid-template-columns: 1fr 1fr 1fr;
+        grid-template-rows: 1fr 1fr;
+        grid-template-areas: "board board player1" "board board player2";
+    }
+
+    .chess-board {
+        grid-area: board;
+    }
+
+    .player-card {
+        width: 150px;
+        height: 40px;
+    }
 }

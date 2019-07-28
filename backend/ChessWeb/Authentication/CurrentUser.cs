@@ -36,14 +36,29 @@ namespace ChessWeb.Authentication
         }
         public async Task<User> GetCurrentUserAsync()
         {
+            User currentUser;
             if (RequestLevelCache["User"] == null)
             {
-                var container = await CurrentUserContainerAsync();
-                RequestLevelCache["User"] = container;
-                return container;
+                currentUser = await CurrentUserContainerAsync();
+                RequestLevelCache["User"] = currentUser;
+                return currentUser;
             }
             var result = RequestLevelCache["User"] as User;
             return result;
+        }
+
+        public async Task<User> GetCurrentDbUserAsync()
+        {
+            User currentUser;
+            if (RequestLevelCache["User"] == null || (currentUser = RequestLevelCache["User"] as User).Id < 1)
+            {
+                var userUid = CurrentContext.User.GetUid();
+                currentUser = await _userProvider.GetOneAsync(u => string.Equals(u.Uid, userUid));
+                RequestLevelCache["User"] = currentUser;
+                return currentUser;
+            }
+
+            return currentUser;
         }
 
         public string GetCurrentUserUid()

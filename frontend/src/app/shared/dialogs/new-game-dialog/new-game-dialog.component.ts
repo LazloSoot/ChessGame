@@ -24,6 +24,8 @@ import { MatDialogRef } from "@angular/material";
 })
 export class NewGameDialogComponent implements OnInit {
 	@Output() onSettingsDefined: EventEmitter<GameSettings> = new EventEmitter<GameSettings>(null);
+	public selectedTab: number = 0;
+	
 	private boardColors: BoardColor[];
 	private boardColor: BoardColor = new BoardColor();
 	private pieceStyles: PieceStyle[];
@@ -31,7 +33,6 @@ export class NewGameDialogComponent implements OnInit {
 	private isEnPassantOn: boolean = true;
 	private side: GameSide = GameSide.Random;
 	private opponentType: OpponentType = OpponentType.Computer;
-	private selectedTab: number = 0;
 	private opponent: User;
 
 	private currentUser: User;
@@ -45,7 +46,7 @@ export class NewGameDialogComponent implements OnInit {
 		this.appStateService.getCurrentUserObs().subscribe((user) => {
 			this.currentUser = user;
 		});
-		let tabHeader = document.getElementsByClassName("mat-tab-header")[0];
+		let tabHeader = document.getElementsByClassName("new-game__container")[0].getElementsByClassName("mat-tab-header")[0];
 		tabHeader.classList.add("hidden");
 		let keys = Object.keys(BoardTextureType);
 		this.boardColors = Array(keys.length)
@@ -101,7 +102,6 @@ export class NewGameDialogComponent implements OnInit {
 
 
 	selectUser(user: User) {
-		debugger;
 		if (user) {
 			this.opponent = user;
 			this.opponentType = OpponentType.Friend;

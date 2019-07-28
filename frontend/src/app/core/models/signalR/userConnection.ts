@@ -3,6 +3,10 @@ import { Hub } from './hub';
 import { environment } from '../../../../environments/environment';
 import * as signalR from '@aspnet/signalr';
 import { ServerAction } from "./serverAction";
+import { Group } from "./group";
+import { ClientEvent } from "./clientEvent";
+import { Invocation } from "./invocation";
+import { GameSide } from "../chess";
 
 export class UserConnection {
     private joinGroupAttemptsСount = maxJoinAttemptsСount;
@@ -80,8 +84,18 @@ export class UserConnection {
         }
     }
 
-    send(serverActionName: ServerAction | string, arg: string): Promise<void> {
-        return this.connection.send(serverActionName, arg);
+    dismissInvocation(targetUserUid: string): Promise<void> {
+        return this.send(
+            ServerAction.DismissInvocation,
+            `${Group.User}${targetUserUid}`
+        );
+    }
+
+    cancelInvocation(targetUserUid: string): Promise<void> {
+        return this.send(
+            ServerAction.CancelInvocation,
+            `${Group.User}${targetUserUid}`
+            );
     }
 
     leaveGroup(groupName: string) {
@@ -101,17 +115,68 @@ export class UserConnection {
         }
     }
 
-    on(methodName: string, newMethod: (...args: any[]) => void): void {
-        if (this.connection) {
-            this.connection.on(methodName, newMethod);
-            this.subscribeAttemptsCount = maxJoinAttemptsСount;
-        } else if (this.subscribeAttemptsCount > 0) {
-            setTimeout(() => {
-                this.subscribeAttemptsCount--;
-                this.on(methodName, newMethod);
-                return;
-            }, 1000);
-        }
+
+    onInvocationReceived(newMethod: (invocation: Invocation) => void) {
+        this.on(
+			ClientEvent.InvocationReceived,
+			newMethod
+		);
+    }
+
+    onInvocationAccepted(newMethod: (gameId: number) => void){
+        this.on(
+            ClientEvent.InvocationAccepted,
+            newMethod
+        );
+    }
+
+    onInvocationDismissed(newMethod: (byUserWithUid: string) => void) {
+        this.on(
+            ClientEvent.InvocationDismissed,
+            newMethod
+        );
+    }
+
+    onInvocationCanceled(newMethod: ()=> void) {
+        this.on(
+            ClientEvent.InvocationCanceled,
+            newMethod
+            );
+    }
+
+    onMoveComitted(newMethod: ()=> void){
+        this.on(
+            ClientEvent.MoveCommitted,
+            newMethod
+        );
+    }
+
+    onCheck(newMethod: (checkTo: GameSide)=> void) {
+        this.on(
+            ClientEvent.Check,
+            newMethod
+        );
+    }
+
+    onMate(newMethod: (mateTo: GameSide)=> void) {
+        this.on(
+            ClientEvent.Mate,
+            newMethod
+        );
+    }
+
+    onResign(newMethod: (resignedSide: GameSide)=> void) {
+        this.on(
+            ClientEvent.Resign,
+            newMethod
+        );
+    }
+
+    onDraw(newMethod: (gameId: number)=> void) {
+        this.on(
+            ClientEvent.Draw,
+            newMethod
+        );
     }
 
     off(methodName: string): void {
@@ -194,6 +259,23 @@ export class UserConnection {
                 });
                 return connPromise;
             }
+        }
+    }
+    
+    private send(serverActionName: ServerAction | string, arg: string): Promise<void> {
+        return this.connection.send(serverActionName, arg);
+    }
+
+    private on(methodName: string, newMethod: (...args: any[]) => void): void {
+        if (this.connection) {
+            this.connection.on(methodName, newMethod);
+            this.subscribeAttemptsCount = maxJoinAttemptsСount;
+        } else if (this.subscribeAttemptsCount > 0) {
+            setTimeout(() => {
+                this.subscribeAttemptsCount--;
+                this.on(methodName, newMethod);
+                return;
+            }, 1000);
         }
     }
 }

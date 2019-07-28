@@ -17,12 +17,15 @@ import { SpinnerColorDirective } from './layout/spinners/directives/spinner-colo
 import { LastEntryDatePipe } from './pipes/last-entry-date.pipe';
 import { UsersTableComponent } from './components/users-table/users-table.component';
 import { InfoDialogComponent } from './dialogs/info-dialog/info-dialog.component';
+import { SnotifyModule, SnotifyService, ToastDefaults } from 'ng-snotify';
+import { ConfirmationDialogComponent } from './dialogs/confirmation-dialog/confirmation-dialog.component';
 
 @NgModule({
   imports: [
     CommonModule,
     MaterialModule,
-    FormsModule
+    FormsModule,
+    SnotifyModule
   ],
   
   exports: [
@@ -30,7 +33,9 @@ import { InfoDialogComponent } from './dialogs/info-dialog/info-dialog.component
     FormsModule,
     SpinnerRectComponent,
     SpinnerColorDirective,
-    LastEntryDatePipe
+    LastEntryDatePipe,
+    SnotifyModule,
+    UsersTableComponent
   ],
 
   declarations: [
@@ -47,9 +52,15 @@ import { InfoDialogComponent } from './dialogs/info-dialog/info-dialog.component
     SpinnerColorDirective,
     LastEntryDatePipe,
     UsersTableComponent,
-    InfoDialogComponent
+    InfoDialogComponent,
+    ConfirmationDialogComponent
     ],
-    
+
+    providers: [
+      { provide: 'SnotifyToastConfig', useValue: ToastDefaults},
+      SnotifyService
+    ],
+
   entryComponents: [
     SignInDialogComponent,
     SignUpDialogComponent,
@@ -58,7 +69,8 @@ import { InfoDialogComponent } from './dialogs/info-dialog/info-dialog.component
     InvitationDialogComponent,
     WaitingDialogComponent,
     CheckmateDialogComponent,
-    InfoDialogComponent
+    InfoDialogComponent,
+    ConfirmationDialogComponent
   ]
 })
 export class SharedModule { }

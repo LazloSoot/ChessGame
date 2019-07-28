@@ -27,7 +27,7 @@ namespace Chess.BusinessLogic
             }
             else
             {
-                services.AddSignalR().AddAzureSignalR();
+                services.AddSignalR().AddAzureSignalR(configuration.GetSection("Azure").GetSection("SignalR").GetValue<string>("ConnectionString"));
             }
         }
 

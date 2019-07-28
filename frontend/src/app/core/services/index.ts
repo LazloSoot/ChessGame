@@ -5,3 +5,4 @@ export * from './user.service';
 export * from './signalr.service';
 export * from './chess-game.service';
 export * from './moves.service';
+export * from './notifications.service';

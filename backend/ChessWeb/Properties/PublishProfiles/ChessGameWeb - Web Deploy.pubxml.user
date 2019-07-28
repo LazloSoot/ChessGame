@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+This file is used by the publish/package process of your Web project. You can customize the behavior of this process
+by editing this MSBuild file. In order to learn more about this please visit https://go.microsoft.com/fwlink/?LinkID=208121. 
+-->
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <TimeStampOfAssociatedLegacyPublishXmlFile />
+    <EncryptedPassword>AQAAANCMnd8BFdERjHoAwE/Cl+sBAAAAXe/W+z7+C0KQGok2+abb4AAAAAACAAAAAAAQZgAAAAEAACAAAABIccF1rHXpEl2jb1V/JXOVsNQG6Du7cn0iyAALQfcL4QAAAAAOgAAAAAIAACAAAAA5tz8HIcWCNJURPfJ1tr/+kzLd8g6/1ebmoiFX4kZCF4AAAABmPeWT93nX6TFkxKF8aeBaykQM35ShQtAeMSbrX5EczleXQ9agIfFPG1FmJucm1KeybDXRHnwtHlBppetrUkVQyoBlO4gFBxvhYE1toc3aPPdKEpyJk0V9BXFBylQ9sA86ZHUKeU8gmPKiVs6FKxrMxfcyUmkJCwghFilTwcz2KUAAAABZLijJdDimmWEh5Y8cQXzZ+F3Mzw8Vm5jPIHznRrjLyYVuwM9F1kgzRMunOFPYV3gW6i61wpaqjeRcw8bSHXQr</EncryptedPassword>
+  </PropertyGroup>
+  <ItemGroup>
+    <DestinationConnectionStrings Include="ChessGameDb">
+      <Value>Data Source=tcp:chessgamewebdbserver.database.windows.net,1433%3bInitial Catalog=ChessGameDb%3bUser Id=ZhukovMykhailo%40chessgamewebdbserver%3bPassword=20sd10cAsGH701d7</Value>
+    </DestinationConnectionStrings>
+  </ItemGroup>
+  <ItemGroup>
+    <EFMigrations Include="Chess.DataAccess.DataContext">
+      <Value>Data Source=tcp:chessgamewebdbserver.database.windows.net,1433%3bInitial Catalog=ChessGameDb%3bUser Id=ZhukovMykhailo%40chessgamewebdbserver%3bPassword=20sd10cAsGH701d7</Value>
+    </EFMigrations>
+  </ItemGroup>
+</Project>

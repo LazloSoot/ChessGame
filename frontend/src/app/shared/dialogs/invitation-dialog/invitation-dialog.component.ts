@@ -9,7 +9,7 @@ import { Game, User } from "../../../core";
 	styleUrls: ["./invitation-dialog.component.less"]
 })
 export class InvitationDialogComponent implements OnInit {
-	private inviter: User;
+	public inviter: User;
 	private game: Game;
 	private isUserLoading = true;
 	private isGameLoading = true;

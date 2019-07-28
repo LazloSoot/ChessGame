@@ -12,7 +12,8 @@ export class AppStateService {
 	private tokenSubject: BehaviorSubject<string> = new BehaviorSubject<string>("");
 	private currentUserSubject: BehaviorSubject<User> = new BehaviorSubject<User>(null);
 	private currentGameSubject: BehaviorSubject<GameSettings> = new BehaviorSubject<GameSettings>(null); 
-	private _signalRConnection: UserConnection;
+	private notificationsStateSubject: BehaviorSubject<boolean> = new BehaviorSubject<boolean>(false);
+	private signalRConnectionSubject: BehaviorSubject<UserConnection> = new BehaviorSubject<UserConnection>(null);
 	private signalRConnectionGroupName: string;
 	private _isRemember: boolean;
 
@@ -25,7 +26,15 @@ export class AppStateService {
 	}
 
 	public get signalRConnection(): UserConnection {
-		return this._signalRConnection;
+		return this.signalRConnectionSubject.value;
+	}
+
+	private setSignalRConnection(value: UserConnection) {
+		this.signalRConnectionSubject.next(value);
+	}
+
+	public getSignalRConnectionObs(): Observable<UserConnection> {
+		return this.signalRConnectionSubject.asObservable();
 	}
 
 	public getCurrentUserObs(): Observable<User> {
@@ -48,6 +57,18 @@ export class AppStateService {
 		return this.currentGameSubject.asObservable();
 	}
 
+	public get isNotificationsMuted(): boolean {
+		return this.notificationsStateSubject.value;
+	}
+
+	public set isNotificationsMuted(value: boolean) {
+		this.notificationsStateSubject.next(value);
+	}
+
+	public getNotificatonsMutedObs(): Observable<boolean> {
+		return this.notificationsStateSubject.asObservable();
+	}
+
 	constructor(
 		private userService: UserService,
 		private signalRService: SignalRService
@@ -58,7 +79,7 @@ export class AppStateService {
 			this.currentGameSubject.next(currentGame);
 		}
 		this.currentGameSubject.subscribe((settings) => {
-			if(settings)
+			if(settings && this.isRemember)
 			{
 				localStorage.setItem("chess-zm-currentGame", JSON.stringify(settings));
 			}
@@ -72,10 +93,12 @@ export class AppStateService {
 				await this.initializeCurrentUser(firebaseUser)
 			);
 			this.signalRConnectionGroupName = `${Group.User}${firebaseUser.uid}`;
-			this._signalRConnection = this.signalRService.connect(
-				this.signalRConnectionGroupName,
-				Hub.Notification,
-				this.token
+			this.setSignalRConnection(
+				this.signalRService.connect(
+					this.signalRConnectionGroupName,
+					Hub.Notification,
+					this.token
+				)
 			);
 			if(isRemember) {
 				localStorage.setItem("chess-zm-isRemember", "true");
@@ -84,7 +107,7 @@ export class AppStateService {
 			}
 		} else {
 			if (this.signalRConnection) {
-				this._signalRConnection.offAll();
+				this.signalRConnection.offAll();
 				this.signalRService.leaveGroup(
 					this.signalRConnectionGroupName,
 					Hub.Notification
