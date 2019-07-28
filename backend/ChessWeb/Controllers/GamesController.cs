@@ -93,5 +93,14 @@ namespace ChessWeb.Controllers
             return readyGame == null ? StatusCode(304) as IActionResult
                 : Ok(readyGame);
         }
+
+        // PUT: Games/{:id}/resign
+        [HttpPut("{gameId}/resign", Name ="Resign")]
+        public async Task<IActionResult> ResignGame(int gameId)
+        {
+            var resignedGame = await _service.ResignGame(gameId);
+            return resignedGame == null ? StatusCode(304) as IActionResult
+                : Ok(resignedGame);
+        }
     }
 }

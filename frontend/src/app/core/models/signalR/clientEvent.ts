@@ -5,5 +5,7 @@ export enum ClientEvent {
     InvocationCanceled = 'invocationCanceled',
     MoveCommitted = 'moveCommitted',
     Check = 'check',
-    Mate = 'mate'
+    Mate = 'mate',
+    Resign = 'resign',
+    Draw = 'draw'
 }

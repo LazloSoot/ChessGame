@@ -24,9 +24,11 @@
 				</div>
 			</mat-card>
 
-			<app-chess-board class="chess-board" #chessBoard *ngIf="isGameInitialized;else boardPlaceholder" [gameSettings]="gameSettings"
+			<app-chess-board #chessBoard *ngIf="isGameInitialized;else boardPlaceholder" [gameSettings]="gameSettings"
 				[boardFlipped]="boardFlipped" [boardSize]="boardSize" (moveRequest)="onMove($event)"
-				(check)="onCheck($event)" (checkmate)="onCheckmate($event)">
+				(check)="onCheck($event)" (checkmate)="onCheckmate($event)" (resign)="onResign($event)"
+				(draw)="onDraw($event)">
+
 			</app-chess-board>
 			<ng-template #boardPlaceholder>
 				<img src="../../../assets/images/Chess/prev.jpg">
@@ -75,7 +77,8 @@
 		<mat-tab-group [(selectedIndex)]="selectedTabIndex">
 			<mat-tab label="Game">
 				<ng-template matTabContent>
-					<app-move-tracker [moves]="commitedMoves" [opponent]="opponent" [isMovesSwitchOn]="isGameWithAi">
+					<app-move-tracker [moves]="commitedMoves" [opponent]="opponent" [isMovesSwitchOn]="isGameWithAi"
+						(onDraw)="draw($event)" (onResign)="resign($event)">
 					</app-move-tracker>
 				</ng-template>
 			</mat-tab>

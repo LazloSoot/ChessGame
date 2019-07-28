@@ -20,16 +20,19 @@ namespace Chess.BusinessLogic.Services
     {
         private readonly ICurrentUserProvider _currentUserProvider;
         private readonly ISignalRNotificationService _notificationService;
+        private readonly ISignalRChessService _signalRChessService;
         public GameDataService(
             IMapper mapper, 
             IUnitOfWork unitOfWork,
             ICurrentUserProvider currentUserProvider,
-            ISignalRNotificationService notificationService
+            ISignalRNotificationService notificationService,
+            ISignalRChessService signalRChessService
             )
             : base(mapper, unitOfWork)
         {
             _notificationService = notificationService;
             _currentUserProvider = currentUserProvider;
+            _signalRChessService = signalRChessService;
         }
 
 #warning работает только с приглашением оппонента
@@ -143,6 +146,34 @@ namespace Chess.BusinessLogic.Services
             return mapper.Map<GameFullDTO>(targetGame);
         }
 
+        public async Task<GameFullDTO> ResignGame(int gameId)
+        {
+            if (uow == null)
+                return null;
+
+            var currentGame = await this.uow.GetRepository<Game>().GetByIdAsync(gameId);
+
+            if (currentGame == null)
+                return null;
+
+            var currentPlayer = await this._currentUserProvider.GetCurrentDbUserAsync();
+            var currentSide = currentGame.Sides.Where(s => s.PlayerId == currentPlayer.Id).FirstOrDefault();
+
+            if (currentSide == null)
+                return null;
+
+            currentSide.IsResign = true;
+            currentGame.Status = DataAccess.Helpers.GameStatus.Completed;
+            await uow.SaveAsync();
+            await this._signalRChessService.EmitResign(currentGame.Id, (Common.Helpers.Color)currentSide.Color);
+            return mapper.Map<Game, GameFullDTO>(currentGame);
+        }
+
+        public async Task<GameFullDTO> SetDraw(int gameId)
+        {
+            return null;
+        }
+
         public Task<GameFullDTO> SuspendGame(int gameId)
         {
             throw new NotImplementedException();
@@ -169,6 +200,7 @@ namespace Chess.BusinessLogic.Services
             };
             return gamesPage;
         } 
+
         public override async Task<PagedResultDTO<GameFullDTO>> GetListAsync(int? pageIndex = null, int? pageSize = null)
         {
             if (uow == null)

@@ -131,6 +131,16 @@ export class ChessGameService {
 		});
 	}
 
+	public resign(gameId: number): Observable<Game> {
+		return this.httpService.sendRequest(
+			RequestMethod.Put,`${this._apiUrl}/${gameId}/resign`);
+	}
+
+	public draw(gameId: number): Observable<Game> {
+		return this.httpService.sendRequest(
+			RequestMethod.Put,`${this._apiUrl}/${gameId}/draw`);
+	}
+
 	public GetAllValidMovesForFigureAt(
 		squareName: string
 	): Observable<string[]> {
