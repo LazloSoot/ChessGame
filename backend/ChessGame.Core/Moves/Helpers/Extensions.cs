@@ -2,7 +2,7 @@
 {
     static class Extentions
     {
-        public static Color FlipColor(this Color color)
+        internal static Color FlipColor(this Color color)
         {
             if (color == Color.None)
                 return Color.None;

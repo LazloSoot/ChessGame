@@ -46,6 +46,7 @@ namespace Chess.BL
             currentMove = new Move(board);
             return this;
         }
+
         public IChessGame Move(string move) // Pe2e4  Pe7e8Q
         {
             var movingFigure = new MovingFigure(move);

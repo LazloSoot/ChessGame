@@ -5,16 +5,16 @@ namespace Chess.BL.Figures.Helpers
 {
     struct Square : IEquatable<Square>
     {
-        public int X { get; private set; }
-        public int Y { get; private set; }
+        internal int X { get; private set; }
+        internal int Y { get; private set; }
 
-        public Square(int x, int y)
+        internal Square(int x, int y)
         {
             X = x;
             Y = y;
         }
 
-        public Square(string squareSymbol)
+        internal Square(string squareSymbol)
         {
             if (squareSymbol[0] >= 'a' &&
                 squareSymbol[0] <= 'h' &&
@@ -32,7 +32,7 @@ namespace Chess.BL.Figures.Helpers
             }
         }
 
-        public bool IsOnBoard()
+        internal bool IsOnBoard()
         {
             return X > -1 && Y > -1 && X < 8 && Y < 8;
         }
@@ -51,7 +51,7 @@ namespace Chess.BL.Figures.Helpers
             return !(a == b);
         }
 
-        public static IEnumerable<Square> YieldSquares()
+        internal static IEnumerable<Square> YieldSquares()
         {
             for (int y = 0; y < 8; y++)
             {

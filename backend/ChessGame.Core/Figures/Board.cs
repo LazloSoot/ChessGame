@@ -7,17 +7,17 @@ using System.Text;
 
 namespace Chess.BL.Figures
 {
-    class Board
+    internal sealed class Board
     {
         private Figure[,] figures;
 
-        public string Fen { get; private set; }
-        public string WhiteCastlingFenPart { get; set; }
-        public string BlackCastlingFenPart { get; set; }
-        public Color MoveColor { get; set; }
-        public int MoveNumber { get; set; }
+        internal string Fen { get; private set; }
+        internal string WhiteCastlingFenPart { get; set; }
+        internal string BlackCastlingFenPart { get; set; }
+        internal Color MoveColor { get; set; }
+        internal int MoveNumber { get; set; }
 
-        public Board(string fen, int moveNumber = 0)
+        internal Board(string fen, int moveNumber = 0)
         {
             Fen = fen;
             figures = new Figure[8, 8];
@@ -25,17 +25,17 @@ namespace Chess.BL.Figures
             InitFiguresPosition();
         }
 
-        public Figure GetFigureAt(Square square)
+        internal Figure GetFigureAt(Square square)
         {
             return figures[square.X, square.Y];
         }
 
-        public Figure GetFigureAt(int x, int y)
+        internal Figure GetFigureAt(int x, int y)
         {
             return figures[x, y];
         }
 
-        public Board Move(MovingFigure mf)
+        internal Board Move(MovingFigure mf)
         {
             var nextBoardState = new Board(Fen);
             
@@ -51,7 +51,7 @@ namespace Chess.BL.Figures
             return nextBoardState;
         }
 
-        public Board Castle(MovingFigure king, MovingFigure rook)
+        internal Board Castle(MovingFigure king, MovingFigure rook)
         {
             var nextBoardState = new Board(Fen);
 
@@ -68,6 +68,7 @@ namespace Chess.BL.Figures
             nextBoardState.GenerateNextFen();
             return nextBoardState;
         }
+
         private void UpdateCastlingData(MovingFigure mf)
         {
             var targetColor = mf.Figure.GetColor();
@@ -124,7 +125,7 @@ namespace Chess.BL.Figures
             return nextBoardState;
         }
 
-        public IEnumerable<FigureOnSquare> YieldFigures()
+        internal IEnumerable<FigureOnSquare> YieldFigures()
         {
             foreach (var s in Square.YieldSquares())
             {
@@ -132,13 +133,14 @@ namespace Chess.BL.Figures
                     yield return new FigureOnSquare(GetFigureAt(s), s);
             }
         }
-        public bool IsCheckAfterMove(MovingFigure movingFigure)
+
+        internal bool IsCheckAfterMove(MovingFigure movingFigure)
         {
             var after = Move(movingFigure);
             return after.IsCheckTo();
         }
 
-        public bool IsCheckTo()
+        internal bool IsCheckTo()
         {
             Square targetKingPosition = FindTargetKingPosition();
             var move = new Move(this);

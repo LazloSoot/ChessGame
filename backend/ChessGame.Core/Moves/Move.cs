@@ -3,7 +3,7 @@ using Chess.BL.Figures.Helpers;
 
 namespace Chess.BL.Moves
 {
-    class Move
+    internal sealed class Move
     {
         private MovingFigure movingFigure;
         private Board board;
@@ -129,8 +129,6 @@ namespace Chess.BL.Moves
                 return false;
             }
         }
-
-
 
         private bool CanStraightMove()
         {
