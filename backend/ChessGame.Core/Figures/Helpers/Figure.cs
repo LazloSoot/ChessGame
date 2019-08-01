@@ -1,4 +1,4 @@
-﻿namespace Chess.BL.Figures.Helpers
+﻿namespace ChessGame.Core.Figures.Helpers
 {
     enum Figure
     {

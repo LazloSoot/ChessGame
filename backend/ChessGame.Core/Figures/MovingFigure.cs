@@ -1,7 +1,7 @@
-﻿using Chess.BL.Figures.Helpers;
+﻿using ChessGame.Core.Figures.Helpers;
 using System;
 
-namespace Chess.BL.Figures
+namespace ChessGame.Core.Figures
 {
     internal sealed class MovingFigure
     {

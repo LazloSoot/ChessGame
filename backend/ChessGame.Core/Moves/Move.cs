@@ -1,7 +1,7 @@
-﻿using Chess.BL.Figures;
-using Chess.BL.Figures.Helpers;
+﻿using ChessGame.Core.Figures;
+using ChessGame.Core.Figures.Helpers;
 
-namespace Chess.BL.Moves
+namespace ChessGame.Core.Moves
 {
     internal sealed class Move
     {

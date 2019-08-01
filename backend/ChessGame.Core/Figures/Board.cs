@@ -1,27 +1,66 @@
-﻿using Chess.BL.Figures.Helpers;
-using Chess.BL.Moves;
-using Chess.BL.Moves.Helpers;
+﻿using ChessGame.Core.Figures.Helpers;
+using ChessGame.Core.Moves;
+using ChessGame.Core.Moves.Helpers;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 
-namespace Chess.BL.Figures
+namespace ChessGame.Core.Figures
 {
     internal sealed class Board
     {
         private Figure[,] figures;
 
         internal string Fen { get; private set; }
-        internal string WhiteCastlingFenPart { get; set; }
-        internal string BlackCastlingFenPart { get; set; }
-        internal Color MoveColor { get; set; }
-        internal int MoveNumber { get; set; }
 
-        internal Board(string fen, int moveNumber = 0)
+        internal string WhiteCastlingFenPart { get; private set; }
+
+        internal string BlackCastlingFenPart { get; private set; }
+
+        internal Color MoveColor { get; set; }
+
+        internal int MoveNumber { get; set; }
+        /// <summary>
+        /// Computed by increasing better positions for White and decreasing for better positions for Black.
+        /// Black is always trying to find boards with the lowest score and White with the highest.
+        /// </summary>
+        internal int Score { get; private set; }
+        /// <summary>
+        /// This flag is needed for evaluation function, to give bonuse score for castling.
+        /// </summary>
+        internal bool IsWhiteCastled { get; set; }
+        /// <summary>
+        /// This flag is needed for evaluation function, to give bonuse score for castling.
+        /// </summary>
+        internal bool IsBlackCastled { get; set; }
+        /// <summary>
+        /// Enables fifty-move rule.
+        /// </summary>
+        /// <remarks>https://en.wikipedia.org/wiki/Fifty-move_rule</remarks>
+        public bool IsFiftyMovesRuleEnabled { get; set; }
+        /// <summary>
+        /// Enables En passant capture rule.
+        /// </summary>
+        /// <remarks>https://en.wikipedia.org/wiki/En_passant</remarks>
+        public bool IsEnpassantRuleEnabled { get; set; }
+        /// <summary>
+        /// Enables threefold repetition rule (also known as repetition of position).
+        /// </summary>
+        /// <remarks>https://en.wikipedia.org/wiki/Threefold_repetition</remarks>
+        public bool IsThreefoldRepetitionRuleEnabled { get; set; }
+        /// <summary>
+        /// Counter to check is fifty moves rule condition satisfied.
+        /// </summary>
+        public int FiftyMovesCount { get; private set; }
+        /// <summary>
+        /// Counter to check is three moves repition rule condition satisfied.
+        /// </summary>
+        public int RepeatedMovesCount { get; set; }
+        internal Board(string fen, int repeatedMovesCount = 0)
         {
             Fen = fen;
+            RepeatedMovesCount = repeatedMovesCount < 0 ? 0 : repeatedMovesCount;
             figures = new Figure[8, 8];
-            MoveNumber = moveNumber < 0 ? 0 : moveNumber;
             InitFiguresPosition();
         }
 
@@ -191,6 +230,8 @@ namespace Chess.BL.Figures
 
         private void InitFiguresPosition()
         {
+
+#warning INIT FIFTY MOVES COUNT
             string[] parts = Fen.Split();
             if (parts.Length < 6)
                 return;

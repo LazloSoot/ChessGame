@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 
-namespace Chess.BL.Figures.Helpers
+namespace ChessGame.Core.Figures.Helpers
 {
     struct Square : IEquatable<Square>
     {
@@ -36,6 +36,7 @@ namespace Chess.BL.Figures.Helpers
         {
             return X > -1 && Y > -1 && X < 8 && Y < 8;
         }
+
         public bool Equals(Square other)
         {
             return this.X == other.X && this.Y == other.Y;
@@ -53,9 +54,9 @@ namespace Chess.BL.Figures.Helpers
 
         internal static IEnumerable<Square> YieldSquares()
         {
-            for (int y = 0; y < 8; y++)
+            for (var y = 0; y < 8; y++)
             {
-                for (int x = 0; x < 8; x++)
+                for (var x = 0; x < 8; x++)
                 {
                     yield return new Square(x, y);
                 }

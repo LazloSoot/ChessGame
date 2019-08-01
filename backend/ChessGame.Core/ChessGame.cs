@@ -1,33 +1,35 @@
-﻿using Chess.BL.Figures;
-using Chess.BL.Figures.Helpers;
-using Chess.BL.Moves;
-using Chess.BL.Moves.Helpers;
+﻿using Chess.Common.Helpers;
 using Chess.Common.Interfaces;
-using System;
+using ChessGame.Core.Figures;
+using ChessGame.Core.Figures.Helpers;
+using ChessGame.Core.Moves;
+using ChessGame.Core.Moves.Helpers;
 using System.Collections.Generic;
-using System.Text;
 
-namespace Chess.BL
+namespace ChessGame.Core
 {
-    public class ChessGame : IChessGame
+    public class ChessGameEngine : IChessGame
     {
         private Board board;
         private Move currentMove;
+        // Defined by the amount of pieces remaining on the board in the evaluation function.If the chess board is in an end game
+        // state certain behaviors will be modified to increase king safety and mate opportunities.
+        private bool isEndGamePhase;
         public const string DefaultFen = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
         public string Fen { get; private set; }
-        public Chess.Common.Helpers.Color MateTo { get; private set; } = Common.Helpers.Color.None;
-        public Chess.Common.Helpers.Color CheckTo { get; private set; } = Common.Helpers.Color.None;
-
+        public Chess.Common.Helpers.Color MateTo { get; private set; } = Chess.Common.Helpers.Color.None;
+        public Chess.Common.Helpers.Color CheckTo { get; private set; } = Chess.Common.Helpers.Color.None;
+        public bool IsStaleMate { get; private set; } = false;
         /// <summary>
         /// Forsyth–Edwards Notation (FEN) is a standard notation for describing a particular board position of a chess game. The purpose of FEN is to provide all the necessary information to restart a game from a particular position.
         /// </summary>
         /// <param name="fen">Forsyth–Edwards Notation</param>
         /// <remarks>https://en.wikipedia.org/wiki/Forsyth–Edwards_Notation</remarks>
-        public ChessGame()
+        public ChessGameEngine()
         {
         }
 
-        private ChessGame(Board board)
+        private ChessGameEngine(Board board)
         {
             this.board = board;
             Fen = board.Fen;
@@ -43,6 +45,21 @@ namespace Chess.BL
             // 5 - номер хода
             Fen = fen;
             board = new Board(fen);
+            currentMove = new Move(board);
+            return this;
+        }
+
+        public IChessGame InitGame(ChessGameInitSettings initialSettings)
+        {
+            Fen = initialSettings.Fen;
+            board = new Board(Fen)
+            {
+                IsBlackCastled = initialSettings.IsBlackCastled,
+                IsWhiteCastled = initialSettings.IsWhiteCastled,
+                IsEnpassantRuleEnabled = initialSettings.IsEnpassantRuleEnabled,
+                IsFiftyMovesRuleEnabled = initialSettings.IsFiftyMovesRuleEnabled,
+                IsThreefoldRepetitionRuleEnabled = initialSettings.IsThreefoldRepetitionRuleEnabled
+            };
             currentMove = new Move(board);
             return this;
         }
@@ -75,16 +92,17 @@ namespace Chess.BL
                 return this;
             }
             var nextBoard = board.Move(movingFigure);
-            var nextChessPosition = new ChessGame(nextBoard);
+            var nextChessPosition = new ChessGameEngine(nextBoard);
 
             if (nextBoard.IsCheckAfterMove(movingFigure))
             {
-                CheckTo = (Common.Helpers.Color)nextBoard.MoveColor;
+                CheckTo = (Chess.Common.Helpers.Color)nextBoard.MoveColor;
+#warning is not requared to compute all moves, only one enought 
                 if (nextChessPosition.ComputeAllMoves().Count < 1)
-                    MateTo = (Common.Helpers.Color)nextBoard.MoveColor;
+                    MateTo = (Chess.Common.Helpers.Color)nextBoard.MoveColor;
             } else
             {
-                CheckTo = Common.Helpers.Color.None;
+                CheckTo = Chess.Common.Helpers.Color.None;
             }
             return nextChessPosition;
         }
@@ -109,7 +127,8 @@ namespace Chess.BL
             var finalKingDestSquare = new Square(firstKingDestSquare.X + stepX, y);
 
             var nextBoard = board.Castle(new MovingFigure(new FigureOnSquare(king, new Square(4, y)), finalKingDestSquare), new MovingFigure(rook, firstKingDestSquare));
-            return new ChessGame(nextBoard);
+#warning if castle is done => change castle bool property
+            return new ChessGameEngine(nextBoard);
         }
 
         private bool CanKingCastle(bool isToKingside)
