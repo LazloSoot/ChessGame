@@ -3,17 +3,13 @@ using Chess.BusinessLogic.Interfaces;
 using Chess.Common.DTOs;
 using Chess.DataAccess.Entities;
 using Chess.DataAccess.Interfaces;
-using Chess.BL;
 using System;
 using System.Collections.Generic;
-using System.Text;
 using System.Threading.Tasks;
 using System.Linq;
 using Chess.Common.Interfaces;
-using Chess.BusinessLogic.Services.SignalR;
 using Chess.BusinessLogic.Interfaces.SignalR;
-using Chess.BusinessLogic.Helpers;
-
+using ChessGame.Core;
 namespace Chess.BusinessLogic.Services
 {
     public class GameDataService : CRUDService<Game, GameFullDTO>, IGameDataService
@@ -43,7 +39,7 @@ namespace Chess.BusinessLogic.Services
 
             if (string.IsNullOrWhiteSpace(game.Fen))
             {
-                game.Fen = ChessGame.DefaultFen;
+                game.Fen = ChessGameEngine.DefaultFen;
             }
             else
             {
@@ -96,7 +92,7 @@ namespace Chess.BusinessLogic.Services
 
             if (string.IsNullOrWhiteSpace(game.Fen))
             {
-                game.Fen = ChessGame.DefaultFen;
+                game.Fen = ChessGameEngine.DefaultFen;
             }
 
             var currentUser = await _currentUserProvider.GetCurrentUserAsync();

@@ -1,24 +1,24 @@
-﻿using Chess.BL.Figures.Helpers;
+﻿using ChessGame.Core.Figures.Helpers;
 using System;
 
-namespace Chess.BL.Figures
+namespace ChessGame.Core.Figures
 {
-    class MovingFigure
+    internal sealed class MovingFigure
     {
-        public Figure Figure { get; private set; }
-        public Square From { get; private set; }
-        public Square To { get; private set; }
-        public Figure Promotion { get; private set; }
+        internal Figure Figure { get; private set; }
+        internal Square From { get; private set; }
+        internal Square To { get; private set; }
+        internal Figure Promotion { get; private set; }
 
 
-        public int DeltaX { get; private set; }
-        public int DeltaY { get; private set; }
-        public int AbsDeltaX { get; private set; }
-        public int AbsDeltaY { get; private set; }
-        public int SignX { get; private set; }
-        public int SignY { get; private set; }
+        internal int DeltaX { get; private set; }
+        internal int DeltaY { get; private set; }
+        internal int AbsDeltaX { get; private set; }
+        internal int AbsDeltaY { get; private set; }
+        internal int SignX { get; private set; }
+        internal int SignY { get; private set; }
 
-        public MovingFigure(FigureOnSquare fs, Square to, Figure promotion = Figure.None)
+        internal MovingFigure(FigureOnSquare fs, Square to, Figure promotion = Figure.None)
         {
             Figure = fs.Figure;
             From = fs.Square;
@@ -27,7 +27,7 @@ namespace Chess.BL.Figures
             ComputeProps();
         }
 
-        public MovingFigure(string move) // Pe2e4 Pe7e8Q k0-0-0
+        internal MovingFigure(string move) // Pe2e4 Pe7e8Q k0-0-0
         {
             Figure = (Figure)move[0];
             From = new Square(move.Substring(1, 2));

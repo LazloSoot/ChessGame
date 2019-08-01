@@ -1,8 +1,8 @@
-﻿namespace Chess.BL.Moves.Helpers
+﻿namespace ChessGame.Core.Moves.Helpers
 {
     static class Extentions
     {
-        public static Color FlipColor(this Color color)
+        internal static Color FlipColor(this Color color)
         {
             if (color == Color.None)
                 return Color.None;
