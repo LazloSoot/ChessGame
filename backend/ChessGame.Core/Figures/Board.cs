@@ -28,11 +28,11 @@ namespace ChessGame.Core.Figures
         /// <summary>
         /// This flag is needed for evaluation function, to give bonuse score for castling.
         /// </summary>
-        internal bool IsWhiteCastled { get; set; }
+        internal bool IsWhiteCastled { get; private set; }
         /// <summary>
         /// This flag is needed for evaluation function, to give bonuse score for castling.
         /// </summary>
-        internal bool IsBlackCastled { get; set; }
+        internal bool IsBlackCastled { get; private set; }
         /// <summary>
         /// Enables fifty-move rule.
         /// </summary>
@@ -100,7 +100,13 @@ namespace ChessGame.Core.Figures
             nextBoardState.SetFigureAt(rook.To, rook.Figure);
 
             if (MoveColor == Color.Black)
+            {
                 nextBoardState.MoveNumber = MoveNumber + 1;
+                nextBoardState.IsBlackCastled = true;
+            } else
+            {
+                nextBoardState.IsWhiteCastled = true;
+            }
 
             nextBoardState.MoveColor = MoveColor.FlipColor();
             nextBoardState.UpdateCastlingData(king);

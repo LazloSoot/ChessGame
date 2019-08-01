@@ -107,7 +107,7 @@ namespace ChessGame.Core
             return nextChessPosition;
         }
 
-        public IChessGame Castle(bool isToKingside)
+        private IChessGame Castle(bool isToKingside)
         {
             var isWhiteSide = board.MoveColor == Moves.Helpers.Color.White;
             var king = (isWhiteSide) ? Figure.WhiteKing : Figure.BlackKing;
@@ -133,6 +133,9 @@ namespace ChessGame.Core
 
         private bool CanKingCastle(bool isToKingside)
         {
+            if (board.MoveColor == Moves.Helpers.Color.White && board.IsWhiteCastled 
+                || board.MoveColor == Moves.Helpers.Color.Black && board.IsBlackCastled)
+                return false;
             board.MoveColor = board.MoveColor.FlipColor();
             if (board.IsCheckTo())
             {
