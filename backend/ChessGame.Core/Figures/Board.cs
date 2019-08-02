@@ -24,15 +24,15 @@ namespace ChessGame.Core.Figures
         /// Computed by increasing better positions for White and decreasing for better positions for Black.
         /// Black is always trying to find boards with the lowest score and White with the highest.
         /// </summary>
-        internal int Score { get; private set; }
+        internal int Score { get; set; }
         /// <summary>
         /// This flag is needed for evaluation function, to give bonuse score for castling.
         /// </summary>
-        internal bool IsWhiteCastled { get; private set; }
+        internal bool IsWhiteCastled { get; set; }
         /// <summary>
         /// This flag is needed for evaluation function, to give bonuse score for castling.
         /// </summary>
-        internal bool IsBlackCastled { get; private set; }
+        internal bool IsBlackCastled { get; set; }
         /// <summary>
         /// Enables fifty-move rule.
         /// </summary>

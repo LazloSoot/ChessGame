@@ -33,7 +33,6 @@ namespace ChessGame.Core.Figures
             From = new Square(move.Substring(1, 2));
             To = new Square(move.Substring(3, 2));
             Promotion = (move.Length > 5) ? (Figure)move[5] : Figure.None;
-            
             ComputeProps();
         }
 

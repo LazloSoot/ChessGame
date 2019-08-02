@@ -21,6 +21,7 @@ namespace ChessGame.Core.Figures
         /// This follows the logic that it is better to risk a pawn than it is to risk a queen.
         /// </summary>
         internal int PieceActionValue { get; private set; }
+        internal int ValidMovesCount { get; set; }
         internal Figure Figure { get; private set; }
         internal Square Square { get; private set; }
         internal FigureOnSquare(Figure figure, Square square)

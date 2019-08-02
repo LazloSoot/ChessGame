@@ -37,6 +37,11 @@ namespace ChessGame.Core.Figures.Helpers
             return X > -1 && Y > -1 && X < 8 && Y < 8;
         }
 
+        internal Moves.Helpers.Color GetSquareColor()
+        {
+            return ((X % 2 == 0 && Y % 2 == 0) || (X % 2 == 1 && Y % 2 == 1)) ? Moves.Helpers.Color.White : Moves.Helpers.Color.White;
+        }
+
         public bool Equals(Square other)
         {
             return this.X == other.X && this.Y == other.Y;
