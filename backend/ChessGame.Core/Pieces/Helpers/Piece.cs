@@ -1,6 +1,6 @@
-﻿namespace ChessGame.Core.Figures.Helpers
+﻿namespace ChessGame.Core.Pieces.Helpers
 {
-    enum Figure
+    enum Piece
     {
         None = '1',
 

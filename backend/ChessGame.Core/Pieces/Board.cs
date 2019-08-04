@@ -1,15 +1,15 @@
-﻿using ChessGame.Core.Figures.Helpers;
+﻿using ChessGame.Core.Pieces.Helpers;
 using ChessGame.Core.Moves;
 using ChessGame.Core.Moves.Helpers;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 
-namespace ChessGame.Core.Figures
+namespace ChessGame.Core.Pieces
 {
     internal sealed class Board
     {
-        private Figure[,] figures;
+        private Piece[,] pieces;
 
         internal string Fen { get; private set; }
 
@@ -60,26 +60,26 @@ namespace ChessGame.Core.Figures
         {
             Fen = fen;
             RepeatedMovesCount = repeatedMovesCount < 0 ? 0 : repeatedMovesCount;
-            figures = new Figure[8, 8];
-            InitFiguresPosition();
+            pieces = new Piece[8, 8];
+            InitPiecesPosition();
         }
 
-        internal Figure GetFigureAt(Square square)
+        internal Piece GetPieceAt(Square square)
         {
-            return figures[square.X, square.Y];
+            return pieces[square.X, square.Y];
         }
 
-        internal Figure GetFigureAt(int x, int y)
+        internal Piece GetPieceAt(int x, int y)
         {
-            return figures[x, y];
+            return pieces[x, y];
         }
 
-        internal Board Move(MovingFigure mf)
+        internal Board Move(MovingPiece mf)
         {
             var nextBoardState = new Board(Fen);
             
-            nextBoardState.SetFigureAt(mf.From, Figure.None);
-            nextBoardState.SetFigureAt(mf.To, mf.Promotion == Figure.None ? mf.Figure : mf.Promotion);
+            nextBoardState.SetPieceAt(mf.From, Piece.None);
+            nextBoardState.SetPieceAt(mf.To, mf.Promotion == Piece.None ? mf.Piece : mf.Promotion);
 
             if (MoveColor == Color.Black)
                 nextBoardState.MoveNumber = MoveNumber + 1;
@@ -90,14 +90,14 @@ namespace ChessGame.Core.Figures
             return nextBoardState;
         }
 
-        internal Board Castle(MovingFigure king, MovingFigure rook)
+        internal Board Castle(MovingPiece king, MovingPiece rook)
         {
             var nextBoardState = new Board(Fen);
 
-            nextBoardState.SetFigureAt(king.From, Figure.None);
-            nextBoardState.SetFigureAt(king.To, king.Figure);
-            nextBoardState.SetFigureAt(rook.From, Figure.None);
-            nextBoardState.SetFigureAt(rook.To, rook.Figure);
+            nextBoardState.SetPieceAt(king.From, Piece.None);
+            nextBoardState.SetPieceAt(king.To, king.Piece);
+            nextBoardState.SetPieceAt(rook.From, Piece.None);
+            nextBoardState.SetPieceAt(rook.To, rook.Piece);
 
             if (MoveColor == Color.Black)
             {
@@ -114,16 +114,16 @@ namespace ChessGame.Core.Figures
             return nextBoardState;
         }
 
-        private void UpdateCastlingData(MovingFigure mf)
+        private void UpdateCastlingData(MovingPiece mf)
         {
-            var targetColor = mf.Figure.GetColor();
+            var targetColor = mf.Piece.GetColor();
             var currentCastlingFenPart = (targetColor == Color.White) ? WhiteCastlingFenPart : BlackCastlingFenPart;
             if (string.IsNullOrWhiteSpace(currentCastlingFenPart))
                 return;
 
-            switch (mf.Figure)
+            switch (mf.Piece)
             {
-                case (Figure.BlackRook):
+                case (Piece.BlackRook):
                     {
                         if(mf.From.X == 7)
                         {
@@ -135,7 +135,7 @@ namespace ChessGame.Core.Figures
                         }
                         break;
                     }
-                case (Figure.WhiteRook):
+                case (Piece.WhiteRook):
                     {
                         if (mf.From.X == 7)
                         {
@@ -148,12 +148,12 @@ namespace ChessGame.Core.Figures
                         }
                         break;
                     }
-                case (Figure.WhiteKing):
+                case (Piece.WhiteKing):
                     {
                         WhiteCastlingFenPart = string.Empty;
                         break;
                     }
-                case (Figure.BlackKing):
+                case (Piece.BlackKing):
                     {
                         BlackCastlingFenPart = string.Empty;
                         break;
@@ -161,27 +161,27 @@ namespace ChessGame.Core.Figures
             }
         }
 
-        internal Board GetBoardAfterFirstKingCastlingMove(MovingFigure king)
+        internal Board GetBoardAfterFirstKingCastlingMove(MovingPiece king)
         {
             var nextBoardState = new Board(Fen);
-            nextBoardState.SetFigureAt(king.From, Figure.None);
-            nextBoardState.SetFigureAt(king.To, king.Figure);
+            nextBoardState.SetPieceAt(king.From, Piece.None);
+            nextBoardState.SetPieceAt(king.To, king.Piece);
             nextBoardState.GenerateNextFen();
             return nextBoardState;
         }
 
-        internal IEnumerable<FigureOnSquare> YieldFigures()
+        internal IEnumerable<PieceOnSquare> YieldPieces()
         {
             foreach (var s in Square.YieldSquares())
             {
-                if (GetFigureAt(s).GetColor() == MoveColor)
-                    yield return new FigureOnSquare(GetFigureAt(s), s);
+                if (GetPieceAt(s).GetColor() == MoveColor)
+                    yield return new PieceOnSquare(GetPieceAt(s), s);
             }
         }
 
-        internal bool IsCheckAfterMove(MovingFigure movingFigure)
+        internal bool IsCheckAfterMove(MovingPiece movingPiece)
         {
-            var after = Move(movingFigure);
+            var after = Move(movingPiece);
             return after.IsCheckTo();
         }
 
@@ -189,11 +189,11 @@ namespace ChessGame.Core.Figures
         {
             Square targetKingPosition = FindTargetKingPosition();
             var move = new Move(this);
-            MovingFigure currentMovingFigure;
-            foreach (var figureOnSquare in YieldFigures())
+            MovingPiece currentMovingPiece;
+            foreach (var pieceOnSquare in YieldPieces())
             {
-                currentMovingFigure = new MovingFigure(figureOnSquare, targetKingPosition);
-                if (move.CanMove(currentMovingFigure))
+                currentMovingPiece = new MovingPiece(pieceOnSquare, targetKingPosition);
+                if (move.CanMove(currentMovingPiece))
                     return true;
             }
 
@@ -202,10 +202,10 @@ namespace ChessGame.Core.Figures
 
         private Square FindTargetKingPosition()
         {
-            var targetFigure = MoveColor == Color.Black ? Figure.WhiteKing : Figure.BlackKing;
+            var targetPiece = MoveColor == Color.Black ? Piece.WhiteKing : Piece.BlackKing;
             foreach (var square in Square.YieldSquares())
             {
-                if (GetFigureAt(square) == targetFigure)
+                if (GetPieceAt(square) == targetPiece)
                     return square;
             }
             return default(Square);
@@ -214,27 +214,27 @@ namespace ChessGame.Core.Figures
         private void GenerateNextFen()
         {
 
-            var figuresBldr = new StringBuilder();
+            var piecesBldr = new StringBuilder();
             for (int y = 7; y >= 0; y--)
             {
                 for (int x = 0; x < 8; x++)
                 {
-                    figuresBldr.Append(figures[x, y] == Figure.None ? '1' : (char)figures[x, y]);
+                    piecesBldr.Append(pieces[x, y] == Piece.None ? '1' : (char)pieces[x, y]);
                 }
                 if (y > 0)
-                    figuresBldr.Append('/');
+                    piecesBldr.Append('/');
             }
             var eight = "11111111";
             for (int i = 8; i >= 2; i--)
             {
-                figuresBldr.Replace(eight.Substring(0, i), i.ToString());
+                piecesBldr.Replace(eight.Substring(0, i), i.ToString());
             }
             //  "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1"
             var castlingFenPart = (string.IsNullOrEmpty(WhiteCastlingFenPart) && string.IsNullOrEmpty(BlackCastlingFenPart)) ? "-" : $"{WhiteCastlingFenPart}{BlackCastlingFenPart}";
-            Fen = figuresBldr.Append($" {(char)MoveColor} {castlingFenPart} - 0 {MoveNumber}").ToString();
+            Fen = piecesBldr.Append($" {(char)MoveColor} {castlingFenPart} - 0 {MoveNumber}").ToString();
         }
 
-        private void InitFiguresPosition()
+        private void InitPiecesPosition()
         {
 
 #warning INIT FIFTY MOVES COUNT
@@ -245,11 +245,11 @@ namespace ChessGame.Core.Figures
             WhiteCastlingFenPart = new string(castlingFenPart.Where(c => char.IsUpper(c)).ToArray());
             BlackCastlingFenPart = new string(castlingFenPart.Where(c => char.IsLower(c)).ToArray());
 
-            InitFigures(parts[0]);
+            InitPieces(parts[0]);
             MoveColor = string.Equals("b", parts[1].Trim().ToLower()) ? Color.Black : Color.White;
             MoveNumber = int.Parse(parts[5]);
 
-            void InitFigures(string data)
+            void InitPieces(string data)
             {
                 for (int i = 8; i >= 2; i--)
                 {
@@ -261,15 +261,15 @@ namespace ChessGame.Core.Figures
                 {
                     for (int x = 0; x < 8; x++)
                     {
-                        figures[x, y] = (Figure)lines[7 - y][x];
+                        pieces[x, y] = (Piece)lines[7 - y][x];
                     }
                 }
             }
         }
 
-        private void SetFigureAt(Square square, Figure figure)
+        private void SetPieceAt(Square square, Piece piece)
         {
-            figures[square.X, square.Y] = figure;
+            pieces[square.X, square.Y] = piece;
 
         }
     }

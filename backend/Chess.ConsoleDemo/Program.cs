@@ -48,7 +48,7 @@ namespace Chess.ConsoleDemo
                 text += " | ";
                 for (int x = 0; x < 8; x++)
                 {
-                    currentFigure = chess.GetFigureAt(x, y);
+                    currentFigure = chess.GetPieceAt(x, y);
                     text += ((currentFigure == '1') ? '.' : currentFigure) + " ";
                 }
                 text += "|\n";

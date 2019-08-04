@@ -128,7 +128,7 @@ namespace Chess.BusinessLogic.Services
                 return null;
 
             var chessGame = _chessGame.InitGame(targetGame.Fen);
-            return chessGame.GetAllValidMovesForFigureAt(x,y);
+            return chessGame.GetAllValidMovesForPieceAt(x,y);
         }
     }
 }

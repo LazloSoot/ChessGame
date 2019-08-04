@@ -1,6 +1,6 @@
 ﻿using ChessGame.Core.Moves.Helpers;
 
-namespace ChessGame.Core.Figures.Helpers
+namespace ChessGame.Core.Pieces.Helpers
 {
     static class Extentions
     {
@@ -87,78 +87,78 @@ namespace ChessGame.Core.Figures.Helpers
 
         #endregion
 
-        internal static Color GetColor(this Figure figure)
+        internal static Color GetColor(this Piece piece)
         {
-            if (figure == Figure.None)
+            if (piece == Piece.None)
                 return Color.None;
 
-            return figure.ToString()[0] == 'W' ? Color.White : Color.Black;
+            return piece.ToString()[0] == 'W' ? Color.White : Color.Black;
         }
 
-        internal static int GetPieceValue(this Figure figure)
+        internal static int GetPieceValue(this Piece piece)
         {
             // source: Larry Kaufman 2012
-            switch (figure)
+            switch (piece)
             {
-                case Figure.WhitePawn:
-                case Figure.BlackPawn:
+                case Piece.WhitePawn:
+                case Piece.BlackPawn:
                     return 100;
-                case Figure.BlackKnight:
-                case Figure.WhiteKnight:
-                case Figure.BlackBishop:
-                case Figure.WhiteBishop:
+                case Piece.BlackKnight:
+                case Piece.WhiteKnight:
+                case Piece.BlackBishop:
+                case Piece.WhiteBishop:
                     return 350;
-                case Figure.BlackRook:
-                case Figure.WhiteRook:
+                case Piece.BlackRook:
+                case Piece.WhiteRook:
                     return 525;
-                case Figure.WhiteQueen:
-                case Figure.BlackQueen:
+                case Piece.WhiteQueen:
+                case Piece.BlackQueen:
                     return 1000;
-                case Figure.WhiteKing:
-                case Figure.BlackKing:
+                case Piece.WhiteKing:
+                case Piece.BlackKing:
                     return 20000;
-                case Figure.None:
+                case Piece.None:
                 default:
                     return 0;
             }
         }
 
-        internal static int GetPieceActionValue(this Figure figure)
+        internal static int GetPieceActionValue(this Piece piece)
         {
-            switch (figure)
+            switch (piece)
             {
-                case Figure.WhitePawn:
-                case Figure.BlackPawn:
+                case Piece.WhitePawn:
+                case Piece.BlackPawn:
                     return 6;
-                case Figure.BlackKnight:
-                case Figure.WhiteKnight:
-                case Figure.BlackBishop:
-                case Figure.WhiteBishop:
+                case Piece.BlackKnight:
+                case Piece.WhiteKnight:
+                case Piece.BlackBishop:
+                case Piece.WhiteBishop:
                     return 3;
-                case Figure.BlackRook:
-                case Figure.WhiteRook:
+                case Piece.BlackRook:
+                case Piece.WhiteRook:
                     return 2;
-                case Figure.WhiteQueen:
-                case Figure.BlackQueen:
-                case Figure.WhiteKing:
-                case Figure.BlackKing:
+                case Piece.WhiteQueen:
+                case Piece.BlackQueen:
+                case Piece.WhiteKing:
+                case Piece.BlackKing:
                     return 1;
-                case Figure.None:
+                case Piece.None:
                 default:
                     return 0;
             }
         }
 
         /// <summary>
-        /// Computes points awarded for a tactical position capture by figure(piece)
+        /// Computes points awarded for a tactical position capture by piece(piece)
         /// </summary>
         /// <remarks> 
         /// Combination of several tactical advantages for the moving side and several tactical penalties for the opponent
         /// may couse in unnecessary pawn sacrifice for set of minor tactical advantages.So always keep this in mind.</remarks>
         /// <returns>Score points</returns>
-        internal static int GetPieceSquareTableScore(this Figure figure, int positionX, int positionY, bool isEndOfGame = false)
+        internal static int GetPieceSquareTableScore(this Piece piece, int positionX, int positionY, bool isEndOfGame = false)
         {
-            var color = figure.GetColor();
+            var color = piece.GetColor();
             int index;
             var position1D = positionX * 8 + positionY;
             if (color == Color.White)
@@ -172,25 +172,25 @@ namespace ChessGame.Core.Figures.Helpers
             }
             if (index < 0 || index > 63)
                 return 0;
-            switch (figure)
+            switch (piece)
             {
-                case Figure.WhitePawn:
-                case Figure.BlackPawn:
+                case Piece.WhitePawn:
+                case Piece.BlackPawn:
                     return pawnsSquareTable[index];
-                case Figure.BlackKnight:
-                case Figure.WhiteKnight:
+                case Piece.BlackKnight:
+                case Piece.WhiteKnight:
                     return knightsSquareTable[index];
-                case Figure.BlackBishop:
-                case Figure.WhiteBishop:
+                case Piece.BlackBishop:
+                case Piece.WhiteBishop:
                     return bishopsSquareTable[index];
-                case Figure.BlackRook:
-                case Figure.WhiteRook:
+                case Piece.BlackRook:
+                case Piece.WhiteRook:
                     return rookSquareTable[index];
-                case Figure.WhiteQueen:
-                case Figure.BlackQueen:
+                case Piece.WhiteQueen:
+                case Piece.BlackQueen:
                     return queenSquareTable[index];
-                case Figure.WhiteKing:
-                case Figure.BlackKing:
+                case Piece.WhiteKing:
+                case Piece.BlackKing:
                     {
                         if (isEndOfGame)
                         {
@@ -201,7 +201,7 @@ namespace ChessGame.Core.Figures.Helpers
                             return kingsMiddleGameSquareTable[index];
                         }
                     }
-                case Figure.None:
+                case Piece.None:
                 default:
                     return 0;
             }

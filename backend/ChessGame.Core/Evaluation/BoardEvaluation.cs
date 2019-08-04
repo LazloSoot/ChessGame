@@ -1,9 +1,10 @@
-﻿using ChessGame.Core.Figures;
-using ChessGame.Core.Figures.Helpers;
+﻿using ChessGame.Core.Pieces;
+using ChessGame.Core.Pieces.Helpers;
 using ChessGame.Core.Moves;
 using System;
 using System.Collections.Generic;
 using System.Text;
+using ChessGame.Core.Moves.Helpers;
 
 namespace ChessGame.Core.Evaluation
 {
@@ -99,34 +100,22 @@ namespace ChessGame.Core.Evaluation
             // king and n * bishop (n > 0) versus king and m * bishops (m > 0) with all bishops on same color = draw
             var bishopsOnWhiteSquareCount = 0;
             var knightsCount = 0;
-            var allFigures = new Dictionary<Square, FigureOnSquare>();
-
-            MovingFigure movingFigure = null;
+            var allPieces = new Dictionary<Square, PieceOnSquare>();
+            
+            MovingPiece movingPiece = null;
             var move = new Move(board);
 
-            foreach (var figureOnSquare in board.YieldFigures())
-            {
-                if(!allFigures.ContainsKey(figureOnSquare.Square))
-                {
-                    allFigures.Add(figureOnSquare.Square, figureOnSquare);
-                }
-                foreach (var squareTo in Square.YieldSquares())
-                {
-                    movingFigure = new MovingFigure(figureOnSquare, squareTo);
-                    // initialize Attacked/Deffended values
-                    if (move.CanMove(movingFigure) &&
-                        !board.IsCheckAfterMove(movingFigure))
-                    {
-                        figureOnSquare.ValidMovesCount++;
-                    }
-                }
+            /// enumerates all pieces, checks all valid moves and initializes special values for evaluation
+            InitAllPieces(allPieces);
+            /// move validation and checkmate validation is depended on current turn color, hence we should flip color 
+            /// to validate it for both colors
+            board.MoveColor = board.MoveColor.FlipColor();
+            InitAllPieces(allPieces);
+            board.MoveColor = board.MoveColor.FlipColor();
 
-
-            }
-            
-            foreach (var piece in allFigures.Values)
+            foreach (var piece in allPieces.Values)
             {
-                board.Score += EvaluatePieceScore(board, piece, chessGame.IsEndOfGamePhase, ref insufficientMaterial, ref (piece.Figure.GetColor() == Moves.Helpers.Color.White ? ref whiteBishopsCount : ref blackBishopsCount), ref bishopsOnWhiteSquareCount, ref knightsCount);
+                board.Score += EvaluatePieceScore(board, piece, chessGame.IsEndOfGamePhase, ref insufficientMaterial, ref (piece.Piece.GetColor() == Moves.Helpers.Color.White ? ref whiteBishopsCount : ref blackBishopsCount), ref bishopsOnWhiteSquareCount, ref knightsCount);
             }
 
             if(whiteBishopsCount + blackBishopsCount > 1 && (whiteBishopsCount + blackBishopsCount != bishopsOnWhiteSquareCount))
@@ -134,18 +123,55 @@ namespace ChessGame.Core.Evaluation
                 insufficientMaterial = false;
             }
 
-            #endregion
+
+            /// Adds to inputed dictionary all pieces depend on current turn color, inits their Attacked/Defended values 
+            /// and cheks all valid moves for each piece
+            void InitAllPieces(Dictionary<Square, PieceOnSquare> pieces)
+            {
+                PieceOnSquare currentCapturedPiece, currentCapturedPieceInDictionary;
+                foreach (var pieceOnSquare in board.YieldPieces())
+                {
+                    if (!pieces.ContainsKey(pieceOnSquare.Square))
+                    {
+                        pieces.Add(pieceOnSquare.Square, pieceOnSquare);
+                    }
+                    foreach (var squareTo in Square.YieldSquares())
+                    {
+                        movingPiece = new MovingPiece(pieceOnSquare, squareTo);
+                        if (move.CanMove(movingPiece, out currentCapturedPiece) &&
+                            !board.IsCheckAfterMove(movingPiece))
+                        {
+                            if (currentCapturedPiece != null)
+                            {
+                                if (!pieces.ContainsKey(currentCapturedPiece.Square))
+                                {
+                                    pieces.Add(currentCapturedPiece.Square, currentCapturedPiece);
+                                }
+                                else
+                                {
+                                    currentCapturedPieceInDictionary = pieces[currentCapturedPiece.Square];
+                                    currentCapturedPieceInDictionary.AttackedValue += currentCapturedPiece.AttackedValue;
+                                    currentCapturedPieceInDictionary.DefendedValue += currentCapturedPiece.DefendedValue;
+                                }
+                            }
+                            pieceOnSquare.ValidMovesCount++;
+                        }
+                    }
+                }
+            }
+
+            #endregion PiecesScore
 
             #region BoardLevelEventsHandling
 
-            if(insufficientMaterial)
+            if (insufficientMaterial)
             {
                 board.Score = 0;
                 chessGame.IsStaleMate = true;
                 chessGame.IsInsufficientMaterial = true;
                 return;
             }
-            if(allFigures.Count < 10)
+            if(allPieces.Count < 10)
             {
                 chessGame.IsEndOfGamePhase = true;
             }
@@ -305,7 +331,7 @@ namespace ChessGame.Core.Evaluation
         /// Computes the single piece score.
         /// </summary>
         /// <returns>Score value</returns>
-        private int EvaluatePieceScore(Board board, FigureOnSquare piece, bool isEndOfGame, ref bool insufficientMaterial, ref int bishopsCount, ref int bishopsOnWhiteSquareCount, ref int knightsCount)
+        private int EvaluatePieceScore(Board board, PieceOnSquare piece, bool isEndOfGame, ref bool insufficientMaterial, ref int bishopsCount, ref int bishopsOnWhiteSquareCount, ref int knightsCount)
         {
             var score = 0;
             var posX = piece.Square.X;
@@ -321,17 +347,17 @@ namespace ChessGame.Core.Evaluation
             // Add score for mobility.
             score += piece.ValidMovesCount;
 
-            switch (piece.Figure)
+            switch (piece.Piece)
             {
-                case Figure.BlackPawn:
-                case Figure.WhitePawn:
+                case Piece.BlackPawn:
+                case Piece.WhitePawn:
                     {
                         insufficientMaterial = false;
                         score += EvaluatePawnScore(piece);
                         break;
                     }
-                case Figure.BlackKnight:
-                case Figure.WhiteKnight:
+                case Piece.BlackKnight:
+                case Piece.WhiteKnight:
                     {
                         knightsCount++;
                         if (knightsCount > 1)
@@ -346,8 +372,8 @@ namespace ChessGame.Core.Evaluation
                         }
                         break;
                     }
-                case Figure.BlackBishop:
-                case Figure.WhiteBishop:
+                case Piece.BlackBishop:
+                case Piece.WhiteBishop:
                     {
                         // to check insuffisient material tie rule
                         // king and n * bishop (n > 0) on the same color versus king = draw
@@ -370,7 +396,7 @@ namespace ChessGame.Core.Evaluation
                         break;
                     }
                     // Rooks shouldnt leave their corner positions before castling has occured
-                case Figure.BlackRook:
+                case Piece.BlackRook:
                     {
                         insufficientMaterial = false;
                         if (!board.IsBlackCastled && !((piece.Square.X == 0 && board.BlackCastlingFenPart.Contains('k')) || (piece.Square.X == 7 && board.BlackCastlingFenPart.Contains('q'))))
@@ -379,7 +405,7 @@ namespace ChessGame.Core.Evaluation
                         }
                         break;
                     }
-                case Figure.WhiteRook:
+                case Piece.WhiteRook:
                     {
                         insufficientMaterial = false;
                         if (!board.IsWhiteCastled && !((piece.Square.X == 0 && board.WhiteCastlingFenPart.Contains('K')) || (piece.Square.X == 7 && board.WhiteCastlingFenPart.Contains('Q'))))
@@ -388,13 +414,13 @@ namespace ChessGame.Core.Evaluation
                         }
                         break;
                     }
-                case Figure.BlackQueen:
-                case Figure.WhiteQueen:
+                case Piece.BlackQueen:
+                case Piece.WhiteQueen:
                     {
                         insufficientMaterial = false;
                         break;
                     }
-                case Figure.BlackKing:
+                case Piece.BlackKing:
                     {
                         // If he has less than 2 move, he possibly one move away from mate.
                         if (piece.ValidMovesCount < 2)
@@ -408,7 +434,7 @@ namespace ChessGame.Core.Evaluation
                         }
                         break;
                     }
-                case Figure.WhiteKing:
+                case Piece.WhiteKing:
                     {
                         // If he has less than 2 move, he possibly one move away from mate.
                         if (piece.ValidMovesCount < 2)
@@ -422,13 +448,13 @@ namespace ChessGame.Core.Evaluation
                         }
                         break;
                     }
-                case Figure.None:
+                case Piece.None:
                 default:
                     break;
             }
 
             // add position value
-            score += piece.Figure.GetPieceSquareTableScore(piece.Square.X, piece.Square.Y, isEndOfGame);
+            score += piece.Piece.GetPieceSquareTableScore(piece.Square.X, piece.Square.Y, isEndOfGame);
 
             return score;
         }
@@ -441,7 +467,7 @@ namespace ChessGame.Core.Evaluation
         /// Add points based on the Pawn Piece Square Table Lookup.
         /// </summary>
         /// <returns></returns>
-        private int EvaluatePawnScore(FigureOnSquare piece)
+        private int EvaluatePawnScore(PieceOnSquare piece)
         {
             var score = 0;
             var posX = piece.Square.X;
@@ -453,7 +479,7 @@ namespace ChessGame.Core.Evaluation
                 score -= 15;
             }
 
-            if (piece.Figure.GetColor() == Moves.Helpers.Color.White)
+            if (piece.Piece.GetColor() == Moves.Helpers.Color.White)
             {
                 if (whitePawnInColumnCount[posX] > 0)
                 {

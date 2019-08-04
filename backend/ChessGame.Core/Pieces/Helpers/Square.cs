@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 
-namespace ChessGame.Core.Figures.Helpers
+namespace ChessGame.Core.Pieces.Helpers
 {
     struct Square : IEquatable<Square>
     {
