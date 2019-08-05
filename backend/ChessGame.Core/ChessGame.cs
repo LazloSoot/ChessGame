@@ -5,6 +5,7 @@ using ChessGame.Core.Pieces.Helpers;
 using ChessGame.Core.Moves;
 using ChessGame.Core.Moves.Helpers;
 using System.Collections.Generic;
+using System;
 
 namespace ChessGame.Core
 {
@@ -13,14 +14,14 @@ namespace ChessGame.Core
         private Move _currentMove;
         public const string DefaultFen = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
         public string Fen { get; private set; }
-        public Chess.Common.Helpers.Color MateTo { get; private set; } = Chess.Common.Helpers.Color.None;
-        public Chess.Common.Helpers.Color CheckTo { get; private set; } = Chess.Common.Helpers.Color.None;
-        public bool IsStaleMate { get; internal set; } = false;
-        public bool IsInsufficientMaterial { get; internal set; } = false;
+        public Chess.Common.Helpers.Color MateTo { get => (Chess.Common.Helpers.Color)Board.MateTo; private set => Board.CheckTo = (ChessGame.Core.Moves.Helpers.Color)value; }
+        public Chess.Common.Helpers.Color CheckTo { get => (Chess.Common.Helpers.Color)Board.CheckTo; private set => Board.CheckTo = (ChessGame.Core.Moves.Helpers.Color)value; }
+        public bool IsStaleMate { get => Board.IsStaleMate; private set => Board.IsStaleMate = value; }
+        public bool IsInsufficientMaterial { get => Board.IsInsufficientMaterial; private set => Board.IsInsufficientMaterial = value; }
         internal Board Board { get; private set; }
         // Defined by the amount of pieces remaining on the board in the evaluation function.If the chess board is in an end game
         // state certain behaviors will be modified to increase king safety and mate opportunities.
-        internal bool IsEndOfGamePhase { get; set; }
+        internal bool IsEndOfGamePhase { get => Board.IsEndOfGamePhase; private set => Board.IsEndOfGamePhase = value; }
         /// <summary>
         /// Forsyth–Edwards Notation (FEN) is a standard notation for describing a particular board position of a chess game. The purpose of FEN is to provide all the necessary information to restart a game from a particular position.
         /// </summary>
@@ -70,8 +71,7 @@ namespace ChessGame.Core
             var movingPiece = new MovingPiece(move);
             if (Board.GetPieceAt(movingPiece.From) == Piece.None)
                 return this;
-            if((movingPiece.Piece == Piece.BlackKing || movingPiece.Piece == Piece.WhiteKing)
-                && (movingPiece.AbsDeltaX == 2 && movingPiece.AbsDeltaY == 0)) // its castling
+            if(movingPiece.IsItCastlingMove()) // its castling
             {
                 var targetColor = movingPiece.Piece.GetColor();
                 if (targetColor != Board.MoveColor)
@@ -130,10 +130,10 @@ namespace ChessGame.Core
             var finalKingDestSquare = new Square(firstKingDestSquare.X + stepX, y);
 
             var nextBoard = Board.Castle(new MovingPiece(new PieceOnSquare(king, new Square(4, y)), finalKingDestSquare), new MovingPiece(rook, firstKingDestSquare));
-#warning if castle is done => change castle bool property
             return new ChessGameEngine(nextBoard);
         }
 
+        [Obsolete("This method moved to Pieces.Helpers.Extensions and remaked as Board extention. Going to be removed after testing")]
         private bool CanKingCastle(bool isToKingside)
         {
             if (Board.MoveColor == Moves.Helpers.Color.White && Board.IsWhiteCastled 
@@ -223,11 +223,11 @@ namespace ChessGame.Core
 
             if(targetPiece == Piece.BlackKing || targetPiece == Piece.WhiteKing)
             {
-                if (CanKingCastle(true))
+                if (CanKingCastle(isToKingside: true))
                 {
                     validMoves.Add($"g{y + 1}");
                 }
-                if (CanKingCastle(false))
+                if (CanKingCastle(isToKingside: false))
                 {
                     validMoves.Add($"c{y + 1}");
                 }
@@ -258,7 +258,8 @@ namespace ChessGame.Core
 
             return false;
         }
-    
+
+        [Obsolete("This method going to be removed after removing CanKingCastle method above.")]
         private bool IsCastlingPossible(bool isKingside, Moves.Helpers.Color color)
         {
             var currentCastrlingFenPart = ((color == Moves.Helpers.Color.White) ? Board.WhiteCastlingFenPart : Board.BlackCastlingFenPart).ToLower();

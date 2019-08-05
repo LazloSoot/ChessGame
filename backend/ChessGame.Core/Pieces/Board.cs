@@ -37,25 +37,31 @@ namespace ChessGame.Core.Pieces
         /// Enables fifty-move rule.
         /// </summary>
         /// <remarks>https://en.wikipedia.org/wiki/Fifty-move_rule</remarks>
-        public bool IsFiftyMovesRuleEnabled { get; set; }
+        internal bool IsFiftyMovesRuleEnabled { get; set; }
         /// <summary>
         /// Enables En passant capture rule.
         /// </summary>
         /// <remarks>https://en.wikipedia.org/wiki/En_passant</remarks>
-        public bool IsEnpassantRuleEnabled { get; set; }
+        internal bool IsEnpassantRuleEnabled { get; set; }
         /// <summary>
         /// Enables threefold repetition rule (also known as repetition of position).
         /// </summary>
         /// <remarks>https://en.wikipedia.org/wiki/Threefold_repetition</remarks>
-        public bool IsThreefoldRepetitionRuleEnabled { get; set; }
+        internal bool IsThreefoldRepetitionRuleEnabled { get; set; }
         /// <summary>
         /// Counter to check is fifty moves rule condition satisfied.
         /// </summary>
-        public int FiftyMovesCount { get; private set; }
+        internal int FiftyMovesCount { get; private set; }
         /// <summary>
         /// Counter to check is three moves repition rule condition satisfied.
         /// </summary>
-        public int RepeatedMovesCount { get; set; }
+        internal int RepeatedMovesCount { get; set; }
+        internal Color MateTo { get; set; } = Color.None;
+        internal Color CheckTo { get; set; } = Color.None;
+        internal bool IsStaleMate { get; set; } = false;
+        internal bool IsInsufficientMaterial { get; set; } = false;
+        internal bool IsEndOfGamePhase { get; set; } = false;
+
         internal Board(string fen, int repeatedMovesCount = 0)
         {
             Fen = fen;

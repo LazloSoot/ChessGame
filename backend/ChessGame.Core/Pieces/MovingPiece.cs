@@ -3,7 +3,7 @@ using System;
 
 namespace ChessGame.Core.Pieces
 {
-    internal sealed class MovingPiece
+    internal sealed class MovingPiece : IComparable<MovingPiece>
     {
         internal Piece Piece { get; private set; }
         internal Square From { get; private set; }
@@ -14,6 +14,10 @@ namespace ChessGame.Core.Pieces
         /// This follows the logic that it is better to risk a pawn than it is to risk a queen.
         /// </summary>
         internal int PieceActionValue { get; private set; }
+        /// <summary>
+        /// Score of current move, initialized by evaluation function
+        /// </summary>
+        internal int Score { get; set; }
 
         internal int DeltaX { get; private set; }
         internal int DeltaY { get; private set; }
@@ -41,6 +45,15 @@ namespace ChessGame.Core.Pieces
             ComputeProps();
         }
 
+        /// <summary>
+        /// Cheks is current move is castling move.
+        /// </summary>
+        /// <returns></returns>
+        internal bool IsItCastlingMove()
+        {
+            return (Piece == Piece.WhiteKing || Piece == Piece.BlackKing) && (AbsDeltaX == 2 && AbsDeltaY == 0);
+        }
+
         private void ComputeProps()
         {
             DeltaX = To.X - From.X;
@@ -49,6 +62,11 @@ namespace ChessGame.Core.Pieces
             AbsDeltaY = Math.Abs(DeltaY);
             SignX = Math.Sign(DeltaX);
             SignY = Math.Sign(DeltaY);
+        }
+
+        public int CompareTo(MovingPiece other)
+        {
+            return Score.CompareTo(other.Score);
         }
     }
 }
