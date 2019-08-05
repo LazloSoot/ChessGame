@@ -10,7 +10,7 @@ namespace ChessGame.Core.Evaluation
 {
     internal sealed class BoardEvaluation
     {
-        private int[] whitePawnInColumnCount = new int[8], 
+        private int[] whitePawnInColumnCount = new int[8],
             blackPawnInColumnCount = new int[8];
         internal void EvaluateBoardScore(Board board)
         {
@@ -100,7 +100,7 @@ namespace ChessGame.Core.Evaluation
             var bishopsOnWhiteSquareCount = 0;
             var knightsCount = 0;
             var allPieces = new Dictionary<Square, PieceOnSquare>();
-            
+
             MovingPiece movingPiece = null;
             var move = new Move(board);
 
@@ -117,7 +117,7 @@ namespace ChessGame.Core.Evaluation
                 board.Score += EvaluatePieceScore(board, piece, board.IsEndOfGamePhase, ref insufficientMaterial, ref (piece.Piece.GetColor() == Moves.Helpers.Color.White ? ref whiteBishopsCount : ref blackBishopsCount), ref bishopsOnWhiteSquareCount, ref knightsCount);
             }
 
-            if(whiteBishopsCount + blackBishopsCount > 1 && (whiteBishopsCount + blackBishopsCount != bishopsOnWhiteSquareCount))
+            if (whiteBishopsCount + blackBishopsCount > 1 && (whiteBishopsCount + blackBishopsCount != bishopsOnWhiteSquareCount))
             {
                 insufficientMaterial = false;
             }
@@ -137,6 +137,12 @@ namespace ChessGame.Core.Evaluation
                     foreach (var squareTo in Square.YieldSquares())
                     {
                         movingPiece = new MovingPiece(pieceOnSquare, squareTo);
+                        //////////////////////////////// 
+                        //////
+                        ///////
+#warning ADD CASTLING MOVES!!!!111111111111111111111111111111111111
+                        ///////
+                        ///
                         if (move.CanMove(movingPiece, out currentCapturedPiece) &&
                             !board.IsCheckAfterMove(movingPiece))
                         {
@@ -170,7 +176,7 @@ namespace ChessGame.Core.Evaluation
                 board.IsInsufficientMaterial = true;
                 return;
             }
-            if(allPieces.Count < 10)
+            if (allPieces.Count < 10)
             {
                 board.IsEndOfGamePhase = true;
             }
@@ -225,7 +231,7 @@ namespace ChessGame.Core.Evaluation
             }
             if (whitePawnInColumnCount[1] >= 1 && whitePawnInColumnCount[0] == 0 &&
             whitePawnInColumnCount[2] == 0)
-{
+            {
                 board.Score -= 14;
             }
             if (whitePawnInColumnCount[2] >= 1 && whitePawnInColumnCount[1] == 0 &&
@@ -275,7 +281,7 @@ namespace ChessGame.Core.Evaluation
                 board.Score -= blackPawnInColumnCount[3];
             }
             if (blackPawnInColumnCount[4] >= 1 && whitePawnInColumnCount[4] == 0)
-            { 
+            {
                 board.Score -= blackPawnInColumnCount[4];
             }
             if (blackPawnInColumnCount[5] >= 1 && whitePawnInColumnCount[5] == 0)
@@ -384,17 +390,17 @@ namespace ChessGame.Core.Evaluation
                         // Bishops are worth more in the end game, also we add a small bonus for having 2 bishops
                         // since they complement each other by controlling different ranks.
                         bishopsCount++;
-                        if(bishopsCount >= 2)
+                        if (bishopsCount >= 2)
                         {
                             score += 10;
                         }
-                        if(isEndOfGame)
+                        if (isEndOfGame)
                         {
                             score += 10;
                         }
                         break;
                     }
-                    // Rooks shouldnt leave their corner positions before castling has occured
+                // Rooks shouldnt leave their corner positions before castling has occured
                 case Piece.BlackRook:
                     {
                         insufficientMaterial = false;
@@ -482,10 +488,10 @@ namespace ChessGame.Core.Evaluation
             {
                 if (whitePawnInColumnCount[posX] > 0)
                 {
-                //Doubled Pawn
-                score -= 16;
+                    //Doubled Pawn
+                    score -= 16;
                 }
-                if (piece.Square.Y  == 1)
+                if (piece.Square.Y == 1)
                 {
                     if (piece.AttackedValue == 0)
                     {
@@ -551,13 +557,13 @@ namespace ChessGame.Core.Evaluation
                 {
                     currentMovingPiece = new MovingPiece(pieceOnSquare, squareTo);
                     // add score for castling
-                    if(currentMovingPiece.IsItCastlingMove())
+                    if (currentMovingPiece.IsItCastlingMove())
                     {
                         var targetColor = currentMovingPiece.Piece.GetColor();
                         if (targetColor != board.MoveColor)
                             continue;
                         var isToKingside = currentMovingPiece.SignX > 0;
-                        if(board.CanKingCastle(isToKingside))
+                        if (board.CanKingCastle(isToKingside))
                         {
                             currentMovingPiece.Score += 40;
                             validMoves.Add(currentMovingPiece);
@@ -588,9 +594,9 @@ namespace ChessGame.Core.Evaluation
                                     currentMovingPiece.Score -= 40;
                                 }
                             }
-                            else if(board.MoveColor == Color.Black && !board.IsBlackCastled)
+                            else if (board.MoveColor == Color.Black && !board.IsBlackCastled)
                             {
-                                if(currentMovingPiece.Piece == Piece.BlackKing || currentMovingPiece.Piece == Piece.BlackRook)
+                                if (currentMovingPiece.Piece == Piece.BlackKing || currentMovingPiece.Piece == Piece.BlackRook)
                                 {
                                     currentMovingPiece.Score -= 40;
                                 }
@@ -608,46 +614,89 @@ namespace ChessGame.Core.Evaluation
         {
             if ((board.IsFiftyMovesRuleEnabled && board.FiftyMovesCount >= 50) || (board.IsThreefoldRepetitionRuleEnabled && board.RepeatedMovesCount >= 3))
                 return 0;
-            if(depth == 0)
+            if (depth == 0)
             {
                 EvaluateBoardScore(board);
                 return GetScoreAccordingColor(board.Score, board.MoveColor);
             }
 
+            if(board.IsStaleMate)
+            {
+                return 0;
+            }
+            switch (board.MateTo)
+            {
+                case Color.White:
+                    {
+                        if(board.MoveColor == Color.Black)
+                        {
+                            return 32767 + depth;
+                        } else
+                        {
+                            return -32767 - depth;
+                        }
+                    }
+                case Color.Black:
+                    {
+                        if(board.MoveColor == Color.Black)
+                        {
+                            return -32767 - depth;
+                        } else
+                        {
+                            return 32767 + depth;
+                        }
+                    }
+                case Color.None:
+                default:
+                    break;
+            }
+            if(board.MateTo != Color.None)
+            {
+                return 32767 + depth;
+            }
 
             var validMoves = new List<MovingPiece>();
             validMoves = EvaluateMoves(board);
-
-            if (validMoves.Count < 1)
-            {
-                if(board.CheckTo != Color.None)
-                {
-                    board.MateTo = board.CheckTo;
-                } else
-                {
-                    board.IsStaleMate = true;
-                }
-            }
-            //////////////////////////////////////////////////////////////////////////
-
             validMoves.Sort();
+
+            Board nextBoard;
+            bool isToKingSide;
             foreach (var move in validMoves)
             {
-                var value = AlphaBeta(Move(move), depth - 1, -beta, -alpha);
-                if(value > alpha)
+                if(move.IsItCastlingMove())
+                {
+                    isToKingSide = move.SignX > 0;
+                    nextBoard = board.Castle(isToKingSide);
+                } else
+                {
+                    nextBoard = board.Move(move);
+                }
+
+                if (nextBoard.IsCheckAfterMove(move))
+                {
+                    nextBoard.CheckTo = nextBoard.MoveColor;
+                    if (!nextBoard.IsMoveAvailable())
+                    {
+                        nextBoard.MateTo = nextBoard.MoveColor;
+                    }
+                }
+                else if (!nextBoard.IsMoveAvailable())
+                {
+                    nextBoard.IsStaleMate = true;
+                }
+                
+                var value = AlphaBeta(nextBoard, depth - 1, -beta, -alpha);
+                if (value >= beta)
+                {
+                    return beta;
+                }
+                if (value > alpha)
                 {
                     alpha = value;
                 }
             }
             return alpha;
-
-
-            Board Move(MovingPiece movingPiece)
-            {
-                var nextBoard = board.Move(movingPiece);
-
-                return nextBoard;
-            }
+            
         }
 
         private int GetScoreAccordingColor(int score, Color color)

@@ -96,7 +96,7 @@ namespace ChessGame.Core.Pieces
             return nextBoardState;
         }
 
-        internal Board Castle(MovingPiece king, MovingPiece rook)
+        private Board Castle(MovingPiece king, MovingPiece rook)
         {
             var nextBoardState = new Board(Fen);
 
@@ -201,6 +201,117 @@ namespace ChessGame.Core.Pieces
                 currentMovingPiece = new MovingPiece(pieceOnSquare, targetKingPosition);
                 if (move.CanMove(currentMovingPiece))
                     return true;
+            }
+
+            return false;
+        }
+
+        internal bool CanKingCastle(bool isToKingside)
+        {
+            if (MoveColor == Color.White && IsWhiteCastled
+                || MoveColor == Color.Black && IsBlackCastled)
+                return false;
+            MoveColor = MoveColor.FlipColor();
+            if (IsCheckTo())
+            {
+                MoveColor = MoveColor.FlipColor();
+                return false;
+            }
+            MoveColor = MoveColor.FlipColor();
+            var isWhiteSide = MoveColor == Moves.Helpers.Color.White;
+            var king = (isWhiteSide) ? Piece.WhiteKing : Piece.BlackKing;
+            var rookPiece = (isWhiteSide) ? Piece.WhiteRook : Piece.BlackRook;
+            var y = (isWhiteSide) ? 0 : 7;
+            var stepX = (isToKingside) ? 1 : -1;
+            if (!IsCastlingPossible(stepX > 0, king.GetColor()))
+            {
+                return false;
+            }
+            MovingPiece mf;
+
+            if (stepX == -1)
+            {
+                if (GetPieceAt(1, y) != Piece.None ||
+                    GetPieceAt(2, y) != Piece.None ||
+                    GetPieceAt(3, y) != Piece.None)
+                {
+                    return false;
+                }
+            }
+            else
+            {
+                if (GetPieceAt(6, y) != Piece.None ||
+                    GetPieceAt(5, y) != Piece.None)
+                {
+                    return false;
+                }
+            }
+            var firstKingDestSquare = new Square(4 + stepX, y);
+            mf = new MovingPiece(new PieceOnSquare(king, new Square(4, y)), firstKingDestSquare);
+            var currentMove = new Move(this);
+            if (!currentMove.CanMove(mf))
+                return false;
+            if (IsCheckAfterMove(mf))
+                return false;
+
+            var boardAfterFirstMove = GetBoardAfterFirstKingCastlingMove(mf);
+            var moveAfterFirstKingMove = new Move(boardAfterFirstMove);
+            var finalKingDestSquare = new Square(firstKingDestSquare.X + stepX, y);
+            mf = new MovingPiece(new PieceOnSquare(king, firstKingDestSquare), finalKingDestSquare);
+            if (!moveAfterFirstKingMove.CanMove(mf))
+                return false;
+            if (boardAfterFirstMove.IsCheckAfterMove(mf))
+                return false;
+
+            return true;
+
+            bool IsCastlingPossible(bool isKingside, Color color)
+            {
+                var currentCastrlingFenPart = ((color == Color.White) ? WhiteCastlingFenPart : BlackCastlingFenPart).ToLower();
+                return (isKingside) ? currentCastrlingFenPart.Contains('k') : currentCastrlingFenPart.Contains('q');
+            }
+        }
+
+        internal Board Castle(bool isToKingside)
+        {
+            var isWhiteSide = MoveColor == Color.White;
+            var king = (isWhiteSide) ? Piece.WhiteKing : Piece.BlackKing;
+            var rookPiece = (isWhiteSide) ? Piece.WhiteRook : Piece.BlackRook;
+            var y = (isWhiteSide) ? 0 : 7;
+            var stepX = (isToKingside) ? 1 : -1;
+            PieceOnSquare rook;
+
+            if (stepX == -1)
+            {
+                rook = new PieceOnSquare(rookPiece, new Square(0, y));
+            }
+            else
+            {
+                rook = new PieceOnSquare(rookPiece, new Square(7, y));
+            }
+            var firstKingDestSquare = new Square(4 + stepX, y);
+            var finalKingDestSquare = new Square(firstKingDestSquare.X + stepX, y);
+
+            return Castle(new MovingPiece(new PieceOnSquare(king, new Square(4, y)), finalKingDestSquare), new MovingPiece(rook, firstKingDestSquare));
+        }
+        /// <summary>
+        /// Tries to find at least one available move.Useful to check on checkmate/stalemate situation.
+        /// </summary>
+        /// <returns></returns>
+        internal bool IsMoveAvailable()
+        {
+            var currentMove = new Move(this);
+            var allMoves = new List<MovingPiece>();
+            MovingPiece movingPiece;
+            foreach (var pieceOnSquare in YieldPieces())
+            {
+                foreach (var squareTo in Square.YieldSquares())
+                {
+                    movingPiece = new MovingPiece(pieceOnSquare, squareTo);
+                    if (currentMove.CanMove(movingPiece) &&
+                        !IsCheckAfterMove(movingPiece))
+                        return true;
+                }
             }
 
             return false;

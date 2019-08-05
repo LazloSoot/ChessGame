@@ -1,5 +1,6 @@
 ﻿using ChessGame.Core.Moves;
 using ChessGame.Core.Moves.Helpers;
+using System.Collections.Generic;
 
 namespace ChessGame.Core.Pieces.Helpers
 {
@@ -208,76 +209,6 @@ namespace ChessGame.Core.Pieces.Helpers
                     return 0;
             }
         }
-
-        #region Board
-
-#warning TEST REQUARED!!!111
-        internal static bool CanKingCastle(this Board board, bool isToKingside)
-        {
-            if (board.MoveColor == Color.White && board.IsWhiteCastled
-                || board.MoveColor == Color.Black && board.IsBlackCastled)
-                return false;
-            board.MoveColor = board.MoveColor.FlipColor();
-            if (board.IsCheckTo())
-            {
-                board.MoveColor = board.MoveColor.FlipColor();
-                return false;
-            }
-            board.MoveColor = board.MoveColor.FlipColor();
-            var isWhiteSide = board.MoveColor == Moves.Helpers.Color.White;
-            var king = (isWhiteSide) ? Piece.WhiteKing : Piece.BlackKing;
-            var rookPiece = (isWhiteSide) ? Piece.WhiteRook : Piece.BlackRook;
-            var y = (isWhiteSide) ? 0 : 7;
-            var stepX = (isToKingside) ? 1 : -1;
-            if (!IsCastlingPossible(stepX > 0, king.GetColor()))
-            {
-                return false;
-            }
-            MovingPiece mf;
-
-            if (stepX == -1)
-            {
-                if (board.GetPieceAt(1, y) != Piece.None ||
-                    board.GetPieceAt(2, y) != Piece.None ||
-                    board.GetPieceAt(3, y) != Piece.None)
-                {
-                    return false;
-                }
-            }
-            else
-            {
-                if (board.GetPieceAt(6, y) != Piece.None ||
-                    board.GetPieceAt(5, y) != Piece.None)
-                {
-                    return false;
-                }
-            }
-            var firstKingDestSquare = new Square(4 + stepX, y);
-            mf = new MovingPiece(new PieceOnSquare(king, new Square(4, y)), firstKingDestSquare);
-            var currentMove = new Move(board);
-            if (!currentMove.CanMove(mf))
-                return false;
-            if (board.IsCheckAfterMove(mf))
-                return false;
-
-            var boardAfterFirstMove = board.GetBoardAfterFirstKingCastlingMove(mf);
-            var moveAfterFirstKingMove = new Move(boardAfterFirstMove);
-            var finalKingDestSquare = new Square(firstKingDestSquare.X + stepX, y);
-            mf = new MovingPiece(new PieceOnSquare(king, firstKingDestSquare), finalKingDestSquare);
-            if (!moveAfterFirstKingMove.CanMove(mf))
-                return false;
-            if (boardAfterFirstMove.IsCheckAfterMove(mf))
-                return false;
-
-            return true;
-
-            bool IsCastlingPossible(bool isKingside, Color color)
-            {
-                var currentCastrlingFenPart = ((color == Color.White) ? board.WhiteCastlingFenPart : board.BlackCastlingFenPart).ToLower();
-                return (isKingside) ? currentCastrlingFenPart.Contains('k') : currentCastrlingFenPart.Contains('q');
-            }
-        }
-
-        #endregion Board
+        
     }
 }

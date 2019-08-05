@@ -14,7 +14,7 @@ namespace ChessGame.Core
         private Move _currentMove;
         public const string DefaultFen = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
         public string Fen { get; private set; }
-        public Chess.Common.Helpers.Color MateTo { get => (Chess.Common.Helpers.Color)Board.MateTo; private set => Board.CheckTo = (ChessGame.Core.Moves.Helpers.Color)value; }
+        public Chess.Common.Helpers.Color MateTo { get => (Chess.Common.Helpers.Color)Board.MateTo; private set => Board.MateTo = (ChessGame.Core.Moves.Helpers.Color)value; }
         public Chess.Common.Helpers.Color CheckTo { get => (Chess.Common.Helpers.Color)Board.CheckTo; private set => Board.CheckTo = (ChessGame.Core.Moves.Helpers.Color)value; }
         public bool IsStaleMate { get => Board.IsStaleMate; private set => Board.IsStaleMate = value; }
         public bool IsInsufficientMaterial { get => Board.IsInsufficientMaterial; private set => Board.IsInsufficientMaterial = value; }
@@ -79,7 +79,7 @@ namespace ChessGame.Core
                 var isToKingside = movingPiece.SignX > 0;
                 if (CanKingCastle(isToKingside))
                 {
-                    return Castle(isToKingside);
+                    return new ChessGameEngine(Board.Castle(isToKingside));
                 }
                 else
                 {
@@ -110,30 +110,7 @@ namespace ChessGame.Core
             return nextChessPosition;
         }
 
-        private IChessGame Castle(bool isToKingside)
-        {
-            var isWhiteSide = Board.MoveColor == Moves.Helpers.Color.White;
-            var king = (isWhiteSide) ? Piece.WhiteKing : Piece.BlackKing;
-            var rookPiece = (isWhiteSide) ? Piece.WhiteRook : Piece.BlackRook;
-            var y = (isWhiteSide) ? 0 : 7;
-            var stepX = (isToKingside) ? 1 : -1;
-            PieceOnSquare rook;
-
-            if(stepX == -1)
-            {
-                rook = new PieceOnSquare(rookPiece, new Square(0, y));
-            } else
-            {
-                rook = new PieceOnSquare(rookPiece, new Square(7, y));
-            }
-            var firstKingDestSquare = new Square(4 + stepX, y);
-            var finalKingDestSquare = new Square(firstKingDestSquare.X + stepX, y);
-
-            var nextBoard = Board.Castle(new MovingPiece(new PieceOnSquare(king, new Square(4, y)), finalKingDestSquare), new MovingPiece(rook, firstKingDestSquare));
-            return new ChessGameEngine(nextBoard);
-        }
-
-        [Obsolete("This method moved to Pieces.Helpers.Extensions and remaked as Board extention. Going to be removed after testing")]
+        [Obsolete("This method moved to Board. Going to be removed after testing")]
         private bool CanKingCastle(bool isToKingside)
         {
             if (Board.MoveColor == Moves.Helpers.Color.White && Board.IsWhiteCastled 
@@ -236,7 +213,7 @@ namespace ChessGame.Core
             return validMoves;
         }
 
-
+        [Obsolete("This method moved to Board. Going to be removed after testing")]
         /// <summary>
         /// Tries to find at least one available move.Useful to check on checkmate/stalemate situation.
         /// </summary>
