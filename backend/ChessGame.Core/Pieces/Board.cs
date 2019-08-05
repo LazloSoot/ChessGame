@@ -239,6 +239,7 @@ namespace ChessGame.Core.Pieces
 
 #warning INIT FIFTY MOVES COUNT
             string[] parts = Fen.Split();
+#warning Fen can be length of 4
             if (parts.Length < 6)
                 return;
             var castlingFenPart = parts[2];

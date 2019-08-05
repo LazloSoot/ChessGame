@@ -9,6 +9,7 @@ namespace Chess.Common.Interfaces
         string Fen { get; }
         Color MateTo { get; }
         Color CheckTo { get; }
+        bool IsStaleMate { get; }
         IChessGame InitGame(string fen);
         IChessGame InitGame(ChessGameInitSettings initialSettings);
         List<string> GetAllValidMovesForPieceAt(int x, int y);

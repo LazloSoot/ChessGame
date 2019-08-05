@@ -95,16 +95,18 @@ namespace ChessGame.Core
             var nextBoard = Board.Move(movingPiece);
             var nextChessPosition = new ChessGameEngine(nextBoard);
 
-            if (nextBoard.IsCheckAfterMove(movingPiece))
+            if(nextBoard.IsCheckAfterMove(movingPiece))
             {
-                CheckTo = (Chess.Common.Helpers.Color)nextBoard.MoveColor;
-#warning is not requared to compute all moves, only one enought 
-                if (nextChessPosition.ComputeAllMoves().Count < 1)
-                    MateTo = (Chess.Common.Helpers.Color)nextBoard.MoveColor;
-            } else
+                nextChessPosition.CheckTo = (Chess.Common.Helpers.Color)nextBoard.MoveColor;
+                if(!nextChessPosition.IsMoveAvailable())
+                {
+                    nextChessPosition.MateTo = (Chess.Common.Helpers.Color)nextBoard.MoveColor;
+                }
+            } else if(!nextChessPosition.IsMoveAvailable())
             {
-                CheckTo = Chess.Common.Helpers.Color.None;
+                nextChessPosition.IsStaleMate = true;
             }
+
             return nextChessPosition;
         }
 
@@ -234,8 +236,12 @@ namespace ChessGame.Core
             return validMoves;
         }
 
-#warning перенести в board
-        private List<MovingPiece> ComputeAllMoves()
+
+        /// <summary>
+        /// Tries to find at least one available move.Useful to check on checkmate/stalemate situation.
+        /// </summary>
+        /// <returns></returns>
+        private bool IsMoveAvailable()
         {
             var allMoves = new List<MovingPiece>();
             MovingPiece movingPiece;
@@ -246,11 +252,11 @@ namespace ChessGame.Core
                     movingPiece = new MovingPiece(pieceOnSquare, squareTo);
                     if (_currentMove.CanMove(movingPiece) &&
                         !Board.IsCheckAfterMove(movingPiece))
-                        allMoves.Add(movingPiece);
+                        return true;
                 }
             }
 
-            return allMoves;
+            return false;
         }
     
         private bool IsCastlingPossible(bool isKingside, Moves.Helpers.Color color)
