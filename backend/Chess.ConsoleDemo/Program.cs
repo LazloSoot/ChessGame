@@ -7,8 +7,8 @@ namespace Chess.ConsoleDemo
     class Program
     {
         static void Main(string[] args)
-        {
-            var chess = new ChessGameEngine().InitGame("rnb1kbnr/pppppppp/4q3/8/8/N2Q1B2/PPPP1PPP/R3K2R w KQkq - 0 1");
+        { // 6k1/1b3ppp/pb2p3/1p2P3/1P2BPnP/P1r5/1B1rQ2P/R4R1K
+            var chess = new ChessGameEngine().InitGame("6k1/1b3ppp/pb2p3/1p2P3/1P2BPnP/P1r5/1B1rQ2P/R4R1K w - - 0 0");
            // ChessGame.Check += Chess_Check;
            // ChessGame.Mate += Chess_Mate;
             while (true)
@@ -21,6 +21,7 @@ namespace Chess.ConsoleDemo
                     break;
                 }
                 chess = chess.Move(move);
+                chess = chess.ComputerMove();
             }
         }
 

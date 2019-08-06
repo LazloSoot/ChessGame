@@ -70,9 +70,10 @@ namespace ChessGame.Core
         public IChessGame Move(string move) // Pe2e4  Pe7e8Q
         {
             var movingPiece = new MovingPiece(move);
+            Board nextBoard;
             if (Board.GetPieceAt(movingPiece.From) == Piece.None)
                 return this;
-            if(movingPiece.IsItCastlingMove()) // its castling
+            if (movingPiece.IsItCastlingMove()) // its castling
             {
                 var targetColor = movingPiece.Piece.GetColor();
                 if (targetColor != Board.MoveColor)
@@ -80,20 +81,21 @@ namespace ChessGame.Core
                 var isToKingside = movingPiece.SignX > 0;
                 if (CanKingCastle(isToKingside))
                 {
-                    return new ChessGameEngine(Board.Castle(isToKingside));
+                    nextBoard = Board.Castle(isToKingside);
                 }
                 else
                 {
                     return this;
                 }
             }
-            if (!_currentMove.CanMove(movingPiece))
-                return this;
-            if (Board.IsCheckAfterMove(movingPiece))
+            else if (!_currentMove.CanMove(movingPiece) || Board.IsCheckAfterMove(movingPiece))
             {
                 return this;
+            } else
+            {
+                nextBoard = Board.Move(movingPiece);
             }
-            var nextBoard = Board.Move(movingPiece);
+            
             var nextChessPosition = new ChessGameEngine(nextBoard);
 
             if(nextBoard.IsCheckAfterMove(movingPiece))
@@ -115,7 +117,29 @@ namespace ChessGame.Core
         {
             BoardEvaluation eval = new BoardEvaluation();
             var bestMove = eval.SearchForBestMove(Board, 3);
-            return new ChessGameEngine(Board.Move(bestMove));
+            Board nextBoard;
+            if (bestMove.IsItCastlingMove()) // its castling
+            {
+                var isToKingside = bestMove.SignX > 0;
+                nextBoard = Board.Castle(isToKingside);
+            } else
+            {
+                nextBoard = Board.Move(bestMove);
+            }
+
+            if (nextBoard.IsCheckAfterMove(bestMove))
+            {
+                nextBoard.CheckTo = nextBoard.MoveColor;
+                if (!nextBoard.IsMoveAvailable())
+                {
+                    nextBoard.MateTo = nextBoard.MoveColor;
+                }
+            }
+            else if (!nextBoard.IsMoveAvailable())
+            {
+                nextBoard.IsStaleMate = true;
+            }
+            return new ChessGameEngine(nextBoard);
         }
 
         [Obsolete("This method moved to Board. Going to be removed after testing")]

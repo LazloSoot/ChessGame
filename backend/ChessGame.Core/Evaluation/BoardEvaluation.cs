@@ -359,7 +359,7 @@ namespace ChessGame.Core.Evaluation
             depth--;
             // search deeper if there are fewer available moves
             depth = (resultBoards.Count <= 15) ? depth + 1 : depth;
-            alpha = int.MinValue;
+            alpha = -400000000;
             foreach (var boardMovePair in resultBoards)
             {
                 int value = -AlphaBeta(boardMovePair.Board, depth, -beta, -alpha);
@@ -661,7 +661,7 @@ namespace ChessGame.Core.Evaluation
             if (depth == 0 || board.IsStaleMate)
             {
                 EvaluateBoardScore(board);
-                return GetScoreAccordingColor(board.Score, board.MoveColor);
+                return board.Score;
             }
 
             switch (board.MateTo)
@@ -734,8 +734,9 @@ namespace ChessGame.Core.Evaluation
                     alpha = value;
                 }
             }
-            return alpha;
             
+            return alpha;
+
         }
 
         private int GetScoreAccordingColor(int score, Color color)
