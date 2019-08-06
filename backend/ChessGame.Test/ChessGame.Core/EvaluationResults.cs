@@ -2,7 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.Text;
-using Chess.Common.Helpers;
+using Chess.Common.Helpers.ChessGame;
 using ChessGame.Core;
 
 namespace ChessGame.Test.ChessGame.Core

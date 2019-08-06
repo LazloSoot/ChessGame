@@ -9,6 +9,7 @@ using System.Linq;
 using Chess.Common.Interfaces;
 using System.Collections.Generic;
 using Chess.BusinessLogic.Interfaces.SignalR;
+using Chess.Common.Helpers.ChessGame;
 
 namespace Chess.BusinessLogic.Services
 {
@@ -40,10 +41,10 @@ namespace Chess.BusinessLogic.Services
         public async Task<MoveDTO> Move(MoveRequest moveRequest)
         {
 #warning кинуть разные исключения вместо null
-            if (uow == null || string.IsNullOrWhiteSpace(moveRequest.Move) || moveRequest.GameId < 1)
+            if (_uow == null || string.IsNullOrWhiteSpace(moveRequest.Move) || moveRequest.GameId < 1)
                 return null;
 
-            var gameDbRecord = await uow.GetRepository<Game>().GetByIdAsync(moveRequest.GameId);
+            var gameDbRecord = await _uow.GetRepository<Game>().GetByIdAsync(moveRequest.GameId);
             if (gameDbRecord == null || gameDbRecord.Status != DataAccess.Helpers.GameStatus.Going)
                 return null;
 
@@ -55,11 +56,11 @@ namespace Chess.BusinessLogic.Services
             var gameAfterMove = game.Move(moveRequest.Move);
             if (game.Equals(gameAfterMove))
             {
-                if (game.MateTo != Common.Helpers.Color.None)
+                if (game.MateTo != Color.None)
                 {
                     await _signalRChessService.EmitMate(gameDbRecord.Id, game.MateTo);
                 }
-                else if (game.CheckTo != Common.Helpers.Color.None)
+                else if (game.CheckTo != Color.None)
                 {
                     await _signalRChessService.EmitСheck(gameDbRecord.Id, game.CheckTo);
                 }
@@ -81,18 +82,18 @@ namespace Chess.BusinessLogic.Services
             committedMove.MoveNext = moveRequest.Move;
             committedMove.FenAfterMove = gameAfterMove.Fen;
             await _signalRChessService.CommitMove(gameDbRecord.Id);
-            if (game.MateTo != Common.Helpers.Color.None)
+            if (game.MateTo != Color.None)
             {
                 gameDbRecord.Status = DataAccess.Helpers.GameStatus.Completed;
                 await _signalRChessService.EmitMate(gameDbRecord.Id, game.MateTo);
             }
-            else if (game.CheckTo != Common.Helpers.Color.None)
+            else if (game.CheckTo != Color.None)
             {
                 await _signalRChessService.EmitСheck(gameDbRecord.Id, game.CheckTo);
             }
 
 
-            await uow.SaveAsync();
+            await _uow.SaveAsync();
             return committedMove;
         }
 
@@ -103,7 +104,7 @@ namespace Chess.BusinessLogic.Services
 
         public async Task<IEnumerable<string>> GetAllValidMovesForFigureAt(int gameId, string squareName)
         {
-            if (uow == null)
+            if (_uow == null)
                 return null;
 
             if (squareName.Length != 2)
@@ -122,7 +123,7 @@ namespace Chess.BusinessLogic.Services
                 return null;
             }
 
-            var targetGame = await uow.GetRepository<Game>().GetByIdAsync(gameId);
+            var targetGame = await _uow.GetRepository<Game>().GetByIdAsync(gameId);
 #warning кинуть исключение (игры нет)
             if (targetGame == null)
                 return null;

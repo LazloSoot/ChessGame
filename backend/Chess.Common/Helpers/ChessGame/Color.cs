@@ -1,4 +1,4 @@
-﻿namespace Chess.Common.Helpers
+﻿namespace Chess.Common.Helpers.ChessGame
 {
     public enum Color
     {

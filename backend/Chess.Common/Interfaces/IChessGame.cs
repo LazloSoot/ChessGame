@@ -1,4 +1,4 @@
-﻿using Chess.Common.Helpers;
+﻿using Chess.Common.Helpers.ChessGame;
 using System;
 using System.Collections.Generic;
 

@@ -15,8 +15,8 @@ namespace ChessGame.Core
         private Move _currentMove;
         public const string DefaultFen = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
         public string Fen { get; private set; }
-        public Chess.Common.Helpers.Color MateTo { get => (Chess.Common.Helpers.Color)Board.MateTo; private set => Board.MateTo = (ChessGame.Core.Moves.Helpers.Color)value; }
-        public Chess.Common.Helpers.Color CheckTo { get => (Chess.Common.Helpers.Color)Board.CheckTo; private set => Board.CheckTo = (ChessGame.Core.Moves.Helpers.Color)value; }
+        public Chess.Common.Helpers.ChessGame.Color MateTo { get => (Chess.Common.Helpers.ChessGame.Color)Board.MateTo; private set => Board.MateTo = (Color)value; }
+        public Chess.Common.Helpers.ChessGame.Color CheckTo { get => (Chess.Common.Helpers.ChessGame.Color)Board.CheckTo; private set => Board.CheckTo = (Color)value; }
         public bool IsStaleMate { get => Board.IsStaleMate; private set => Board.IsStaleMate = value; }
         public bool IsInsufficientMaterial { get => Board.IsInsufficientMaterial; private set => Board.IsInsufficientMaterial = value; }
         internal Board Board { get; private set; }
@@ -52,7 +52,7 @@ namespace ChessGame.Core
             return this;
         }
 
-        public IChessGame InitGame(ChessGameInitSettings initialSettings)
+        public IChessGame InitGame(Chess.Common.Helpers.ChessGame.ChessGameInitSettings initialSettings)
         {
             Fen = initialSettings.Fen;
             Board = new Board(Fen)
@@ -100,10 +100,10 @@ namespace ChessGame.Core
 
             if(nextBoard.IsCheckAfterMove(movingPiece))
             {
-                nextChessPosition.CheckTo = (Chess.Common.Helpers.Color)nextBoard.MoveColor;
+                nextChessPosition.CheckTo = (Chess.Common.Helpers.ChessGame.Color)nextBoard.MoveColor;
                 if(!nextChessPosition.IsMoveAvailable())
                 {
-                    nextChessPosition.MateTo = (Chess.Common.Helpers.Color)nextBoard.MoveColor;
+                    nextChessPosition.MateTo = (Chess.Common.Helpers.ChessGame.Color)nextBoard.MoveColor;
                 }
             } else if(!nextChessPosition.IsMoveAvailable())
             {
