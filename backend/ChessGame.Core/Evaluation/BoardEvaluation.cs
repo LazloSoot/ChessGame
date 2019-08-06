@@ -10,6 +10,7 @@ namespace ChessGame.Core.Evaluation
 {
     internal sealed class BoardEvaluation
     {
+        static int AlphaBetaInvokeCount = 0;
         private int[] whitePawnInColumnCount = new int[8],
             blackPawnInColumnCount = new int[8];
         internal void EvaluateBoardScore(Board board)
@@ -137,12 +138,6 @@ namespace ChessGame.Core.Evaluation
                     foreach (var squareTo in Square.YieldSquares())
                     {
                         movingPiece = new MovingPiece(pieceOnSquare, squareTo);
-                        //////////////////////////////// 
-                        //////
-                        ///////
-#warning ADD CASTLING MOVES!!!!111111111111111111111111111111111111
-                        ///////
-                        ///
                         if (move.CanMove(movingPiece, out currentCapturedPiece) &&
                             !board.IsCheckAfterMove(movingPiece))
                         {
@@ -160,6 +155,17 @@ namespace ChessGame.Core.Evaluation
                                 }
                             }
                             pieceOnSquare.ValidMovesCount++;
+                        }
+                        else if (movingPiece.IsItCastlingMove())
+                        {
+                            var targetColor = movingPiece.Piece.GetColor();
+                            if (targetColor != board.MoveColor)
+                                continue;
+                            var isToKingside = movingPiece.SignX > 0;
+                            if (board.CanKingCastle(isToKingside))
+                            {
+                                pieceOnSquare.ValidMovesCount++;
+                            }
                         }
                     }
                 }
@@ -332,6 +338,43 @@ namespace ChessGame.Core.Evaluation
 
             #endregion DoubledIsolatedPawns
         }
+
+        internal MovingPiece SearchForBestMove(Board board, int depth)
+        {
+            int alpha = -400000000;
+            const int beta = 400000000;
+            BoardMovePair bestBoardMovePair = default;
+            List<BoardMovePair> resultBoards = GetSortedBoardMovePairs(board);
+
+           // Console.WriteLine($"SearchForBestMove. available moves = {resultBoards.Count}" );
+            // Searching for instant checkmate
+            foreach (var boardMovePair in resultBoards)
+            {
+                int value = -AlphaBeta(boardMovePair.Board, 1, -beta, -alpha);
+                if (value >= 32767)
+                {
+                    return boardMovePair.Move;
+                }
+            }
+            depth--;
+            // search deeper if there are fewer available moves
+            depth = (resultBoards.Count <= 15) ? depth + 1 : depth;
+            alpha = int.MinValue;
+            foreach (var boardMovePair in resultBoards)
+            {
+                int value = -AlphaBeta(boardMovePair.Board, depth, -beta, -alpha);
+                boardMovePair.Board.Score = value;
+                //If value is greater then alpha this is the best board
+                if (value > alpha)
+                {
+                    alpha = value;
+                    bestBoardMovePair = boardMovePair;
+                }
+            }
+            Console.WriteLine();
+            Console.WriteLine($"alphabeta invoked {AlphaBetaInvokeCount} times");
+            return bestBoardMovePair.Move;
+        }
         /// <summary>
         /// Computes the single piece score.
         /// </summary>
@@ -461,7 +504,7 @@ namespace ChessGame.Core.Evaluation
             // add position value
             score += piece.Piece.GetPieceSquareTableScore(piece.Square.X, piece.Square.Y, isEndOfGame);
 
-            return score;
+            return (piece.Piece.GetColor() == Color.White) ? score : -score;
         }
 
         /// <summary>
@@ -612,18 +655,15 @@ namespace ChessGame.Core.Evaluation
 
         private int AlphaBeta(Board board, int depth, int alpha, int beta)
         {
+            AlphaBetaInvokeCount++;
             if ((board.IsFiftyMovesRuleEnabled && board.FiftyMovesCount >= 50) || (board.IsThreefoldRepetitionRuleEnabled && board.RepeatedMovesCount >= 3))
                 return 0;
-            if (depth == 0)
+            if (depth == 0 || board.IsStaleMate)
             {
                 EvaluateBoardScore(board);
                 return GetScoreAccordingColor(board.Score, board.MoveColor);
             }
 
-            if(board.IsStaleMate)
-            {
-                return 0;
-            }
             switch (board.MateTo)
             {
                 case Color.White:
@@ -658,7 +698,6 @@ namespace ChessGame.Core.Evaluation
             var validMoves = new List<MovingPiece>();
             validMoves = EvaluateMoves(board);
             validMoves.Sort();
-
             Board nextBoard;
             bool isToKingSide;
             foreach (var move in validMoves)
@@ -685,7 +724,7 @@ namespace ChessGame.Core.Evaluation
                     nextBoard.IsStaleMate = true;
                 }
                 
-                var value = AlphaBeta(nextBoard, depth - 1, -beta, -alpha);
+                var value = -AlphaBeta(nextBoard, depth - 1, -beta, -alpha);
                 if (value >= beta)
                 {
                     return beta;
@@ -702,6 +741,62 @@ namespace ChessGame.Core.Evaluation
         private int GetScoreAccordingColor(int score, Color color)
         {
             return (color == Color.Black) ? -score : score;
+        }
+
+        private List<BoardMovePair> GetSortedBoardMovePairs(Board board)
+        {
+            var result = new List<BoardMovePair>();
+            var currentMove = new Move(board);
+            Board nextBoard;
+            MovingPiece movingPiece;
+            foreach (var pieceOnSquare in board.YieldPieces())
+            {
+                foreach (var squareTo in Square.YieldSquares())
+                {
+                    movingPiece = new MovingPiece(pieceOnSquare, squareTo);
+                    if (currentMove.CanMove(movingPiece) &&
+                        !board.IsCheckAfterMove(movingPiece))
+                    {
+                        nextBoard = board.Move(movingPiece);
+                        EvaluateBoardScore(nextBoard);
+                        nextBoard.Score = GetScoreAccordingColor(nextBoard.Score, nextBoard.MoveColor);
+                        result.Add(new BoardMovePair(nextBoard, movingPiece));
+                    }
+                    else if (movingPiece.IsItCastlingMove())
+                    {
+                        var targetColor = movingPiece.Piece.GetColor();
+                        if (targetColor != board.MoveColor)
+                            continue;
+                        var isToKingside = movingPiece.SignX > 0;
+                        if (board.CanKingCastle(isToKingside))
+                        {
+                            nextBoard = board.Castle(isToKingside);
+                            EvaluateBoardScore(nextBoard);
+                            nextBoard.Score = GetScoreAccordingColor(nextBoard.Score, nextBoard.MoveColor);
+                            result.Add(new BoardMovePair(nextBoard, movingPiece));
+                        }
+                    }
+                }
+            }
+            result.Sort();
+
+            return result;
+        }
+
+        private struct BoardMovePair : IComparable<BoardMovePair>
+        {
+            public Board Board { get; set; }
+            public MovingPiece Move { get; set; }
+            public BoardMovePair(Board board, MovingPiece move)
+            {
+                Board = board;
+                Move = move;
+            }
+
+            public int CompareTo(BoardMovePair other)
+            {
+                return other.Board.Score.CompareTo(Board.Score);
+            }
         }
     }
 }

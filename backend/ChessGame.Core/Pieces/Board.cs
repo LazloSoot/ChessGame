@@ -4,10 +4,11 @@ using ChessGame.Core.Moves.Helpers;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System;
 
 namespace ChessGame.Core.Pieces
 {
-    internal sealed class Board
+    internal sealed class Board : IComparable<Board>
     {
         private Piece[,] pieces;
 
@@ -389,6 +390,11 @@ namespace ChessGame.Core.Pieces
         {
             pieces[square.X, square.Y] = piece;
 
+        }
+
+        public int CompareTo(Board other)
+        {
+            return other.Score.CompareTo(Score);
         }
     }
 }

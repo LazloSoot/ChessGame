@@ -15,5 +15,6 @@ namespace Chess.Common.Interfaces
         List<string> GetAllValidMovesForPieceAt(int x, int y);
         char GetPieceAt(int x, int y);
         IChessGame Move(string move);
+        IChessGame ComputerMove();
     }
 }

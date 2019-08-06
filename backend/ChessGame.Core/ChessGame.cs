@@ -6,6 +6,7 @@ using ChessGame.Core.Moves;
 using ChessGame.Core.Moves.Helpers;
 using System.Collections.Generic;
 using System;
+using ChessGame.Core.Evaluation;
 
 namespace ChessGame.Core
 {
@@ -108,6 +109,13 @@ namespace ChessGame.Core
             }
 
             return nextChessPosition;
+        }
+
+        public IChessGame ComputerMove()
+        {
+            BoardEvaluation eval = new BoardEvaluation();
+            var bestMove = eval.SearchForBestMove(Board, 3);
+            return new ChessGameEngine(Board.Move(bestMove));
         }
 
         [Obsolete("This method moved to Board. Going to be removed after testing")]
