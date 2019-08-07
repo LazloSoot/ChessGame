@@ -8,13 +8,14 @@ using ChessGame.Core.Moves.Helpers;
 
 namespace ChessGame.Core.Evaluation
 {
-    internal sealed class BoardEvaluation
+    internal static class BoardEvaluation
     {
-        public static int AlphaBetaInvokeCount = 0;
-        private int[] whitePawnInColumnCount = new int[8],
-            blackPawnInColumnCount = new int[8];
-        internal void EvaluateBoardScore(Board board)
+        //private int[] whitePawnInColumnCount = new int[8],
+         //   blackPawnInColumnCount = new int[8];
+        internal static void EvaluateBoardScore(Board board)
         {
+            int[] whitePawnInColumnCount = new int[8],
+               blackPawnInColumnCount = new int[8];
             board.Score = 0;
             // to check Insufficient Material Tie Rule condition
             var insufficientMaterial = true;
@@ -115,7 +116,7 @@ namespace ChessGame.Core.Evaluation
 
             foreach (var piece in allPieces.Values)
             {
-                board.Score += EvaluatePieceScore(board, piece, board.IsEndOfGamePhase, ref insufficientMaterial, ref (piece.Piece.GetColor() == Moves.Helpers.Color.White ? ref whiteBishopsCount : ref blackBishopsCount), ref bishopsOnWhiteSquareCount, ref knightsCount);
+                board.Score += EvaluatePieceScore(board, piece, board.IsEndOfGamePhase, ref insufficientMaterial, ref (piece.Piece.GetColor() == Moves.Helpers.Color.White ? ref whiteBishopsCount : ref blackBishopsCount), ref bishopsOnWhiteSquareCount, ref knightsCount, whitePawnInColumnCount, blackPawnInColumnCount);
             }
 
             if (whiteBishopsCount + blackBishopsCount > 1 && (whiteBishopsCount + blackBishopsCount != bishopsOnWhiteSquareCount))
@@ -339,7 +340,7 @@ namespace ChessGame.Core.Evaluation
             #endregion DoubledIsolatedPawns
         }
 
-        internal MovingPiece SearchForBestMove(Board board, int depth)
+        internal static MovingPiece SearchForBestMove(Board board, int depth, ref int checkedNodesCount, ref int quiescenceCheckedNodesCount)
         {
             int alpha = -400000000;
             const int beta = 400000000;
@@ -350,7 +351,7 @@ namespace ChessGame.Core.Evaluation
             // Searching for instant checkmate
             foreach (var boardMovePair in resultBoards)
             {
-                int value = -AlphaBeta(boardMovePair.Board, 1, -beta, -alpha);
+                int value = -AlphaBeta(boardMovePair.Board, 1, -beta, -alpha, ref checkedNodesCount, ref quiescenceCheckedNodesCount);
                 if (value >= 32767)
                 {
                     return boardMovePair.Move;
@@ -362,7 +363,7 @@ namespace ChessGame.Core.Evaluation
             alpha = -400000000;
             foreach (var boardMovePair in resultBoards)
             {
-                int value = -AlphaBeta(boardMovePair.Board, depth, -beta, -alpha);
+                int value = -AlphaBeta(boardMovePair.Board, depth, -beta, -alpha, ref checkedNodesCount, ref quiescenceCheckedNodesCount);
                 boardMovePair.Board.Score = value;
                 //If value is greater then alpha this is the best board
                 if (value > alpha)
@@ -373,11 +374,69 @@ namespace ChessGame.Core.Evaluation
             }
             return bestBoardMovePair.Move;
         }
+        internal static List<BoardMovePair> GetSortedBoardMovePairs(Board board)
+        {
+            var result = new List<BoardMovePair>();
+            var currentMove = new Move(board);
+            Board nextBoard;
+            MovingPiece movingPiece;
+            foreach (var pieceOnSquare in board.YieldPieces())
+            {
+                foreach (var squareTo in Square.YieldSquares())
+                {
+                    movingPiece = new MovingPiece(pieceOnSquare, squareTo);
+                    if (currentMove.CanMove(movingPiece) &&
+                        !board.IsIGotCheckAfterMove(movingPiece))
+                    {
+                        nextBoard = board.Move(movingPiece);
+                        nextBoard.CheckBoard();
+                        EvaluateBoardScore(nextBoard);
+                        nextBoard.Score = GetScoreAccordingColor(nextBoard.Score, nextBoard.MoveColor.FlipColor());
+                        result.Add(new BoardMovePair(nextBoard, movingPiece));
+                    }
+                    else if (movingPiece.IsItCastlingMove())
+                    {
+                        var targetColor = movingPiece.Piece.GetColor();
+                        if (targetColor != board.MoveColor)
+                            continue;
+                        var isToKingside = movingPiece.SignX > 0;
+                        if (board.CanKingCastle(isToKingside))
+                        {
+                            nextBoard = board.Castle(isToKingside);
+                            nextBoard.CheckBoard();
+                            EvaluateBoardScore(nextBoard);
+                            nextBoard.Score = GetScoreAccordingColor(nextBoard.Score, nextBoard.MoveColor.FlipColor());
+                            result.Add(new BoardMovePair(nextBoard, movingPiece));
+                        }
+                    }
+                }
+            }
+            result.Sort();
+
+            return result;
+        }
+
+        internal struct BoardMovePair : IComparable<BoardMovePair>
+        {
+            public Board Board { get; set; }
+            public MovingPiece Move { get; set; }
+            public BoardMovePair(Board board, MovingPiece move)
+            {
+                Board = board;
+                Move = move;
+            }
+
+            public int CompareTo(BoardMovePair other)
+            {
+                return other.Board.Score.CompareTo(Board.Score);
+            }
+        }
+
         /// <summary>
         /// Computes the single piece score.
         /// </summary>
         /// <returns>Score value</returns>
-        private int EvaluatePieceScore(Board board, PieceOnSquare piece, bool isEndOfGame, ref bool insufficientMaterial, ref int bishopsCount, ref int bishopsOnWhiteSquareCount, ref int knightsCount)
+        private static int EvaluatePieceScore(Board board, PieceOnSquare piece, bool isEndOfGame, ref bool insufficientMaterial, ref int bishopsCount, ref int bishopsOnWhiteSquareCount, ref int knightsCount, int[] whitePawnInColumnCount, int[] blackPawnInColumnCount)
         {
             var score = 0;
             var posX = piece.Square.X;
@@ -399,7 +458,7 @@ namespace ChessGame.Core.Evaluation
                 case Piece.WhitePawn:
                     {
                         insufficientMaterial = false;
-                        score += EvaluatePawnScore(piece);
+                        score += EvaluatePawnScore(piece, whitePawnInColumnCount, blackPawnInColumnCount);
                         break;
                     }
                 case Piece.BlackKnight:
@@ -513,7 +572,7 @@ namespace ChessGame.Core.Evaluation
         /// Add points based on the Pawn Piece Square Table Lookup.
         /// </summary>
         /// <returns></returns>
-        private int EvaluatePawnScore(PieceOnSquare piece)
+        private static int EvaluatePawnScore(PieceOnSquare piece, int[] whitePawnInColumnCount, int[] blackPawnInColumnCount)
         {
             var score = 0;
             var posX = piece.Square.X;
@@ -584,7 +643,7 @@ namespace ChessGame.Core.Evaluation
             return score;
         }
 
-        private List<MovingPiece> EvaluateMoves(Board board)
+        private static List<MovingPiece> EvaluateMoves(Board board)
         {
             var validMoves = new List<MovingPiece>();
             var move = new Move(board);
@@ -656,7 +715,7 @@ namespace ChessGame.Core.Evaluation
         /// </summary>
         /// <param name="board">Examined board</param>
         /// <returns></returns>
-        private List<MovingPiece> EvaluateCaptureMoves(Board board)
+        private static List<MovingPiece> EvaluateCaptureMoves(Board board)
         {
             var targetValidMoves = new List<MovingPiece>();
             var move = new Move(board);
@@ -702,9 +761,9 @@ namespace ChessGame.Core.Evaluation
         /// <param name="isExtend">If yes, main algorithm will be extended by one more 
         /// deeper search if the position is expectially interesting(Like check or some valuable captures).</param>
         /// <returns></returns>
-        private int AlphaBeta(Board board, int depth, int alpha, int beta, bool isExtend = false)
+        private static int AlphaBeta(Board board, int depth, int alpha, int beta, ref int checkedNodesCount, ref int quiescenceCheckedNodesCount, bool isExtend = false)
         {
-            AlphaBetaInvokeCount++;
+            checkedNodesCount++;
             if (board.IsStaleMate || (board.IsFiftyMovesRuleEnabled && board.FiftyMovesCount >= 50) || (board.IsThreefoldRepetitionRuleEnabled && board.RepeatedMovesCount >= 3))
                 return 0;
             if (depth == 0)
@@ -715,7 +774,7 @@ namespace ChessGame.Core.Evaluation
                     isExtend = false;
                 } else
                 {
-                    return Quiescence(board, alpha, beta);
+                    return Quiescence(board, alpha, beta, ref quiescenceCheckedNodesCount);
                 }
             }
 
@@ -775,7 +834,7 @@ namespace ChessGame.Core.Evaluation
                     nextBoard.IsStaleMate = true;
                 }
                 
-                var value = -AlphaBeta(nextBoard, depth - 1, -beta, -alpha, isExtend);
+                var value = -AlphaBeta(nextBoard, depth - 1, -beta, -alpha, ref checkedNodesCount,ref quiescenceCheckedNodesCount, isExtend);
                 if (value >= beta)
                 {
                     return beta;
@@ -790,9 +849,9 @@ namespace ChessGame.Core.Evaluation
 
         }
 
-        private int Quiescence(Board board, int alpha, int beta)
+        private static int Quiescence(Board board, int alpha, int beta, ref int quiescenceCheckedNodesCount)
         {
-            AlphaBetaInvokeCount++;
+            quiescenceCheckedNodesCount++;
             EvaluateBoardScore(board);
             board.Score = GetScoreAccordingColor(board.Score, board.MoveColor);
             if (board.Score >= beta)
@@ -811,7 +870,7 @@ namespace ChessGame.Core.Evaluation
             foreach (var move in captureMoves)
             {
                 nextBoard = board.Move(move);
-                int value = -Quiescence(nextBoard, -beta, -alpha);
+                int value = -Quiescence(nextBoard, -beta, -alpha, ref quiescenceCheckedNodesCount);
                 if(value >= beta)
                 {
                     return beta;
@@ -824,68 +883,11 @@ namespace ChessGame.Core.Evaluation
             return alpha;
         }
 
-        private int GetScoreAccordingColor(int score, Color color)
+        private static int GetScoreAccordingColor(int score, Color color)
         {
             return (color == Color.Black) ? -score : score;
         }
-
-        private List<BoardMovePair> GetSortedBoardMovePairs(Board board)
-        {
-            var result = new List<BoardMovePair>();
-            var currentMove = new Move(board);
-            Board nextBoard;
-            MovingPiece movingPiece;
-            foreach (var pieceOnSquare in board.YieldPieces())
-            {
-                foreach (var squareTo in Square.YieldSquares())
-                {
-                    movingPiece = new MovingPiece(pieceOnSquare, squareTo);
-                    if (currentMove.CanMove(movingPiece) &&
-                        !board.IsIGotCheckAfterMove(movingPiece))
-                    {
-                        nextBoard = board.Move(movingPiece);
-                        nextBoard.CheckBoard();
-                        EvaluateBoardScore(nextBoard);
-                        nextBoard.Score = GetScoreAccordingColor(nextBoard.Score, nextBoard.MoveColor.FlipColor());
-                        result.Add(new BoardMovePair(nextBoard, movingPiece));
-                    }
-                    else if (movingPiece.IsItCastlingMove())
-                    {
-                        var targetColor = movingPiece.Piece.GetColor();
-                        if (targetColor != board.MoveColor)
-                            continue;
-                        var isToKingside = movingPiece.SignX > 0;
-                        if (board.CanKingCastle(isToKingside))
-                        {
-                            nextBoard = board.Castle(isToKingside);
-                            nextBoard.CheckBoard();
-                            EvaluateBoardScore(nextBoard);
-                            nextBoard.Score = GetScoreAccordingColor(nextBoard.Score, nextBoard.MoveColor.FlipColor());
-                            result.Add(new BoardMovePair(nextBoard, movingPiece));
-                        }
-                    }
-                }
-            }
-            result.Sort();
-
-            return result;
-        }
-
-        private struct BoardMovePair : IComparable<BoardMovePair>
-        {
-            public Board Board { get; set; }
-            public MovingPiece Move { get; set; }
-            public BoardMovePair(Board board, MovingPiece move)
-            {
-                Board = board;
-                Move = move;
-            }
-
-            public int CompareTo(BoardMovePair other)
-            {
-                return other.Board.Score.CompareTo(Board.Score);
-            }
-        }
+        
     }
 }
 
