@@ -16,5 +16,6 @@ namespace Chess.Common.Interfaces
         char GetPieceAt(int x, int y);
         IChessGame Move(string move);
         IChessGame ComputerMove();
+        void RunPerfTest(int depth);
     }
 }

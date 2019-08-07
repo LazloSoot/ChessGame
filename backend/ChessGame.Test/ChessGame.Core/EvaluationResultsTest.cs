@@ -8,7 +8,7 @@ using ChessGame.Core;
 namespace ChessGame.Test.ChessGame.Core
 {
     [TestFixture]
-    public class EvaluationResults
+    public class EvaluationResultsTest
     {
         [TestCase("2k3r1/4q3/8/8/8/8/8/R6K b - - 0 0", Color.White, 1, Description ="Black checkmates white")]
         [TestCase("6k1/1b3ppp/pb2p3/1p2P3/1P2BPnP/P1r5/1B1r3P/R2R3K b - - 0 0", Color.White, 1, Description = "Black checkmates white")]

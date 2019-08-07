@@ -7,6 +7,8 @@ using ChessGame.Core.Moves.Helpers;
 using System.Collections.Generic;
 using System;
 using ChessGame.Core.Evaluation;
+using System.Threading.Tasks;
+using System.Diagnostics;
 
 namespace ChessGame.Core
 {
@@ -112,11 +114,12 @@ namespace ChessGame.Core
 
             return nextChessPosition;
         }
-
+        
         public IChessGame ComputerMove()
         {
-            BoardEvaluation eval = new BoardEvaluation();
-            var bestMove = eval.SearchForBestMove(Board, 3);
+            int checkedNodesCount, quiescenceNodesCount;
+            checkedNodesCount = quiescenceNodesCount = 0;
+            var bestMove = BoardEvaluation.SearchForBestMove(Board, 3, ref checkedNodesCount, ref quiescenceNodesCount);
             Board nextBoard;
             if (bestMove.IsItCastlingMove()) // its castling
             {
@@ -128,9 +131,8 @@ namespace ChessGame.Core
             }
 
             nextBoard.CheckBoard();
-
-            Console.WriteLine();
-            Console.WriteLine($"alphabeta invoked {BoardEvaluation.AlphaBetaInvokeCount} times");
+            Debug.WriteLine($"Total nodes checked: {checkedNodesCount + quiescenceNodesCount}");
+            Debug.WriteLine($"Quiescence nodes checked: {quiescenceNodesCount}");
             return new ChessGameEngine(nextBoard);
         }
 
@@ -273,6 +275,18 @@ namespace ChessGame.Core
                 return false;
             else
                 return true;
+        }
+
+        public void RunPerfTest(int depth)
+        {
+            Task.Run(() =>
+            {
+                for (int i = 0; i <= depth; i++)
+                {
+                    PerformanceTest.PerformanceTest.Run(new Board(DefaultFen), i);
+                }
+            });
+           
         }
     }
 }

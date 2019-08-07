@@ -5,7 +5,7 @@ using Chess.Common.Helpers.ChessGame;
 namespace ChessGame.Test.ChessGame.Core
 {
     [TestFixture]
-    public class ChessGame
+    public class ChessGameTest
     {
         [Test]
         [TestCase("r1bqkbnr/ppp2ppp/2n5/3pp1N1/4P3/3P1Q2/PPP2PPP/RNB1KB1R w KQkq - 0 0", "Qf3f7", Description ="School mate")]
