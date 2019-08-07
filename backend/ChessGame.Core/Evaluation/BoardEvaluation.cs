@@ -10,7 +10,7 @@ namespace ChessGame.Core.Evaluation
 {
     internal sealed class BoardEvaluation
     {
-        static int AlphaBetaInvokeCount = 0;
+        public static int AlphaBetaInvokeCount = 0;
         private int[] whitePawnInColumnCount = new int[8],
             blackPawnInColumnCount = new int[8];
         internal void EvaluateBoardScore(Board board)
@@ -139,7 +139,7 @@ namespace ChessGame.Core.Evaluation
                     {
                         movingPiece = new MovingPiece(pieceOnSquare, squareTo);
                         if (move.CanMove(movingPiece, out currentCapturedPiece) &&
-                            !board.IsCheckAfterMove(movingPiece))
+                            !board.IsIGotCheckAfterMove(movingPiece))
                         {
                             if (currentCapturedPiece != null)
                             {
@@ -371,8 +371,6 @@ namespace ChessGame.Core.Evaluation
                     bestBoardMovePair = boardMovePair;
                 }
             }
-            Console.WriteLine();
-            Console.WriteLine($"alphabeta invoked {AlphaBetaInvokeCount} times");
             return bestBoardMovePair.Move;
         }
         /// <summary>
@@ -613,7 +611,7 @@ namespace ChessGame.Core.Evaluation
                         }
                     } // regular move
                     else if (move.CanMove(currentMovingPiece) &&
-                        !board.IsCheckAfterMove(currentMovingPiece))
+                        !board.IsIGotCheckAfterMove(currentMovingPiece))
                     {
                         destPiece = board.GetPieceAt(currentMovingPiece.To);
                         if (destPiece != Piece.None)
@@ -653,15 +651,72 @@ namespace ChessGame.Core.Evaluation
             return validMoves;
         }
 
-        private int AlphaBeta(Board board, int depth, int alpha, int beta)
+        /// <summary>
+        /// Evaluates only moves which result is capture of opponent piece.
+        /// </summary>
+        /// <param name="board">Examined board</param>
+        /// <returns></returns>
+        private List<MovingPiece> EvaluateCaptureMoves(Board board)
+        {
+            var targetValidMoves = new List<MovingPiece>();
+            var move = new Move(board);
+            MovingPiece currentMovingPiece;
+            int destPieceValue, currentMovingPieceValue;
+            Piece destPiece;
+
+            foreach (var square in Square.YieldSquares())
+            {
+                foreach (var pieceOnSquare in board.YieldPieces())
+                {
+                    currentMovingPiece = new MovingPiece(pieceOnSquare, square);
+                    destPiece = board.GetPieceAt(currentMovingPiece.To);
+                    if (destPiece != Piece.None
+                        && move.CanMove(currentMovingPiece)
+                        && !board.IsIGotCheckAfterMove(currentMovingPiece))
+                    {
+                        destPieceValue = destPiece.GetPieceValue();
+                        currentMovingPieceValue = currentMovingPiece.Piece.GetPieceValue();
+                        currentMovingPiece.Score += destPieceValue;
+
+                        if (currentMovingPieceValue < destPieceValue)
+                        {
+                            currentMovingPiece.Score += destPieceValue - currentMovingPieceValue;
+                        }
+                        currentMovingPiece.Score += currentMovingPiece.PieceActionValue;
+                        
+                        targetValidMoves.Add(currentMovingPiece);
+                    }
+                }
+            }
+            return targetValidMoves;
+        }
+
+        /// <summary>
+        /// MiniMax search algorithm enhancement that eliminates the need to search large portions of the game tree applying a branch-and-bound technique. 
+        /// </summary>
+        /// <param name="board"> Examined board.</param>
+        /// <param name="depth"> Depth of search, amount of ply which will be checked by engine.</param>
+        /// <param name="alpha"> Is the lower bound, representing the minimum score that a node must reach
+        /// in order to change the value of a previous node.(minimum score that the maximizing player is assured of)</param>
+        /// <param name="beta"> Is the upper bound of a score for the node.(maximum score that the minimizing player is assured of)</param>
+        /// <param name="isExtend">If yes, main algorithm will be extended by one more 
+        /// deeper search if the position is expectially interesting(Like check or some valuable captures).</param>
+        /// <returns></returns>
+        private int AlphaBeta(Board board, int depth, int alpha, int beta, bool isExtend = false)
         {
             AlphaBetaInvokeCount++;
-            if ((board.IsFiftyMovesRuleEnabled && board.FiftyMovesCount >= 50) || (board.IsThreefoldRepetitionRuleEnabled && board.RepeatedMovesCount >= 3))
+            if (board.IsStaleMate || (board.IsFiftyMovesRuleEnabled && board.FiftyMovesCount >= 50) || (board.IsThreefoldRepetitionRuleEnabled && board.RepeatedMovesCount >= 3))
                 return 0;
-            if (depth == 0 || board.IsStaleMate)
+            if (depth == 0)
             {
-                EvaluateBoardScore(board);
-                return board.Score;
+                if(isExtend && board.CheckTo != Color.None)
+                {
+                    depth++;
+                    isExtend = false;
+                } else
+                {
+                    return Quiescence(board, alpha, beta);
+                }
             }
 
             switch (board.MateTo)
@@ -690,10 +745,6 @@ namespace ChessGame.Core.Evaluation
                 default:
                     break;
             }
-            if(board.MateTo != Color.None)
-            {
-                return 32767 + depth;
-            }
 
             var validMoves = new List<MovingPiece>();
             validMoves = EvaluateMoves(board);
@@ -711,20 +762,20 @@ namespace ChessGame.Core.Evaluation
                     nextBoard = board.Move(move);
                 }
 
-                if (nextBoard.IsCheckAfterMove(move))
+                if (nextBoard.IsIGotCheckAfterMove(move))
                 {
                     nextBoard.CheckTo = nextBoard.MoveColor;
-                    if (!nextBoard.IsMoveAvailable())
+                    if (!nextBoard.IsMoveAvailable(nextBoard.MoveColor))
                     {
                         nextBoard.MateTo = nextBoard.MoveColor;
                     }
                 }
-                else if (!nextBoard.IsMoveAvailable())
+                else if (!nextBoard.IsMoveAvailable(nextBoard.MoveColor))
                 {
                     nextBoard.IsStaleMate = true;
                 }
                 
-                var value = -AlphaBeta(nextBoard, depth - 1, -beta, -alpha);
+                var value = -AlphaBeta(nextBoard, depth - 1, -beta, -alpha, isExtend);
                 if (value >= beta)
                 {
                     return beta;
@@ -737,6 +788,40 @@ namespace ChessGame.Core.Evaluation
             
             return alpha;
 
+        }
+
+        private int Quiescence(Board board, int alpha, int beta)
+        {
+            AlphaBetaInvokeCount++;
+            EvaluateBoardScore(board);
+            board.Score = GetScoreAccordingColor(board.Score, board.MoveColor);
+            if (board.Score >= beta)
+                return beta;
+            if (board.Score > alpha)
+                alpha = board.Score;
+
+            var captureMoves = EvaluateCaptureMoves(board);
+            if (captureMoves.Count < 1)
+            {
+                return board.Score;
+            }
+            captureMoves.Sort();
+
+            Board nextBoard;
+            foreach (var move in captureMoves)
+            {
+                nextBoard = board.Move(move);
+                int value = -Quiescence(nextBoard, -beta, -alpha);
+                if(value >= beta)
+                {
+                    return beta;
+                } 
+                if(value > alpha)
+                {
+                    alpha = value;
+                }
+            }
+            return alpha;
         }
 
         private int GetScoreAccordingColor(int score, Color color)
@@ -756,11 +841,12 @@ namespace ChessGame.Core.Evaluation
                 {
                     movingPiece = new MovingPiece(pieceOnSquare, squareTo);
                     if (currentMove.CanMove(movingPiece) &&
-                        !board.IsCheckAfterMove(movingPiece))
+                        !board.IsIGotCheckAfterMove(movingPiece))
                     {
                         nextBoard = board.Move(movingPiece);
+                        nextBoard.CheckBoard();
                         EvaluateBoardScore(nextBoard);
-                        nextBoard.Score = GetScoreAccordingColor(nextBoard.Score, nextBoard.MoveColor);
+                        nextBoard.Score = GetScoreAccordingColor(nextBoard.Score, nextBoard.MoveColor.FlipColor());
                         result.Add(new BoardMovePair(nextBoard, movingPiece));
                     }
                     else if (movingPiece.IsItCastlingMove())
@@ -772,8 +858,9 @@ namespace ChessGame.Core.Evaluation
                         if (board.CanKingCastle(isToKingside))
                         {
                             nextBoard = board.Castle(isToKingside);
+                            nextBoard.CheckBoard();
                             EvaluateBoardScore(nextBoard);
-                            nextBoard.Score = GetScoreAccordingColor(nextBoard.Score, nextBoard.MoveColor);
+                            nextBoard.Score = GetScoreAccordingColor(nextBoard.Score, nextBoard.MoveColor.FlipColor());
                             result.Add(new BoardMovePair(nextBoard, movingPiece));
                         }
                     }

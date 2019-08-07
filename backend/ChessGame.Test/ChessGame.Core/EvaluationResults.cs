@@ -13,6 +13,7 @@ namespace ChessGame.Test.ChessGame.Core
         [TestCase("2k3r1/4q3/8/8/8/8/8/R6K b - - 0 0", Color.White, 1, Description ="Black checkmates white")]
         [TestCase("6k1/1b3ppp/pb2p3/1p2P3/1P2BPnP/P1r5/1B1r3P/R2R3K b - - 0 0", Color.White, 1, Description = "Black checkmates white")]
         [TestCase("6k1/1b3ppp/p3p3/1p2P3/1P2BPnP/P1r5/1B6/2qR1N1K w - - 0 0",Color.Black, 1, Description ="White checkmates black")]
+        [TestCase("r4b1r/5ppp/pb2p3/1p6/2Pq4/3P4/PP2QPPP/2k1K2R w KQ - 0 0", Color.Black, 1, Description ="White checkmates black by castling")]
         [Test]
         public void SuccessfullyInstantCheckmateTest(string fen, Color CheckMateTo, int checkmateDepth = 1)
         {

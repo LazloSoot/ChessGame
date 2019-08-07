@@ -1,10 +1,10 @@
-﻿using ChessGame.Core.Pieces.Helpers;
-using ChessGame.Core.Moves;
+﻿using ChessGame.Core.Moves;
 using ChessGame.Core.Moves.Helpers;
+using ChessGame.Core.Pieces.Helpers;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using System;
 
 namespace ChessGame.Core.Pieces
 {
@@ -97,6 +97,35 @@ namespace ChessGame.Core.Pieces
             return nextBoardState;
         }
 
+        /// <summary>
+        /// Checks board for check, checkmate and stalemate
+        /// </summary>
+        internal void CheckBoard()
+        {
+            if((IsFiftyMovesRuleEnabled && FiftyMovesCount >= 50) || (IsThreefoldRepetitionRuleEnabled && RepeatedMovesCount >= 3))
+            {
+                IsStaleMate = true;
+                return;
+            }
+
+            var targetColor = MoveColor;
+            MoveColor = MoveColor.FlipColor();
+            if (IsCheckToOpponent())
+            {
+                CheckTo = targetColor;
+                
+                if (!IsMoveAvailable(targetColor))
+                {
+                    MateTo = targetColor;
+                }
+            }
+            else if (!IsMoveAvailable(targetColor))
+            {
+                IsStaleMate = true;
+            }
+            MoveColor = MoveColor.FlipColor();
+        }
+
         private Board Castle(MovingPiece king, MovingPiece rook)
         {
             var nextBoardState = new Board(Fen);
@@ -186,13 +215,13 @@ namespace ChessGame.Core.Pieces
             }
         }
 
-        internal bool IsCheckAfterMove(MovingPiece movingPiece)
+        internal bool IsIGotCheckAfterMove(MovingPiece movingPiece)
         {
-            var after = Move(movingPiece);
-            return after.IsCheckTo();
+            var boardAfterMove = Move(movingPiece);
+            return boardAfterMove.IsCheckToOpponent();
         }
 
-        internal bool IsCheckTo()
+        internal bool IsCheckToOpponent()
         {
             Square targetKingPosition = FindTargetKingPosition();
             var move = new Move(this);
@@ -206,14 +235,14 @@ namespace ChessGame.Core.Pieces
 
             return false;
         }
-
+        
         internal bool CanKingCastle(bool isToKingside)
         {
             if (MoveColor == Color.White && IsWhiteCastled
                 || MoveColor == Color.Black && IsBlackCastled)
                 return false;
             MoveColor = MoveColor.FlipColor();
-            if (IsCheckTo())
+            if (IsCheckToOpponent())
             {
                 MoveColor = MoveColor.FlipColor();
                 return false;
@@ -252,7 +281,7 @@ namespace ChessGame.Core.Pieces
             var currentMove = new Move(this);
             if (!currentMove.CanMove(mf))
                 return false;
-            if (IsCheckAfterMove(mf))
+            if (IsIGotCheckAfterMove(mf))
                 return false;
 
             var boardAfterFirstMove = GetBoardAfterFirstKingCastlingMove(mf);
@@ -261,7 +290,7 @@ namespace ChessGame.Core.Pieces
             mf = new MovingPiece(new PieceOnSquare(king, firstKingDestSquare), finalKingDestSquare);
             if (!moveAfterFirstKingMove.CanMove(mf))
                 return false;
-            if (boardAfterFirstMove.IsCheckAfterMove(mf))
+            if (boardAfterFirstMove.IsIGotCheckAfterMove(mf))
                 return false;
 
             return true;
@@ -299,8 +328,12 @@ namespace ChessGame.Core.Pieces
         /// Tries to find at least one available move.Useful to check on checkmate/stalemate situation.
         /// </summary>
         /// <returns></returns>
-        internal bool IsMoveAvailable()
+        internal bool IsMoveAvailable(Color movesAvailableFor)
         {
+            if (movesAvailableFor == Color.None)
+                return false;
+            var currentColor = MoveColor;
+            MoveColor = movesAvailableFor;
             var currentMove = new Move(this);
             var allMoves = new List<MovingPiece>();
             MovingPiece movingPiece;
@@ -310,12 +343,21 @@ namespace ChessGame.Core.Pieces
                 {
                     movingPiece = new MovingPiece(pieceOnSquare, squareTo);
                     if (currentMove.CanMove(movingPiece) &&
-                        !IsCheckAfterMove(movingPiece))
+                        !IsIGotCheckAfterMove(movingPiece))
+                    {
+                        MoveColor = currentColor;
                         return true;
+                    }
                 }
             }
 
+            MoveColor = currentColor;
             return false;
+        }
+
+        internal Board FastCopy()
+        {
+            return MemberwiseClone() as Board;
         }
 
         private Square FindTargetKingPosition()

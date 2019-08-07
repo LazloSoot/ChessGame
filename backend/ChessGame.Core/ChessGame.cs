@@ -88,7 +88,7 @@ namespace ChessGame.Core
                     return this;
                 }
             }
-            else if (!_currentMove.CanMove(movingPiece) || Board.IsCheckAfterMove(movingPiece))
+            else if (!_currentMove.CanMove(movingPiece) || Board.IsIGotCheckAfterMove(movingPiece))
             {
                 return this;
             } else
@@ -98,7 +98,7 @@ namespace ChessGame.Core
             
             var nextChessPosition = new ChessGameEngine(nextBoard);
 
-            if(nextBoard.IsCheckAfterMove(movingPiece))
+            if(nextBoard.IsIGotCheckAfterMove(movingPiece))
             {
                 nextChessPosition.CheckTo = (Chess.Common.Helpers.ChessGame.Color)nextBoard.MoveColor;
                 if(!nextChessPosition.IsMoveAvailable())
@@ -127,18 +127,10 @@ namespace ChessGame.Core
                 nextBoard = Board.Move(bestMove);
             }
 
-            if (nextBoard.IsCheckAfterMove(bestMove))
-            {
-                nextBoard.CheckTo = nextBoard.MoveColor;
-                if (!nextBoard.IsMoveAvailable())
-                {
-                    nextBoard.MateTo = nextBoard.MoveColor;
-                }
-            }
-            else if (!nextBoard.IsMoveAvailable())
-            {
-                nextBoard.IsStaleMate = true;
-            }
+            nextBoard.CheckBoard();
+
+            Console.WriteLine();
+            Console.WriteLine($"alphabeta invoked {BoardEvaluation.AlphaBetaInvokeCount} times");
             return new ChessGameEngine(nextBoard);
         }
 
@@ -149,7 +141,7 @@ namespace ChessGame.Core
                 || Board.MoveColor == Moves.Helpers.Color.Black && Board.IsBlackCastled)
                 return false;
             Board.MoveColor = Board.MoveColor.FlipColor();
-            if (Board.IsCheckTo())
+            if (Board.IsCheckToOpponent())
             {
                 Board.MoveColor = Board.MoveColor.FlipColor();
                 return false;
@@ -187,7 +179,7 @@ namespace ChessGame.Core
             mf = new MovingPiece(new PieceOnSquare(king, new Square(4, y)), firstKingDestSquare);
             if (!_currentMove.CanMove(mf))
                 return false;
-            if (Board.IsCheckAfterMove(mf))
+            if (Board.IsIGotCheckAfterMove(mf))
                 return false;
 
             var boardAfterFirstMove = Board.GetBoardAfterFirstKingCastlingMove(mf);
@@ -196,7 +188,7 @@ namespace ChessGame.Core
             mf = new MovingPiece(new PieceOnSquare(king, firstKingDestSquare), finalKingDestSquare);
             if (!moveAfterFirstKingMove.CanMove(mf))
                 return false;
-            if (boardAfterFirstMove.IsCheckAfterMove(mf))
+            if (boardAfterFirstMove.IsIGotCheckAfterMove(mf))
                 return false;
 
             return true;
@@ -226,7 +218,7 @@ namespace ChessGame.Core
             {
                 movingPiece = new MovingPiece(pieceOnSquare, squareTo);
                 if (_currentMove.CanMove(movingPiece) &&
-                    !Board.IsCheckAfterMove(movingPiece))
+                    !Board.IsIGotCheckAfterMove(movingPiece))
                     validMoves.Add(((char)('a' + squareTo.X)).ToString() + (squareTo.Y + 1));
             }
 
@@ -260,7 +252,7 @@ namespace ChessGame.Core
                 {
                     movingPiece = new MovingPiece(pieceOnSquare, squareTo);
                     if (_currentMove.CanMove(movingPiece) &&
-                        !Board.IsCheckAfterMove(movingPiece))
+                        !Board.IsIGotCheckAfterMove(movingPiece))
                         return true;
                 }
             }
