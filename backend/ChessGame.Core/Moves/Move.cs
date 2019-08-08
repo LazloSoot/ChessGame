@@ -117,7 +117,7 @@ namespace ChessGame.Core.Moves
             int stepY = _movingPiece.Piece.GetColor() == Helpers.Color.White ? 1 : -1;
             return
                 CanPawnGo() ||
-                CanPawnJump() ||
+                ((_movingPiece.DeltaY == 2 * stepY) ? CanPawnJump() : false) ||
                 CanPawnAttack();
 
             bool CanPawnGo()
@@ -139,8 +139,7 @@ namespace ChessGame.Core.Moves
                 {
                     if (board.GetPieceAt(_movingPiece.To) == Piece.None)
                     {
-                        if (_movingPiece.DeltaX == 0
-                            && _movingPiece.DeltaY == 2 * stepY)
+                        if (_movingPiece.DeltaX == 0)
                         {
                             if (board.GetPieceAt(_movingPiece.From.X, _movingPiece.From.Y + stepY) == Piece.None)
                             {
@@ -154,7 +153,8 @@ namespace ChessGame.Core.Moves
 
             bool CanPawnAttack()
             {
-                if (board.GetPieceAt(_movingPiece.To) != Piece.None)
+                if (board.GetPieceAt(_movingPiece.To) != Piece.None || 
+                    ((board.IsEnpassantRuleEnabled) ? (string.Equals(board.EnPassantSquare, _movingPiece.To.ToString())) : false))
                 {
                     if (_movingPiece.AbsDeltaX == 1 &&
                         _movingPiece.DeltaY == stepY)
