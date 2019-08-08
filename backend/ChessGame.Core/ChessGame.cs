@@ -9,7 +9,9 @@ using System;
 using ChessGame.Core.Evaluation;
 using System.Threading.Tasks;
 using System.Diagnostics;
+using System.Runtime.CompilerServices;
 
+[assembly: InternalsVisibleTo("ChessGame.Test")]
 namespace ChessGame.Core
 {
     public class ChessGameEngine : IChessGame
@@ -57,14 +59,7 @@ namespace ChessGame.Core
         public IChessGame InitGame(Chess.Common.Helpers.ChessGame.ChessGameInitSettings initialSettings)
         {
             Fen = initialSettings.Fen;
-            Board = new Board(Fen)
-            {
-                IsBlackCastled = initialSettings.IsBlackCastled,
-                IsWhiteCastled = initialSettings.IsWhiteCastled,
-                IsEnpassantRuleEnabled = initialSettings.IsEnpassantRuleEnabled,
-                IsFiftyMovesRuleEnabled = initialSettings.IsFiftyMovesRuleEnabled,
-                IsThreefoldRepetitionRuleEnabled = initialSettings.IsThreefoldRepetitionRuleEnabled
-            };
+            Board = new Board(initialSettings);
             _currentMove = new Move(Board);
             return this;
         }

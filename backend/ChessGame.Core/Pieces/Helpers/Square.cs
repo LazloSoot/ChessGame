@@ -2,7 +2,9 @@
 using System.Collections.Generic;
 using System.Runtime.CompilerServices;
 
-[assembly:InternalsVisibleTo("ChessGame.Test")]
+#if DEBUG
+[assembly: InternalsVisibleTo("ChessGame.Test")]
+#endif
 namespace ChessGame.Core.Pieces.Helpers
 {
     struct Square : IEquatable<Square>

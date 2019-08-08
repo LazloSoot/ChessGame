@@ -4,8 +4,12 @@ using ChessGame.Core.Pieces.Helpers;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using System.Text;
 
+#if DEBUG
+[assembly: InternalsVisibleTo("ChessGame.Test")]
+#endif
 namespace ChessGame.Core.Pieces
 {
     internal sealed class Board : IComparable<Board>
@@ -44,6 +48,7 @@ namespace ChessGame.Core.Pieces
         /// </summary>
         /// <remarks>https://en.wikipedia.org/wiki/En_passant</remarks>
         internal bool IsEnpassantRuleEnabled { get; set; }
+        internal string EnPassantSquare { get; private set; } = "-";
         /// <summary>
         /// Enables threefold repetition rule (also known as repetition of position).
         /// </summary>
@@ -71,6 +76,19 @@ namespace ChessGame.Core.Pieces
             InitPiecesPosition();
         }
 
+        internal Board(Chess.Common.Helpers.ChessGame.ChessGameInitSettings initialSettings)
+        {
+            Fen = initialSettings.Fen;
+            IsBlackCastled = initialSettings.IsBlackCastled;
+            IsWhiteCastled = initialSettings.IsWhiteCastled;
+            IsEnpassantRuleEnabled = initialSettings.IsEnpassantRuleEnabled;
+            IsFiftyMovesRuleEnabled = initialSettings.IsFiftyMovesRuleEnabled;
+            IsThreefoldRepetitionRuleEnabled = initialSettings.IsThreefoldRepetitionRuleEnabled;
+            RepeatedMovesCount = initialSettings.RepeatedMovesCount;
+            pieces = new Piece[8, 8];
+            InitPiecesPosition();
+        }
+
         internal Piece GetPieceAt(Square square)
         {
             return pieces[square.X, square.Y];
@@ -83,22 +101,38 @@ namespace ChessGame.Core.Pieces
 
         internal Board Move(MovingPiece mf)
         {
-            var nextBoardState = new Board(Fen);
-            if(mf.Promotion == Piece.None)
-            {
-                if(mf.Piece == Piece.WhitePawn && mf.To.Y == 7)
-                {
-                    mf.Promotion = Piece.WhiteQueen;
-                }
-                else if(mf.Piece == Piece.BlackPawn && mf.To.Y == 0)
-                {
-                    mf.Promotion = Piece.BlackQueen;
-                }
-            }
+            var nextBoardState = FastCopy();
+            nextBoardState.EnPassantSquare = "-";
 
-            if(mf.Piece == Piece.WhitePawn || mf.Piece == Piece.BlackPawn)
+            if (mf.Piece == Piece.WhitePawn || mf.Piece == Piece.BlackPawn)
             {
+                nextBoardState.FiftyMovesCount = 0;
 
+                if (mf.Promotion == Piece.None)
+                {
+                    if (mf.Piece == Piece.WhitePawn && mf.To.Y == 7)
+                    {
+                        mf.Promotion = Piece.WhiteQueen;
+                    }
+                    else if (mf.Piece == Piece.BlackPawn && mf.To.Y == 0)
+                    {
+                        mf.Promotion = Piece.BlackQueen;
+                    }
+                }
+
+                if(IsEnpassantRuleEnabled)
+                {
+                    int stepY = mf.Piece.GetColor() == Color.White ? 1 : -1;
+                    // its a pawn jump, initialize en passant fen part
+                    if (mf.DeltaY == 2 * stepY)
+                    {
+                        nextBoardState.EnPassantSquare = $"{(char)('a' + mf.From.X)}{(char)('1' + mf.From.Y + mf.SignY)}";
+                    } // its en passant capture
+                    else if(mf.AbsDeltaX == 1 && mf.DeltaY == stepY)
+                    {
+                        nextBoardState.SetPieceAt(mf.To.X, mf.To.Y - mf.SignY, Piece.None);
+                    }
+                }
             }
 
             nextBoardState.SetPieceAt(mf.From, Piece.None);
@@ -118,7 +152,7 @@ namespace ChessGame.Core.Pieces
         /// </summary>
         internal void CheckBoard()
         {
-            if((IsFiftyMovesRuleEnabled && FiftyMovesCount >= 50) || (IsThreefoldRepetitionRuleEnabled && RepeatedMovesCount >= 3))
+            if ((IsFiftyMovesRuleEnabled && FiftyMovesCount >= 50) || (IsThreefoldRepetitionRuleEnabled && RepeatedMovesCount >= 3))
             {
                 IsStaleMate = true;
                 return;
@@ -129,7 +163,7 @@ namespace ChessGame.Core.Pieces
             if (IsCheckToOpponent())
             {
                 CheckTo = targetColor;
-                
+
                 if (!IsMoveAvailable(targetColor))
                 {
                     MateTo = targetColor;
@@ -141,7 +175,7 @@ namespace ChessGame.Core.Pieces
             }
             MoveColor = MoveColor.FlipColor();
         }
-        
+
         internal Board GetBoardAfterFirstKingCastlingMove(MovingPiece king)
         {
             var nextBoardState = new Board(Fen);
@@ -180,7 +214,7 @@ namespace ChessGame.Core.Pieces
 
             return false;
         }
-        
+
         internal bool CanKingCastle(bool isToKingside)
         {
             if (MoveColor == Color.White && IsWhiteCastled
@@ -302,7 +336,9 @@ namespace ChessGame.Core.Pieces
 
         internal Board FastCopy()
         {
-            return MemberwiseClone() as Board;
+            var clone = MemberwiseClone() as Board;
+            clone.pieces = pieces.Clone() as Piece[,];
+            return clone;
         }
 
         private Square FindTargetKingPosition()
@@ -336,7 +372,7 @@ namespace ChessGame.Core.Pieces
             }
             //  "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1"
             var castlingFenPart = (string.IsNullOrEmpty(WhiteCastlingFenPart) && string.IsNullOrEmpty(BlackCastlingFenPart)) ? "-" : $"{WhiteCastlingFenPart}{BlackCastlingFenPart}";
-            Fen = piecesBldr.Append($" {(char)MoveColor} {castlingFenPart} - 0 {MoveNumber}").ToString();
+            Fen = piecesBldr.Append($" {(char)MoveColor} {castlingFenPart} {EnPassantSquare} {FiftyMovesCount} {MoveNumber}").ToString();
         }
 
 
@@ -414,8 +450,6 @@ namespace ChessGame.Core.Pieces
         }
         private void InitPiecesPosition()
         {
-
-#warning INIT FIFTY MOVES COUNT
             string[] parts = Fen.Split();
 #warning Fen can be length of 4
             if (parts.Length < 6)
@@ -426,6 +460,8 @@ namespace ChessGame.Core.Pieces
 
             InitPieces(parts[0]);
             MoveColor = string.Equals("b", parts[1].Trim().ToLower()) ? Color.Black : Color.White;
+            EnPassantSquare = parts[3];
+            FiftyMovesCount = int.Parse(parts[4]);
             MoveNumber = int.Parse(parts[5]);
 
             void InitPieces(string data)
@@ -449,6 +485,12 @@ namespace ChessGame.Core.Pieces
         private void SetPieceAt(Square square, Piece piece)
         {
             pieces[square.X, square.Y] = piece;
+
+        }
+
+        private void SetPieceAt(int x, int y, Piece piece)
+        {
+            pieces[x, y] = piece;
 
         }
 
