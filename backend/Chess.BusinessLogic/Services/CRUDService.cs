@@ -13,66 +13,66 @@ namespace Chess.BusinessLogic.Services
         where TEntityDTO : DbEntityDTO, new()
     {
         protected readonly IMapper mapper;
-        protected readonly IUnitOfWork uow;
+        protected readonly IUnitOfWork _uow;
 
         public CRUDService(IMapper mapper, IUnitOfWork unitOfWork)
         {
             this.mapper = mapper;
-            this.uow = unitOfWork;
+            this._uow = unitOfWork;
         }
 
         public virtual async Task<TEntityDTO> AddAsync(TEntityDTO entity)
         {
-            if (uow == null)
+            if (_uow == null)
                 return null;
 
-            var target = await uow.GetRepository<TEntity>()
+            var target = await _uow.GetRepository<TEntity>()
                 .AddAsync(mapper.Map<TEntityDTO, TEntity>(entity));
 
             if (target == null)
                 return null;
 
-            await uow.SaveAsync();
+            await _uow.SaveAsync();
             return mapper.Map<TEntity, TEntityDTO>(target);
         }
 
         public virtual async Task<TEntityDTO> UpdateAsync(TEntityDTO entity)
         {
-            if (uow == null)
+            if (_uow == null)
                 return null;
 
-            var target = await uow.GetRepository<TEntity>()
+            var target = await _uow.GetRepository<TEntity>()
                 .UpdateAsync(mapper.Map<TEntity>(entity));
 
-            await uow.SaveAsync();
+            await _uow.SaveAsync();
             return mapper.Map<TEntityDTO>(target);
         }
 
         public virtual async Task<TEntityDTO> GetByIdAsync(int id)
         {
-            if (uow == null)
+            if (_uow == null)
                 return null;
 
-            var target = await uow.GetRepository<TEntity>().GetByIdAsync(id);
+            var target = await _uow.GetRepository<TEntity>().GetByIdAsync(id);
             return target == null ? null : mapper.Map<TEntityDTO>(target);
         }
 
         public virtual async Task<PagedResultDTO<TEntityDTO>> GetListAsync(int? pageIndex = null, int? pageSize = null)
         {
-            if (uow == null)
+            if (_uow == null)
                 return null;
 
-            var targets = await uow.GetRepository<TEntity>().GetAllPagedAsync(pageIndex, pageSize);
+            var targets = await _uow.GetRepository<TEntity>().GetAllPagedAsync(pageIndex, pageSize);
             return mapper.Map<PagedResultDTO<TEntityDTO>>(targets);
         }
 
         public virtual async Task<bool> TryRemoveAsync(int id)
         {
-            if (uow == null)
+            if (_uow == null)
                 return false;
 
-            await uow.GetRepository<TEntity>().RemoveByIdAsync(id);
-            return await uow.SaveAsync() > 0;
+            await _uow.GetRepository<TEntity>().RemoveByIdAsync(id);
+            return await _uow.SaveAsync() > 0;
         }
     }
 }

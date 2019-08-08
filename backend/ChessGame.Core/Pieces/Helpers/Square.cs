@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 
-namespace ChessGame.Core.Figures.Helpers
+namespace ChessGame.Core.Pieces.Helpers
 {
     struct Square : IEquatable<Square>
     {
@@ -35,6 +35,11 @@ namespace ChessGame.Core.Figures.Helpers
         internal bool IsOnBoard()
         {
             return X > -1 && Y > -1 && X < 8 && Y < 8;
+        }
+
+        internal Moves.Helpers.Color GetSquareColor()
+        {
+            return ((X % 2 == 0 && Y % 2 == 0) || (X % 2 == 1 && Y % 2 == 1)) ? Moves.Helpers.Color.White : Moves.Helpers.Color.White;
         }
 
         public bool Equals(Square other)

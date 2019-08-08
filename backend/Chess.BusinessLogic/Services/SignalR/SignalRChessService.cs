@@ -4,6 +4,7 @@ using Chess.Common.Interfaces;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.SignalR;
 using Chess.Common.Helpers;
+using Chess.Common.Helpers.ChessGame;
 
 namespace Chess.BusinessLogic.Services.SignalR
 {

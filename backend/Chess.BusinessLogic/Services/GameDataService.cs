@@ -8,8 +8,10 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 using System.Linq;
 using Chess.Common.Interfaces;
+using Chess.Common.Helpers.ChessGame;
 using Chess.BusinessLogic.Interfaces.SignalR;
 using ChessGame.Core;
+
 namespace Chess.BusinessLogic.Services
 {
     public class GameDataService : CRUDService<Game, GameFullDTO>, IGameDataService
@@ -34,7 +36,7 @@ namespace Chess.BusinessLogic.Services
 #warning работает только с приглашением оппонента
         public async Task<GameFullDTO> CreateNewGameWithFriend(GameFullDTO game)
         {
-            if (uow == null)
+            if (_uow == null)
                 return null;
 
             if (string.IsNullOrWhiteSpace(game.Fen))
@@ -59,7 +61,7 @@ namespace Chess.BusinessLogic.Services
             };
 
             GameFullDTO targetGame;
-            var gameRepo = uow.GetRepository<Game>();
+            var gameRepo = _uow.GetRepository<Game>();
             var createdGame = await gameRepo
                                 .GetOneAsync(g =>
                                 g.Status == DataAccess.Helpers.GameStatus.Waiting && 
@@ -74,7 +76,7 @@ namespace Chess.BusinessLogic.Services
                     mapper.Map<Side>(currentUserSide)
                 };
                 targetGame = mapper.Map<GameFullDTO>(await gameRepo.UpdateAsync(createdGame));
-                await uow.SaveAsync();
+                await _uow.SaveAsync();
             }
             else
             {
@@ -87,7 +89,7 @@ namespace Chess.BusinessLogic.Services
 
         public async Task<GameFullDTO> CreateNewGameVersusAI(GameFullDTO game)
         {
-            if (uow == null)
+            if (_uow == null)
                 return null;
 
             if (string.IsNullOrWhiteSpace(game.Fen))
@@ -110,10 +112,10 @@ namespace Chess.BusinessLogic.Services
 
         public async Task<GameFullDTO> JoinToGame(int gameId)
         {
-            if (uow == null)
+            if (_uow == null)
                 return null;
 
-            var targetGame = await uow.GetRepository<Game>().GetByIdAsync(gameId);
+            var targetGame = await _uow.GetRepository<Game>().GetByIdAsync(gameId);
 #warning кинуть исключение (игры нет\ нельзя подключится к игре)
             if (targetGame == null || targetGame.Status != DataAccess.Helpers.GameStatus.Waiting)
                 return null;
@@ -134,9 +136,9 @@ namespace Chess.BusinessLogic.Services
                 Player = currentDbUser
             });
             targetGame.Status = DataAccess.Helpers.GameStatus.Going;
-            await uow.GetRepository<Game>().UpdateAsync(targetGame);
+            await _uow.GetRepository<Game>().UpdateAsync(targetGame);
             
-            await uow.SaveAsync();
+            await _uow.SaveAsync();
 
             await _notificationService.AcceptInvitation(hostSide.Player.Uid, targetGame.Id);
             return mapper.Map<GameFullDTO>(targetGame);
@@ -144,15 +146,15 @@ namespace Chess.BusinessLogic.Services
 
         public async Task<GameFullDTO> ResignGame(int gameId)
         {
-            if (uow == null)
+            if (_uow == null)
                 return null;
 
-            var currentGame = await this.uow.GetRepository<Game>().GetByIdAsync(gameId);
+            var currentGame = await _uow.GetRepository<Game>().GetByIdAsync(gameId);
 
             if (currentGame == null)
                 return null;
 
-            var currentPlayer = await this._currentUserProvider.GetCurrentDbUserAsync();
+            var currentPlayer = await _currentUserProvider.GetCurrentDbUserAsync();
             var currentSide = currentGame.Sides.Where(s => s.PlayerId == currentPlayer.Id).FirstOrDefault();
 
             if (currentSide == null)
@@ -160,8 +162,8 @@ namespace Chess.BusinessLogic.Services
 
             currentSide.IsResign = true;
             currentGame.Status = DataAccess.Helpers.GameStatus.Completed;
-            await uow.SaveAsync();
-            await this._signalRChessService.EmitResign(currentGame.Id, (Common.Helpers.Color)currentSide.Color);
+            await _uow.SaveAsync();
+            await _signalRChessService.EmitResign(currentGame.Id, (Color)currentSide.Color);
             return mapper.Map<Game, GameFullDTO>(currentGame);
         }
 
@@ -177,14 +179,14 @@ namespace Chess.BusinessLogic.Services
 
         public async Task<PagedResultDTO<GamePartialDTO>> GetUserGames(int userID, int? pageIndex, int? pageSize)
         {
-            if (uow == null)
+            if (_uow == null)
                 return null;
 
-            var user = await uow.GetRepository<User>().GetByIdAsync(userID);
+            var user = await _uow.GetRepository<User>().GetByIdAsync(userID);
             if (user == null)
                 return null;
 
-            var sidesPage = (await uow.GetRepository<Side>()
+            var sidesPage = (await _uow.GetRepository<Side>()
                 .GetAllPagedAsync(pageIndex, pageSize, s => s.PlayerId == user.Id));
             var gamesPage = new PagedResultDTO<GamePartialDTO>()
             {
@@ -199,11 +201,11 @@ namespace Chess.BusinessLogic.Services
 
         public override async Task<PagedResultDTO<GameFullDTO>> GetListAsync(int? pageIndex = null, int? pageSize = null)
         {
-            if (uow == null)
+            if (_uow == null)
                 return null;
 
             var currentUser = await _currentUserProvider.GetCurrentUserAsync();
-            var sidesPage = (await uow.GetRepository<Side>()
+            var sidesPage = (await _uow.GetRepository<Side>()
                 .GetAllPagedAsync(pageIndex, pageSize, s => s.PlayerId == currentUser.Id));
             var gamesPage = new PagedResultDTO<GameFullDTO>()
             {

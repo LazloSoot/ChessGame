@@ -35,18 +35,18 @@ namespace Chess.BusinessLogic.Services
 
         public async Task<UserDTO> GetCurrentUser()
         {
-            if (uow == null)
+            if (_uow == null)
                 return null;
 
             var currentUser =  await _currentUserProvider.GetCurrentUserAsync();
             if (currentUser == null)
                 return null;
 
-            var currentDbUser = await uow.GetRepository<User>()
+            var currentDbUser = await _uow.GetRepository<User>()
                 .GetOneAsync(u => string.Equals(u.Uid, currentUser.Uid));
             if (currentDbUser == null)
             {
-                currentDbUser = await uow.GetRepository<User>()
+                currentDbUser = await _uow.GetRepository<User>()
                     .AddAsync(new User()
                     {
                         AvatarUrl = currentUser.AvatarUrl,
@@ -64,11 +64,11 @@ namespace Chess.BusinessLogic.Services
         [Obsolete("Backend no longer serves online status.Currently firebase realtime database serves it.")]
         public async Task<PagedResultDTO<UserDTO>> GetOnlineUsers(int? pageIndex, int? pageSize)
         {
-            if (uow == null)
+            if (_uow == null)
                 return null;
 
             var onlineHubUsers = _notificationService.GetOnlineUsersInfo();
-            var onlineUserPagedProfiles = await uow.GetRepository<User>()
+            var onlineUserPagedProfiles = await _uow.GetRepository<User>()
                 .GetAllPagedAsync(pageIndex, pageSize, u => onlineHubUsers.Keys.Contains(u.Uid));
             if (onlineUserPagedProfiles == null)
                 return null;
@@ -78,7 +78,7 @@ namespace Chess.BusinessLogic.Services
 
         public async Task<PagedResultDTO<UserDTO>> SearchUsers(string query, bool isOnline, int? pageIndex, int? pageSize)
         {
-            if (uow == null)
+            if (_uow == null)
                 return null;
 
             PagedResult<UserIndex> usersPagedProfiles = null;
@@ -120,7 +120,7 @@ namespace Chess.BusinessLogic.Services
 
         public async Task<string> ReIndex()
         {
-            var users = await uow.GetRepository<User>().GetAllAsync();
+            var users = await _uow.GetRepository<User>().GetAllAsync();
             var res = await ESRepository.ReIndex(users);
 
             return res;
