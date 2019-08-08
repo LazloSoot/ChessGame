@@ -20,13 +20,13 @@ namespace ChessGame.Test.ChessGame.Core
                 {
                     From = new Square("g2"),
                     To = new Square("g1"),
-                    PromotedTo = Piece.BlackQueen
+                    PromotedTo = Piece.BlackBishop
                 });
                 yield return new TestCaseData("k1rn4/1pp3P1/p7/3b3p/2PP1B1P/P2P4/1P6/1K1R3R w - - 0 0", new PromotionTestDataWrapper()
                 {
                     From = new Square("g7"),
                     To = new Square("g8"),
-                    PromotedTo = Piece.WhiteQueen
+                    PromotedTo = Piece.WhiteRook
                 });
             }
         }
@@ -80,25 +80,24 @@ namespace ChessGame.Test.ChessGame.Core
             Assert.AreEqual(Color.None, game.MateTo);
             Assert.IsFalse(game.IsStaleMate);
             
-            var pawn = (Piece)game.GetPieceAt(promotionTestdata.From.X, promotionTestdata.From.Y);
-            Assert.IsTrue(Enum.IsDefined(typeof(Piece), pawn));
-            Assert.AreNotEqual(Piece.None, pawn);
-            var pieceColor = pawn.GetColor();
+            var targetPiece = (Piece)game.GetPieceAt(promotionTestdata.From.X, promotionTestdata.From.Y);
+            Assert.IsTrue(Enum.IsDefined(typeof(Piece), targetPiece));
+            Assert.AreNotEqual(Piece.None, targetPiece);
+            var pieceColor = targetPiece.GetColor();
             var expectedPawn = (pieceColor == CoreColor.White) ? Piece.WhitePawn : Piece.BlackPawn;
-            Assert.AreEqual(expectedPawn, pawn);
+            Assert.AreEqual(expectedPawn, targetPiece);
 
-            var move = $"{pawn.ToString()}{promotionTestdata.From.ToString()}{promotionTestdata.To.ToString()}";
+            var move = $"{(char)targetPiece}{promotionTestdata.From.ToString()}{promotionTestdata.To.ToString()}{(char)promotionTestdata.PromotedTo}";
             game = game.Move(move);
             var fenAfter = game.Fen;
             Assert.AreNotEqual(fenBefore, fenAfter);
             Assert.AreEqual(Color.None, game.CheckTo);
             Assert.AreEqual(Color.None, game.MateTo);
             Assert.IsFalse(game.IsStaleMate);
-
-
-            var actualPromotedTo = (Piece)game.GetPieceAt(promotionTestdata.To.X, promotionTestdata.To.Y);
-            Assert.AreNotEqual(expectedPawn, pawn);
-            Assert.AreEqual(promotionTestdata.PromotedTo, actualPromotedTo);
+            
+            targetPiece = (Piece)game.GetPieceAt(promotionTestdata.To.X, promotionTestdata.To.Y);
+            Assert.AreNotEqual(expectedPawn, targetPiece);
+            Assert.AreEqual(promotionTestdata.PromotedTo, targetPiece);
         }
     }
 }

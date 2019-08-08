@@ -71,6 +71,7 @@ namespace ChessGame.Core
 
         public IChessGame Move(string move) // Pe2e4  Pe7e8Q
         {
+            
             var movingPiece = new MovingPiece(move);
             Board nextBoard;
             if (Board.GetPieceAt(movingPiece.From) == Piece.None)
@@ -140,7 +141,7 @@ namespace ChessGame.Core
         {
             var targetSquare = new Square(x, y);
             var piece = Board.GetPieceAt(targetSquare);
-            return piece == Piece.None ? '.' : (char)piece;
+            return (char)piece;
         }
 
         public List<string> GetAllValidMovesForPieceAt(int x, int y)

@@ -12,11 +12,32 @@ namespace ChessGame.Test.ChessGame.Core
     [TestFixture]
     public class EvaluationResultsTest
     {
-        public static IEnumerable<TestCaseData> PromotionTestCaseData
+        #region TestCaseData
+
+        public static IEnumerable<TestCaseData> SuccessfulPromotionTestCaseData
         {
             get
             {
-                yield return new TestCaseData("k1rn4/1pp3P1/p7/3b3p/2PP1B1P/P2P4/1P4p1/1K6 b - - 0 0", new PromotionTestDataWrapper()
+                yield return new TestCaseData("k1rn4/1pp3P1/p7/3b3p/2PP1B1P/P2P4/1P4p1/1K1RB3 b - - 0 0", new PromotionTestDataWrapper()
+                {
+                    From = new Square("g2"),
+                    To = new Square("g1"),
+                    PromotedTo = Piece.BlackQueen
+                });
+                yield return new TestCaseData("k1rn4/1pp3P1/p7/7p/2PP1B1P/P2P4/1P6/1K1R3R w - - 0 0", new PromotionTestDataWrapper()
+                {
+                    From = new Square("g7"),
+                    To = new Square("g8"),
+                    PromotedTo = Piece.WhiteQueen
+                });
+            }
+        }
+
+        public static IEnumerable<TestCaseData> UnsuccessfulPromotionTestCaseData
+        {
+            get
+            {
+                yield return new TestCaseData("k1rn4/1pp3P1/p7/3b3p/2PP1B1P/P2P4/1P4p1/1K1R4 b - - 0 0", new PromotionTestDataWrapper()
                 {
                     From = new Square("g2"),
                     To = new Square("g1"),
@@ -30,6 +51,8 @@ namespace ChessGame.Test.ChessGame.Core
                 });
             }
         }
+
+        #endregion TestCaseData
 
 
         [TestCase("2k3r1/4q3/8/8/8/8/8/R6K b - - 0 0", Color.White, 1, Description ="Black checkmates white")]
@@ -54,7 +77,8 @@ namespace ChessGame.Test.ChessGame.Core
         }
 
         [Test]
-        internal void PromotionTest(string fen, PromotionTestDataWrapper promotionTestdata)
+        [TestCaseSource("SuccessfulPromotionTestCaseData")]
+        public void PromotionTest(string fen, PromotionTestDataWrapper promotionTestdata)
         {
             var game = new ChessGameEngine().InitGame(fen);
             var fenBefore = game.Fen;
@@ -62,11 +86,12 @@ namespace ChessGame.Test.ChessGame.Core
             Assert.AreEqual(Color.None, game.MateTo);
             Assert.IsFalse(game.IsStaleMate);
 
-            var pawn = (Piece)game.GetPieceAt(promotionTestdata.From.X, promotionTestdata.From.Y);
-            Assert.IsTrue(Enum.IsDefined(typeof(Piece), pawn));
-            Assert.AreNotEqual(Piece.None, pawn);
-            var pieceColor = pawn.GetColor();
-            Assert.AreEqual((pieceColor == CoreColor.White) ? Piece.WhitePawn : Piece.BlackPawn, pawn);
+            var targetPiece = (Piece)game.GetPieceAt(promotionTestdata.From.X, promotionTestdata.From.Y);
+            Assert.IsTrue(Enum.IsDefined(typeof(Piece), targetPiece));
+            Assert.AreNotEqual(Piece.None, targetPiece);
+            var pieceColor = targetPiece.GetColor();
+            var expectedPawn = (pieceColor == CoreColor.White) ? Piece.WhitePawn : Piece.BlackPawn;
+            Assert.AreEqual(expectedPawn, targetPiece);
 
             game = game.ComputerMove();
             var fenAfter = game.Fen;
@@ -75,11 +100,42 @@ namespace ChessGame.Test.ChessGame.Core
             Assert.AreEqual(Color.None, game.MateTo);
             Assert.IsFalse(game.IsStaleMate);
 
-
+            // piece successfully promoted
             var actualPromotedTo = (Piece)game.GetPieceAt(promotionTestdata.To.X, promotionTestdata.To.Y);
-            Assert.AreNotEqual((pieceColor == CoreColor.White) ? Piece.WhitePawn : Piece.BlackPawn, actualPromotedTo.ToString().ToLower().ToCharArray()[0]);
+            targetPiece = (Piece)game.GetPieceAt(promotionTestdata.To.X, promotionTestdata.To.Y);
+            Assert.AreNotEqual(expectedPawn, actualPromotedTo);
             Assert.AreEqual(promotionTestdata.PromotedTo, actualPromotedTo);
         }
         
+        [Test]
+        [TestCaseSource("UnsuccessfulPromotionTestCaseData")]
+        public void PromotionNoProfitTest(string fen, PromotionTestDataWrapper promotionTestdata)
+        {
+            var game = new ChessGameEngine().InitGame(fen);
+            var fenBefore = game.Fen;
+            Assert.AreEqual(Color.None, game.CheckTo);
+            Assert.AreEqual(Color.None, game.MateTo);
+            Assert.IsFalse(game.IsStaleMate);
+
+            var targetPiece = (Piece)game.GetPieceAt(promotionTestdata.From.X, promotionTestdata.From.Y);
+            Assert.IsTrue(Enum.IsDefined(typeof(Piece), targetPiece));
+            Assert.AreNotEqual(Piece.None, targetPiece);
+            var pieceColor = targetPiece.GetColor();
+            var expectedPawn = (pieceColor == CoreColor.White) ? Piece.WhitePawn : Piece.BlackPawn;
+            Assert.AreEqual(expectedPawn, targetPiece);
+
+            game = game.ComputerMove();
+            var fenAfter = game.Fen;
+            Assert.AreNotEqual(fenBefore, fenAfter);
+            Assert.AreEqual(Color.None, game.CheckTo);
+            Assert.AreEqual(Color.None, game.MateTo);
+            Assert.IsFalse(game.IsStaleMate);
+
+            // not profitable => no promotion
+            targetPiece = (Piece)game.GetPieceAt(promotionTestdata.From.X, promotionTestdata.From.Y);
+            Assert.AreEqual(expectedPawn, targetPiece);
+            var pieceOnDestSquare = (Piece)game.GetPieceAt(promotionTestdata.To.X, promotionTestdata.To.Y);
+            Assert.AreEqual(Piece.None, pieceOnDestSquare);
+        }
     }
 }
