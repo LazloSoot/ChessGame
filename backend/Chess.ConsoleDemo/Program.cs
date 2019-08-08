@@ -10,7 +10,7 @@ namespace Chess.ConsoleDemo
         { // 6k1/1b3ppp/pb2p3/1p2P3/1P2BPnP/P1r5/1B1rQ2P/R4R1K
             
              //var chess = new ChessGameEngine().InitGame("r4b1r/5ppp/pb2p3/1p6/2Pq4/3P4/PP2QPPP/2k1K2R w KQ - 0 0");
-            var chess = new ChessGameEngine().InitGame();
+            var chess = new ChessGameEngine().InitGame("k1rn4/1pp3P1/p7/3b3p/2PP1B1P/P2P4/1P4p1/1K1RB3 w - - 0 1");
             chess.RunPerfTest(4);
             // ChessGame.Check += Chess_Check;
             // ChessGame.Mate += Chess_Mate;

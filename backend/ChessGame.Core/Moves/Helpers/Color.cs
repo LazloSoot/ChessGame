@@ -1,4 +1,7 @@
-﻿namespace ChessGame.Core.Moves.Helpers
+﻿using System.Runtime.CompilerServices;
+
+[assembly: InternalsVisibleTo("ChessGame.Test")]
+namespace ChessGame.Core.Moves.Helpers
 {
     internal enum Color
     {

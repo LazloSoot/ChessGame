@@ -84,7 +84,23 @@ namespace ChessGame.Core.Pieces
         internal Board Move(MovingPiece mf)
         {
             var nextBoardState = new Board(Fen);
-            
+            if(mf.Promotion == Piece.None)
+            {
+                if(mf.Piece == Piece.WhitePawn && mf.To.Y == 7)
+                {
+                    mf.Promotion = Piece.WhiteQueen;
+                }
+                else if(mf.Piece == Piece.BlackPawn && mf.To.Y == 0)
+                {
+                    mf.Promotion = Piece.BlackQueen;
+                }
+            }
+
+            if(mf.Piece == Piece.WhitePawn || mf.Piece == Piece.BlackPawn)
+            {
+
+            }
+
             nextBoardState.SetPieceAt(mf.From, Piece.None);
             nextBoardState.SetPieceAt(mf.To, mf.Promotion == Piece.None ? mf.Piece : mf.Promotion);
 
@@ -125,78 +141,7 @@ namespace ChessGame.Core.Pieces
             }
             MoveColor = MoveColor.FlipColor();
         }
-
-        private Board Castle(MovingPiece king, MovingPiece rook)
-        {
-            var nextBoardState = new Board(Fen);
-
-            nextBoardState.SetPieceAt(king.From, Piece.None);
-            nextBoardState.SetPieceAt(king.To, king.Piece);
-            nextBoardState.SetPieceAt(rook.From, Piece.None);
-            nextBoardState.SetPieceAt(rook.To, rook.Piece);
-
-            if (MoveColor == Color.Black)
-            {
-                nextBoardState.MoveNumber = MoveNumber + 1;
-                nextBoardState.IsBlackCastled = true;
-            } else
-            {
-                nextBoardState.IsWhiteCastled = true;
-            }
-
-            nextBoardState.MoveColor = MoveColor.FlipColor();
-            nextBoardState.UpdateCastlingData(king);
-            nextBoardState.GenerateNextFen();
-            return nextBoardState;
-        }
-
-        private void UpdateCastlingData(MovingPiece mf)
-        {
-            var targetColor = mf.Piece.GetColor();
-            var currentCastlingFenPart = (targetColor == Color.White) ? WhiteCastlingFenPart : BlackCastlingFenPart;
-            if (string.IsNullOrWhiteSpace(currentCastlingFenPart))
-                return;
-
-            switch (mf.Piece)
-            {
-                case (Piece.BlackRook):
-                    {
-                        if(mf.From.X == 7)
-                        {
-                            BlackCastlingFenPart = (BlackCastlingFenPart.Contains('q')) ? "q" : "";
-                        } else 
-                        if(mf.From.X == 0)
-                        {
-                            BlackCastlingFenPart = (BlackCastlingFenPart.Contains('k')) ? "k" : "";
-                        }
-                        break;
-                    }
-                case (Piece.WhiteRook):
-                    {
-                        if (mf.From.X == 7)
-                        {
-                            WhiteCastlingFenPart = (WhiteCastlingFenPart.Contains('Q')) ? "Q" : "";
-                        }
-                        else
-                        if (mf.From.X == 0)
-                        {
-                            WhiteCastlingFenPart = (WhiteCastlingFenPart.Contains('K')) ? "K" : "";
-                        }
-                        break;
-                    }
-                case (Piece.WhiteKing):
-                    {
-                        WhiteCastlingFenPart = string.Empty;
-                        break;
-                    }
-                case (Piece.BlackKing):
-                    {
-                        BlackCastlingFenPart = string.Empty;
-                        break;
-                    }
-            }
-        }
-
+        
         internal Board GetBoardAfterFirstKingCastlingMove(MovingPiece king)
         {
             var nextBoardState = new Board(Fen);
@@ -328,10 +273,10 @@ namespace ChessGame.Core.Pieces
         /// Tries to find at least one available move.Useful to check on checkmate/stalemate situation.
         /// </summary>
         /// <returns></returns>
-        internal bool IsMoveAvailable(Color movesAvailableFor)
+        internal bool IsMoveAvailable(Color movesAvailableFor = Color.None)
         {
             if (movesAvailableFor == Color.None)
-                return false;
+                movesAvailableFor = MoveColor;
             var currentColor = MoveColor;
             MoveColor = movesAvailableFor;
             var currentMove = new Move(this);
@@ -379,7 +324,7 @@ namespace ChessGame.Core.Pieces
             {
                 for (int x = 0; x < 8; x++)
                 {
-                    piecesBldr.Append(pieces[x, y] == Piece.None ? '1' : (char)pieces[x, y]);
+                    piecesBldr.Append((char)pieces[x, y]);
                 }
                 if (y > 0)
                     piecesBldr.Append('/');
@@ -394,6 +339,79 @@ namespace ChessGame.Core.Pieces
             Fen = piecesBldr.Append($" {(char)MoveColor} {castlingFenPart} - 0 {MoveNumber}").ToString();
         }
 
+
+        private Board Castle(MovingPiece king, MovingPiece rook)
+        {
+            var nextBoardState = new Board(Fen);
+
+            nextBoardState.SetPieceAt(king.From, Piece.None);
+            nextBoardState.SetPieceAt(king.To, king.Piece);
+            nextBoardState.SetPieceAt(rook.From, Piece.None);
+            nextBoardState.SetPieceAt(rook.To, rook.Piece);
+
+            if (MoveColor == Color.Black)
+            {
+                nextBoardState.MoveNumber = MoveNumber + 1;
+                nextBoardState.IsBlackCastled = true;
+            }
+            else
+            {
+                nextBoardState.IsWhiteCastled = true;
+            }
+
+            nextBoardState.MoveColor = MoveColor.FlipColor();
+            nextBoardState.UpdateCastlingData(king);
+            nextBoardState.GenerateNextFen();
+            return nextBoardState;
+        }
+
+        private void UpdateCastlingData(MovingPiece mf)
+        {
+            var targetColor = mf.Piece.GetColor();
+            var currentCastlingFenPart = (targetColor == Color.White) ? WhiteCastlingFenPart : BlackCastlingFenPart;
+            if (string.IsNullOrWhiteSpace(currentCastlingFenPart))
+                return;
+
+            switch (mf.Piece)
+            {
+                case (Piece.BlackRook):
+                    {
+                        if (mf.From.X == 7)
+                        {
+                            BlackCastlingFenPart = (BlackCastlingFenPart.Contains('q')) ? "q" : "";
+                        }
+                        else
+                        if (mf.From.X == 0)
+                        {
+                            BlackCastlingFenPart = (BlackCastlingFenPart.Contains('k')) ? "k" : "";
+                        }
+                        break;
+                    }
+                case (Piece.WhiteRook):
+                    {
+                        if (mf.From.X == 7)
+                        {
+                            WhiteCastlingFenPart = (WhiteCastlingFenPart.Contains('Q')) ? "Q" : "";
+                        }
+                        else
+                        if (mf.From.X == 0)
+                        {
+                            WhiteCastlingFenPart = (WhiteCastlingFenPart.Contains('K')) ? "K" : "";
+                        }
+                        break;
+                    }
+                case (Piece.WhiteKing):
+                    {
+                        WhiteCastlingFenPart = string.Empty;
+                        break;
+                    }
+                case (Piece.BlackKing):
+                    {
+                        BlackCastlingFenPart = string.Empty;
+                        break;
+                    }
+            }
+        }
         private void InitPiecesPosition()
         {
 

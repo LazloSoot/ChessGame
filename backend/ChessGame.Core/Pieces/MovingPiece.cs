@@ -8,7 +8,7 @@ namespace ChessGame.Core.Pieces
         internal Piece Piece { get; private set; }
         internal Square From { get; private set; }
         internal Square To { get; private set; }
-        internal Piece Promotion { get; private set; }
+        internal Piece Promotion { get; set; }
         /// <summary>
         /// This value should be added/substracted from the score when piece either attacking or defending another chess piece.
         /// This follows the logic that it is better to risk a pawn than it is to risk a queen.
