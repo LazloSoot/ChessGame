@@ -81,7 +81,7 @@ namespace ChessGame.Core
                 if (targetColor != Board.MoveColor)
                     return this;
                 var isToKingside = movingPiece.SignX > 0;
-                if (CanKingCastle(isToKingside))
+                if (Board.CanKingCastle(isToKingside))
                 {
                     nextBoard = Board.Castle(isToKingside);
                 }
@@ -103,11 +103,11 @@ namespace ChessGame.Core
             if(nextBoard.IsIGotCheckAfterMove(movingPiece))
             {
                 nextChessPosition.CheckTo = (Chess.Common.Helpers.ChessGame.Color)nextBoard.MoveColor;
-                if(!nextChessPosition.IsMoveAvailable())
+                if(!nextBoard.IsMoveAvailable())
                 {
                     nextChessPosition.MateTo = (Chess.Common.Helpers.ChessGame.Color)nextBoard.MoveColor;
                 }
-            } else if(!nextChessPosition.IsMoveAvailable())
+            } else if(!nextBoard.IsMoveAvailable())
             {
                 nextChessPosition.IsStaleMate = true;
             }
@@ -134,66 +134,6 @@ namespace ChessGame.Core
             Debug.WriteLine($"Total nodes checked: {checkedNodesCount + quiescenceNodesCount}");
             Debug.WriteLine($"Quiescence nodes checked: {quiescenceNodesCount}");
             return new ChessGameEngine(nextBoard);
-        }
-
-        [Obsolete("This method moved to Board. Going to be removed after testing")]
-        private bool CanKingCastle(bool isToKingside)
-        {
-            if (Board.MoveColor == Moves.Helpers.Color.White && Board.IsWhiteCastled 
-                || Board.MoveColor == Moves.Helpers.Color.Black && Board.IsBlackCastled)
-                return false;
-            Board.MoveColor = Board.MoveColor.FlipColor();
-            if (Board.IsCheckToOpponent())
-            {
-                Board.MoveColor = Board.MoveColor.FlipColor();
-                return false;
-            }
-            Board.MoveColor = Board.MoveColor.FlipColor();
-            var isWhiteSide = Board.MoveColor == Moves.Helpers.Color.White;
-            var king = (isWhiteSide) ? Piece.WhiteKing : Piece.BlackKing;
-            var rookPiece = (isWhiteSide) ? Piece.WhiteRook : Piece.BlackRook;
-            var y = (isWhiteSide) ? 0 : 7;
-            var stepX = (isToKingside) ? 1 : -1;
-            if (!IsCastlingPossible(stepX > 0, king.GetColor()))
-            {
-                return false;
-            }
-            MovingPiece mf;
-
-            if (stepX == -1)
-            {
-                if (Board.GetPieceAt(1, y) != Piece.None ||
-                    Board.GetPieceAt(2, y) != Piece.None ||
-                    Board.GetPieceAt(3, y) != Piece.None)
-                {
-                    return false;
-                }
-            }
-            else
-            {
-                if(Board.GetPieceAt(6, y) != Piece.None ||
-                    Board.GetPieceAt(5, y) != Piece.None)
-                {
-                    return false;
-                }
-            }
-            var firstKingDestSquare = new Square(4 + stepX, y);
-            mf = new MovingPiece(new PieceOnSquare(king, new Square(4, y)), firstKingDestSquare);
-            if (!_currentMove.CanMove(mf))
-                return false;
-            if (Board.IsIGotCheckAfterMove(mf))
-                return false;
-
-            var boardAfterFirstMove = Board.GetBoardAfterFirstKingCastlingMove(mf);
-            var moveAfterFirstKingMove = new Move(boardAfterFirstMove);
-            var finalKingDestSquare = new Square(firstKingDestSquare.X + stepX, y);
-            mf = new MovingPiece(new PieceOnSquare(king, firstKingDestSquare), finalKingDestSquare);
-            if (!moveAfterFirstKingMove.CanMove(mf))
-                return false;
-            if (boardAfterFirstMove.IsIGotCheckAfterMove(mf))
-                return false;
-
-            return true;
         }
 
         public char GetPieceAt(int x, int y)
@@ -226,11 +166,11 @@ namespace ChessGame.Core
 
             if(targetPiece == Piece.BlackKing || targetPiece == Piece.WhiteKing)
             {
-                if (CanKingCastle(isToKingside: true))
+                if (Board.CanKingCastle(isToKingside: true))
                 {
                     validMoves.Add($"g{y + 1}");
                 }
-                if (CanKingCastle(isToKingside: false))
+                if (Board.CanKingCastle(isToKingside: false))
                 {
                     validMoves.Add($"c{y + 1}");
                 }
@@ -238,37 +178,7 @@ namespace ChessGame.Core
 
             return validMoves;
         }
-
-        [Obsolete("This method moved to Board. Going to be removed after testing")]
-        /// <summary>
-        /// Tries to find at least one available move.Useful to check on checkmate/stalemate situation.
-        /// </summary>
-        /// <returns></returns>
-        private bool IsMoveAvailable()
-        {
-            var allMoves = new List<MovingPiece>();
-            MovingPiece movingPiece;
-            foreach (var pieceOnSquare in Board.YieldPieces())
-            {
-                foreach (var squareTo in Square.YieldSquares())
-                {
-                    movingPiece = new MovingPiece(pieceOnSquare, squareTo);
-                    if (_currentMove.CanMove(movingPiece) &&
-                        !Board.IsIGotCheckAfterMove(movingPiece))
-                        return true;
-                }
-            }
-
-            return false;
-        }
-
-        [Obsolete("This method going to be removed after removing CanKingCastle method above.")]
-        private bool IsCastlingPossible(bool isKingside, Moves.Helpers.Color color)
-        {
-            var currentCastrlingFenPart = ((color == Moves.Helpers.Color.White) ? Board.WhiteCastlingFenPart : Board.BlackCastlingFenPart).ToLower();
-            return (isKingside) ? currentCastrlingFenPart.Contains('k') : currentCastrlingFenPart.Contains('q');
-        }
-
+        
         public bool Equals(IChessGame other)
         {
             if (other == null || !string.Equals(this.Fen, other.Fen))

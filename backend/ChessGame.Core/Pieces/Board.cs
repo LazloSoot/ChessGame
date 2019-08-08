@@ -328,10 +328,10 @@ namespace ChessGame.Core.Pieces
         /// Tries to find at least one available move.Useful to check on checkmate/stalemate situation.
         /// </summary>
         /// <returns></returns>
-        internal bool IsMoveAvailable(Color movesAvailableFor)
+        internal bool IsMoveAvailable(Color movesAvailableFor = Color.None)
         {
             if (movesAvailableFor == Color.None)
-                return false;
+                movesAvailableFor = MoveColor;
             var currentColor = MoveColor;
             MoveColor = movesAvailableFor;
             var currentMove = new Move(this);
