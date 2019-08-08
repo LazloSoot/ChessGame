@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Runtime.CompilerServices;
 
+[assembly:InternalsVisibleTo("ChessGame.Test")]
 namespace ChessGame.Core.Pieces.Helpers
 {
     struct Square : IEquatable<Square>
@@ -44,7 +46,7 @@ namespace ChessGame.Core.Pieces.Helpers
 
         public bool Equals(Square other)
         {
-            return this.X == other.X && this.Y == other.Y;
+            return X == other.X && Y == other.Y;
         }
 
         public static bool operator ==(Square a, Square b)
@@ -81,6 +83,11 @@ namespace ChessGame.Core.Pieces.Helpers
         public override int GetHashCode()
         {
             return X.GetHashCode() * 17 * Y.GetHashCode();
+        }
+
+        public override string ToString()
+        {
+            return $"{ (char)('a' + X)}{(char)('1' + Y)}";
         }
     }
 }
