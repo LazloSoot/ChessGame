@@ -450,8 +450,6 @@ namespace ChessGame.Core.Pieces
         }
         private void InitPiecesPosition()
         {
-
-#warning INIT FIFTY MOVES COUNT
             string[] parts = Fen.Split();
 #warning Fen can be length of 4
             if (parts.Length < 6)
@@ -462,6 +460,8 @@ namespace ChessGame.Core.Pieces
 
             InitPieces(parts[0]);
             MoveColor = string.Equals("b", parts[1].Trim().ToLower()) ? Color.Black : Color.White;
+            EnPassantSquare = parts[3];
+            FiftyMovesCount = int.Parse(parts[4]);
             MoveNumber = int.Parse(parts[5]);
 
             void InitPieces(string data)

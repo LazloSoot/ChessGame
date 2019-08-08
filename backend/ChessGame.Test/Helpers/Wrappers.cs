@@ -14,4 +14,10 @@ namespace ChessGame.Test.Helpers
         internal Square To { get; set; }
         internal Piece PromotedTo { get; set; }
     }
+
+    public class EnPassantTestDataWrapper
+    {
+        public string Fen { get; set; }
+        internal Square AttackingPawnPosition { get; set; }
+    }
 }
