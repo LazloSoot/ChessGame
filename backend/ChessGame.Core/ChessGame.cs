@@ -9,7 +9,9 @@ using System;
 using ChessGame.Core.Evaluation;
 using System.Threading.Tasks;
 using System.Diagnostics;
+using System.Runtime.CompilerServices;
 
+[assembly: InternalsVisibleTo("ChessGame.Test")]
 namespace ChessGame.Core
 {
     public class ChessGameEngine : IChessGame

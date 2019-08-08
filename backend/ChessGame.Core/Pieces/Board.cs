@@ -4,8 +4,12 @@ using ChessGame.Core.Pieces.Helpers;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using System.Text;
 
+#if DEBUG
+[assembly: InternalsVisibleTo("ChessGame.Test")]
+#endif
 namespace ChessGame.Core.Pieces
 {
     internal sealed class Board : IComparable<Board>
@@ -119,13 +123,14 @@ namespace ChessGame.Core.Pieces
                 if(IsEnpassantRuleEnabled)
                 {
                     int stepY = mf.Piece.GetColor() == Color.White ? 1 : -1;
+                    // its a pawn jump, initialize en passant fen part
                     if (mf.DeltaY == 2 * stepY)
                     {
                         nextBoardState.EnPassantSquare = $"{(char)('a' + mf.From.X)}{(char)('1' + mf.From.Y + mf.SignY)}";
-                    }
+                    } // its en passant capture
                     else if(mf.AbsDeltaX == 1 && mf.DeltaY == stepY)
                     {
-                        nextBoardState.SetPieceAt(mf.To.X, mf.To.Y + mf.SignY, Piece.None);
+                        nextBoardState.SetPieceAt(mf.To.X, mf.To.Y - mf.SignY, Piece.None);
                     }
                 }
             }
@@ -331,7 +336,9 @@ namespace ChessGame.Core.Pieces
 
         internal Board FastCopy()
         {
-            return MemberwiseClone() as Board;
+            var clone = MemberwiseClone() as Board;
+            clone.pieces = pieces.Clone() as Piece[,];
+            return clone;
         }
 
         private Square FindTargetKingPosition()
