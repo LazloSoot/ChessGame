@@ -70,6 +70,8 @@ namespace ChessGame.Core.Pieces
 
         internal Board(string fen, int repeatedMovesCount = 0)
         {
+            if (string.IsNullOrWhiteSpace(fen))
+                throw new ArgumentException("Input fen is null or empty");
             Fen = fen;
             RepeatedMovesCount = repeatedMovesCount < 0 ? 0 : repeatedMovesCount;
             pieces = new Piece[8, 8];
@@ -78,6 +80,8 @@ namespace ChessGame.Core.Pieces
 
         internal Board(Chess.Common.Helpers.ChessGame.ChessGameInitSettings initialSettings)
         {
+            if (string.IsNullOrWhiteSpace(initialSettings.Fen))
+                throw new ArgumentException("Input fen is null or empty");
             Fen = initialSettings.Fen;
             IsBlackCastled = initialSettings.IsBlackCastled;
             IsWhiteCastled = initialSettings.IsWhiteCastled;
@@ -465,18 +469,30 @@ namespace ChessGame.Core.Pieces
         private void InitPiecesPosition()
         {
             string[] parts = Fen.Split();
-#warning Fen can be length of 4
-            if (parts.Length < 6)
-                return;
-            var castlingFenPart = parts[2];
-            WhiteCastlingFenPart = new string(castlingFenPart.Where(c => char.IsUpper(c)).ToArray());
-            BlackCastlingFenPart = new string(castlingFenPart.Where(c => char.IsLower(c)).ToArray());
+            if (parts.Length < 2)
+                throw new ArgumentException("Incorrect input fen! It must consist of at least 2 parts : pieces position and move color.");
 
             InitPieces(parts[0]);
             MoveColor = string.Equals("b", parts[1].Trim().ToLower()) ? Color.Black : Color.White;
-            EnPassantSquare = parts[3];
-            FiftyMovesRulePlyCount = int.Parse(parts[4]);
-            MoveNumber = int.Parse(parts[5]);
+
+            if (parts.Length > 2)
+            {
+                var castlingFenPart = parts[2];
+                WhiteCastlingFenPart = new string(castlingFenPart.Where(c => char.IsUpper(c)).ToArray());
+                BlackCastlingFenPart = new string(castlingFenPart.Where(c => char.IsLower(c)).ToArray());
+            }
+            if(parts.Length > 3)
+            {
+                EnPassantSquare = parts[3];
+            }
+            if(parts.Length > 4 && int.TryParse(parts[4], out int fiftyMovesRulePlyCount))
+            {
+                FiftyMovesRulePlyCount = fiftyMovesRulePlyCount;
+            }
+            if(parts.Length > 5 && int.TryParse(parts[5], out int moveNumber))
+            {
+                MoveNumber = moveNumber;
+            }
 
             void InitPieces(string data)
             {

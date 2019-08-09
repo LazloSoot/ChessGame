@@ -9,12 +9,15 @@ using ChessGame.Test.Helpers;
 using System.Reflection;
 using System.Linq;
 using ChessGame.Core.Pieces;
+using Chess.Common.Interfaces;
 
 namespace ChessGame.Test.ChessGame.Core
 {
     [TestFixture]
     public class ChessGameTest
     {
+        #region TestCaseData
+
         public static IEnumerable<TestCaseData> PromotionTestCaseData
         {
             get
@@ -33,6 +36,8 @@ namespace ChessGame.Test.ChessGame.Core
                 });
             }
         }
+
+        #endregion TestCaseData
 
         [Test]
         [TestCase("r1bqkbnr/ppp2ppp/2n5/3pp1N1/4P3/3P1Q2/PPP2PPP/RNB1KB1R w KQkq - 0 0", "Qf3f7", Description = "School mate")]
@@ -156,6 +161,36 @@ namespace ChessGame.Test.ChessGame.Core
             attackedPawn = board.GetPieceAt(attackedPawnDestPosition);
             Assert.AreEqual(Piece.None, attackedPawn);
 
+        }
+
+        [Test]
+        [TestCase("", "", false)]
+        [TestCase("r1bqkbnr/pppp1ppp/2n5/1B2p3/4P3/5N2/PPPP1PPP/RNBQK2R", "", false)]
+        [TestCase("r1bqkbnr/pppp1ppp/2n5/1B2p3/4P3/5N2/PPPP1PPP/RNBQK2R w", "r1bqkbnr/pppp1ppp/2n5/1B2p3/4P3/5N2/PPPP1PPP/RNBQK2R w - - 0 0", true)]
+        [TestCase("r1bqkbnr/pppp1ppp/2n5/1B2p3/4P3/5N2/PPPP1PPP/RNBQK2R w KQkq", "r1bqkbnr/pppp1ppp/2n5/1B2p3/4P3/5N2/PPPP1PPP/RNBQK2R w KQkq - 0 0", true)]
+        [TestCase("r1bqkbnr/pppp1ppp/2n5/1B2p3/4P3/5N2/PPPP1PPP/RNBQK2R w - f3", "r1bqkbnr/pppp1ppp/2n5/1B2p3/4P3/5N2/PPPP1PPP/RNBQK2R w - f3 0 0", true)]
+        [TestCase("r1bqkbnr/pppp1ppp/2n5/1B2p3/4P3/5N2/PPPP1PPP/RNBQK2R w - - 15", "r1bqkbnr/pppp1ppp/2n5/1B2p3/4P3/5N2/PPPP1PPP/RNBQK2R w - - 15 0", true)]
+        [TestCase("r1bqkbnr/pppp1ppp/2n5/1B2p3/4P3/5N2/PPPP1PPP/RNBQK2R w - - 0 10", "r1bqkbnr/pppp1ppp/2n5/1B2p3/4P3/5N2/PPPP1PPP/RNBQK2R w - - 0 10", true)]
+        public void SimpleFenTest(string inputFen, string expectedInitializedFen, bool isInputFenCorrect)
+        {
+            IChessGame game = null;
+            if (isInputFenCorrect)
+            {
+                game = new ChessGameEngine().InitGame(inputFen);
+                var board = (Board)game.GetType()
+                .GetProperty("Board", BindingFlags.NonPublic | BindingFlags.Instance)
+                .GetValue(game);
+                board.GetType()
+                    .GetMethod("GenerateNextFen", BindingFlags.NonPublic | BindingFlags.Instance)
+                    .Invoke(board, new object[] { });
+                Assert.AreEqual(expectedInitializedFen, game.Fen);
+            } else
+            {
+                Assert.Throws<ArgumentException>(() =>
+                {
+                    game = new ChessGameEngine().InitGame(inputFen);
+                });
+            }
         }
     }
     

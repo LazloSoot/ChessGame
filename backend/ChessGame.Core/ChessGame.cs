@@ -18,7 +18,7 @@ namespace ChessGame.Core
     {
         private Move _currentMove;
         public const string DefaultFen = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
-        public string Fen { get; private set; }
+        public string Fen { get => Board.Fen; }
         public Chess.Common.Helpers.ChessGame.Color MateTo { get => (Chess.Common.Helpers.ChessGame.Color)Board.MateTo; private set => Board.MateTo = (Color)value; }
         public Chess.Common.Helpers.ChessGame.Color CheckTo { get => (Chess.Common.Helpers.ChessGame.Color)Board.CheckTo; private set => Board.CheckTo = (Color)value; }
         public bool IsStaleMate { get => Board.IsStaleMate; private set => Board.IsStaleMate = value; }
@@ -39,7 +39,6 @@ namespace ChessGame.Core
         private ChessGameEngine(Board board)
         {
             Board = board;
-            Fen = board.Fen;
             _currentMove = new Move(board);
         }
 
@@ -50,7 +49,6 @@ namespace ChessGame.Core
             // 0 - позиция фигур,  1 - чей ход, 2 - флаги рокировки
             // 3 - правило битого поля, 4 - колич. ходов для правила 50 ходов
             // 5 - номер хода
-            Fen = fen;
             Board = new Board(fen);
             _currentMove = new Move(Board);
             return this;
@@ -58,7 +56,6 @@ namespace ChessGame.Core
 
         public IChessGame InitGame(Chess.Common.Helpers.ChessGame.ChessGameInitSettings initialSettings)
         {
-            Fen = initialSettings.Fen;
             Board = new Board(initialSettings);
             _currentMove = new Move(Board);
             return this;
