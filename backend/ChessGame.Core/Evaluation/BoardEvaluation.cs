@@ -24,7 +24,7 @@ namespace ChessGame.Core.Evaluation
 
             if (board.IsStaleMate
                 || (board.IsThreefoldRepetitionRuleEnabled && board.RepeatedMovesCount >= 3)
-                || (board.IsFiftyMovesRuleEnabled && board.FiftyMovesCount >= 50))
+                || (board.IsFiftyMovesRuleEnabled && board.FiftyMovesRulePlyCount >= 100))
             {
                 return;
             }
@@ -764,7 +764,7 @@ namespace ChessGame.Core.Evaluation
         private static int AlphaBeta(Board board, int depth, int alpha, int beta, ref int checkedNodesCount, ref int quiescenceCheckedNodesCount, bool isExtend = false)
         {
             checkedNodesCount++;
-            if (board.IsStaleMate || (board.IsFiftyMovesRuleEnabled && board.FiftyMovesCount >= 50) || (board.IsThreefoldRepetitionRuleEnabled && board.RepeatedMovesCount >= 3))
+            if (board.IsStaleMate || (board.IsFiftyMovesRuleEnabled && board.FiftyMovesRulePlyCount >= 100) || (board.IsThreefoldRepetitionRuleEnabled && board.RepeatedMovesCount >= 3))
                 return 0;
             if (depth == 0)
             {
