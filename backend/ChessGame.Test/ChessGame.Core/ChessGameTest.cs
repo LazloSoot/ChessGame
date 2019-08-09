@@ -157,8 +157,6 @@ namespace ChessGame.Test.ChessGame.Core
             Assert.AreEqual(Piece.None, attackedPawn);
 
         }
-
-
     }
     
 }

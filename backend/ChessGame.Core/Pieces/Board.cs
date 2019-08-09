@@ -57,7 +57,7 @@ namespace ChessGame.Core.Pieces
         /// <summary>
         /// Counter to check is fifty moves rule condition satisfied.
         /// </summary>
-        internal int FiftyMovesCount { get; private set; }
+        internal int FiftyMovesRulePlyCount { get; private set; }
         /// <summary>
         /// Counter to check is three moves repition rule condition satisfied.
         /// </summary>
@@ -106,7 +106,7 @@ namespace ChessGame.Core.Pieces
 
             if (mf.Piece == Piece.WhitePawn || mf.Piece == Piece.BlackPawn)
             {
-                nextBoardState.FiftyMovesCount = 0;
+                nextBoardState.FiftyMovesRulePlyCount = 0;
 
                 if (mf.Promotion == Piece.None)
                 {
@@ -135,6 +135,18 @@ namespace ChessGame.Core.Pieces
                 }
             }
 
+            if(IsFiftyMovesRuleEnabled)
+            {
+                if (nextBoardState.GetPieceAt(mf.To) != Piece.None)
+                {
+                    nextBoardState.FiftyMovesRulePlyCount = 0;
+                }
+                else
+                {
+                    nextBoardState.FiftyMovesRulePlyCount++;
+                }
+            }
+
             nextBoardState.SetPieceAt(mf.From, Piece.None);
             nextBoardState.SetPieceAt(mf.To, mf.Promotion == Piece.None ? mf.Piece : mf.Promotion);
 
@@ -152,7 +164,7 @@ namespace ChessGame.Core.Pieces
         /// </summary>
         internal void CheckBoard()
         {
-            if ((IsFiftyMovesRuleEnabled && FiftyMovesCount >= 50) || (IsThreefoldRepetitionRuleEnabled && RepeatedMovesCount >= 3))
+            if ((IsFiftyMovesRuleEnabled && FiftyMovesRulePlyCount >= 100) || (IsThreefoldRepetitionRuleEnabled && RepeatedMovesCount >= 3))
             {
                 IsStaleMate = true;
                 return;
@@ -372,13 +384,15 @@ namespace ChessGame.Core.Pieces
             }
             //  "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1"
             var castlingFenPart = (string.IsNullOrEmpty(WhiteCastlingFenPart) && string.IsNullOrEmpty(BlackCastlingFenPart)) ? "-" : $"{WhiteCastlingFenPart}{BlackCastlingFenPart}";
-            Fen = piecesBldr.Append($" {(char)MoveColor} {castlingFenPart} {EnPassantSquare} {FiftyMovesCount} {MoveNumber}").ToString();
+            Fen = piecesBldr.Append($" {(char)MoveColor} {castlingFenPart} {EnPassantSquare} {FiftyMovesRulePlyCount} {MoveNumber}").ToString();
         }
 
 
         private Board Castle(MovingPiece king, MovingPiece rook)
         {
-            var nextBoardState = new Board(Fen);
+            var nextBoardState = FastCopy();
+            nextBoardState.FiftyMovesRulePlyCount = 0;
+            nextBoardState.EnPassantSquare = "-";
 
             nextBoardState.SetPieceAt(king.From, Piece.None);
             nextBoardState.SetPieceAt(king.To, king.Piece);
@@ -461,7 +475,7 @@ namespace ChessGame.Core.Pieces
             InitPieces(parts[0]);
             MoveColor = string.Equals("b", parts[1].Trim().ToLower()) ? Color.Black : Color.White;
             EnPassantSquare = parts[3];
-            FiftyMovesCount = int.Parse(parts[4]);
+            FiftyMovesRulePlyCount = int.Parse(parts[4]);
             MoveNumber = int.Parse(parts[5]);
 
             void InitPieces(string data)
