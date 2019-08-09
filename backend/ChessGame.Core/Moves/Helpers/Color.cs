@@ -1,6 +1,11 @@
-﻿namespace Chess.BL.Moves.Helpers
+﻿using System.Runtime.CompilerServices;
+
+#if DEBUG
+[assembly: InternalsVisibleTo("ChessGame.Test")]
+#endif
+namespace ChessGame.Core.Moves.Helpers
 {
-    public enum Color
+    internal enum Color
     {
         None,
         White = 'w',

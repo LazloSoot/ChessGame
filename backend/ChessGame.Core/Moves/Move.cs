@@ -1,11 +1,11 @@
-﻿using Chess.BL.Figures;
-using Chess.BL.Figures.Helpers;
+﻿using ChessGame.Core.Pieces;
+using ChessGame.Core.Pieces.Helpers;
 
-namespace Chess.BL.Moves
+namespace ChessGame.Core.Moves
 {
-    class Move
+    internal sealed class Move
     {
-        private MovingFigure movingFigure;
+        private MovingPiece _movingPiece;
         private Board board;
 
         public Move(Board board)
@@ -13,59 +13,96 @@ namespace Chess.BL.Moves
             this.board = board;
         }
 
-        public bool CanMove(MovingFigure movingFigure)
+        public bool CanMove(MovingPiece movingPiece)
         {
-            this.movingFigure = movingFigure;
-            return movingFigure.To.IsOnBoard() && CanFigureMove() && CanMove() && CanMoveTo();
+            _movingPiece = movingPiece;
+            return movingPiece.To.IsOnBoard() && CanPieceMove() && CanMove() && CanMoveTo();
+        }
+
+        /// <summary>
+        /// Cheks if move is valid, initialize attackedValue/defendedValue of captured piece.
+        /// </summary>
+        /// <param name="movingPiece">Piece that tries to commit certain move.</param>
+        /// <param name="capturedPiece">Piece on destanation square with initialized attackedValue/defendedValue properties.</param>
+        /// <returns>Move validation result</returns>
+        public bool CanMove(MovingPiece movingPiece, out PieceOnSquare capturedPiece)
+        {
+            _movingPiece = movingPiece;
+            if(movingPiece.To.IsOnBoard() && CanPieceMove() && CanMove() && _movingPiece.From != _movingPiece.To)
+            {
+                var piece = board.GetPieceAt(_movingPiece.To);
+                if(piece != Piece.None)
+                {
+                    capturedPiece = new PieceOnSquare(piece, movingPiece.To);
+                    if(piece.GetColor() != _movingPiece.Piece.GetColor())
+                    {
+                        capturedPiece.AttackedValue += movingPiece.PieceActionValue;
+                        return true;
+                    }
+                    else
+                    {
+                        capturedPiece.DefendedValue += movingPiece.PieceActionValue;
+                        return false;
+                    }
+                } 
+                else
+                {
+                    capturedPiece = null;
+                    return true;
+                }
+            }
+
+            capturedPiece = null;
+            return false;
         }
 
         private bool CanMove()
         {
-            return movingFigure.Figure.GetColor() == board.MoveColor;
+            return _movingPiece.Piece.GetColor() == board.MoveColor;
         }
 
         private bool CanMoveTo()
         {
-            return movingFigure.From != movingFigure.To &&
-                board.GetFigureAt(movingFigure.To).GetColor() != movingFigure.Figure.GetColor();
+            return _movingPiece.From != _movingPiece.To &&
+                board.GetPieceAt(_movingPiece.To).GetColor() != _movingPiece.Piece.GetColor();
         }
 
-        private bool CanFigureMove()
+        private bool CanPieceMove()
         {
-            switch (movingFigure.Figure)
+            switch (_movingPiece.Piece)
             {
-                case Figure.None:
+                case Piece.None:
                     break;
-                case Figure.WhiteKing:
-                case Figure.BlackKing:
+                case Piece.WhiteKing:
+                case Piece.BlackKing:
                     {
-                        return movingFigure.AbsDeltaX <= 1 && movingFigure.AbsDeltaY <= 1;
+                        return _movingPiece.AbsDeltaX <= 1 && _movingPiece.AbsDeltaY <= 1;
                     }
-                case Figure.WhiteQueen:
-                case Figure.BlackQueen:
+                case Piece.WhiteQueen:
+                case Piece.BlackQueen:
                     {
                         return CanStraightMove();
                     }
-                case Figure.WhiteRook:
-                case Figure.BlackRook:
+                case Piece.WhiteRook:
+                case Piece.BlackRook:
                     {
-                        return (movingFigure.SignX == 0 || movingFigure.SignY == 0) &&
+                        return (_movingPiece.SignX == 0 || _movingPiece.SignY == 0) &&
                             CanStraightMove();
                     }
-                case Figure.WhiteBishop:
-                case Figure.BlackBishop:
+                case Piece.WhiteBishop:
+                case Piece.BlackBishop:
                     {
-                        return (movingFigure.SignX != 0 && movingFigure.SignY != 0) &&
+                        return (_movingPiece.SignX != 0 && _movingPiece.SignY != 0) &&
                             CanStraightMove();
                     }
-                case Figure.WhiteKnight:
-                case Figure.BlackKnight:
+                case Piece.WhiteKnight:
+                case Piece.BlackKnight:
                     {
-                        return (movingFigure.AbsDeltaX == 1 && movingFigure.AbsDeltaY == 2) ||
-                          (movingFigure.AbsDeltaX == 2 && movingFigure.AbsDeltaY == 1);
+                        return (_movingPiece.AbsDeltaX == 1 && _movingPiece.AbsDeltaY == 2) ||
+                          (_movingPiece.AbsDeltaX == 2 && _movingPiece.AbsDeltaY == 1);
                     }
-                case Figure.WhitePawn:
-                case Figure.BlackPawn:
+                case Piece.WhitePawn:
+                case Piece.BlackPawn:
                     {
                         return CanPawnMove();
                     }
@@ -77,17 +114,17 @@ namespace Chess.BL.Moves
         
         private bool CanPawnMove()
         {
-            int stepY = movingFigure.Figure.GetColor() == Helpers.Color.White ? 1 : -1;
+            int stepY = _movingPiece.Piece.GetColor() == Helpers.Color.White ? 1 : -1;
             return
                 CanPawnGo() ||
-                CanPawnJump() ||
+                ((_movingPiece.DeltaY == 2 * stepY) ? CanPawnJump() : false) ||
                 CanPawnAttack();
 
             bool CanPawnGo()
             {
-                if (board.GetFigureAt(movingFigure.To) == Figure.None)
+                if (board.GetPieceAt(_movingPiece.To) == Piece.None)
                 {
-                    if (movingFigure.DeltaX == 0 && movingFigure.DeltaY == stepY)
+                    if (_movingPiece.DeltaX == 0 && _movingPiece.DeltaY == stepY)
                     {
                         return true;
                     }
@@ -98,14 +135,13 @@ namespace Chess.BL.Moves
 
             bool CanPawnJump()
             {
-                if (movingFigure.From.Y == 1 || movingFigure.From.Y == 6)
+                if (_movingPiece.From.Y == 1 || _movingPiece.From.Y == 6)
                 {
-                    if (board.GetFigureAt(movingFigure.To) == Figure.None)
+                    if (board.GetPieceAt(_movingPiece.To) == Piece.None)
                     {
-                        if (movingFigure.DeltaX == 0
-                            && movingFigure.DeltaY == 2 * stepY)
+                        if (_movingPiece.DeltaX == 0)
                         {
-                            if (board.GetFigureAt(movingFigure.From.X, movingFigure.From.Y + stepY) == Figure.None)
+                            if (board.GetPieceAt(_movingPiece.From.X, _movingPiece.From.Y + stepY) == Piece.None)
                             {
                                 return true;
                             }
@@ -117,10 +153,11 @@ namespace Chess.BL.Moves
 
             bool CanPawnAttack()
             {
-                if (board.GetFigureAt(movingFigure.To) != Figure.None)
+                if (board.GetPieceAt(_movingPiece.To) != Piece.None || 
+                    ((board.IsEnpassantRuleEnabled) ? (string.Equals(board.EnPassantSquare, _movingPiece.To.ToString())) : false))
                 {
-                    if (movingFigure.AbsDeltaX == 1 &&
-                        movingFigure.DeltaY == stepY)
+                    if (_movingPiece.AbsDeltaX == 1 &&
+                        _movingPiece.DeltaY == stepY)
                     {
                         return true;
                     }
@@ -130,17 +167,15 @@ namespace Chess.BL.Moves
             }
         }
 
-
-
         private bool CanStraightMove()
         {
-            var currentSquare = movingFigure.From;
+            var currentSquare = _movingPiece.From;
             do
             {
-                currentSquare = new Square(currentSquare.X + movingFigure.SignX, currentSquare.Y + movingFigure.SignY);
-                if (currentSquare == movingFigure.To)
+                currentSquare = new Square(currentSquare.X + _movingPiece.SignX, currentSquare.Y + _movingPiece.SignY);
+                if (currentSquare == _movingPiece.To)
                     return true;
-            } while (currentSquare.IsOnBoard() && board.GetFigureAt(currentSquare) == Figure.None);
+            } while (currentSquare.IsOnBoard() && board.GetPieceAt(currentSquare) == Piece.None);
             return false;
         }
     }

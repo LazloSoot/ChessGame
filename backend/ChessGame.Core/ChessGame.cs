@@ -1,37 +1,46 @@
-﻿using Chess.BL.Figures;
-using Chess.BL.Figures.Helpers;
-using Chess.BL.Moves;
-using Chess.BL.Moves.Helpers;
+﻿using Chess.Common.Helpers;
 using Chess.Common.Interfaces;
-using System;
+using ChessGame.Core.Pieces;
+using ChessGame.Core.Pieces.Helpers;
+using ChessGame.Core.Moves;
+using ChessGame.Core.Moves.Helpers;
 using System.Collections.Generic;
-using System.Text;
+using System;
+using ChessGame.Core.Evaluation;
+using System.Threading.Tasks;
+using System.Diagnostics;
+using System.Runtime.CompilerServices;
 
-namespace Chess.BL
+[assembly: InternalsVisibleTo("ChessGame.Test")]
+namespace ChessGame.Core
 {
-    public class ChessGame : IChessGame
+    public class ChessGameEngine : IChessGame
     {
-        private Board board;
-        private Move currentMove;
+        private Move _currentMove;
         public const string DefaultFen = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
         public string Fen { get; private set; }
-        public Chess.Common.Helpers.Color MateTo { get; private set; } = Common.Helpers.Color.None;
-        public Chess.Common.Helpers.Color CheckTo { get; private set; } = Common.Helpers.Color.None;
-
+        public Chess.Common.Helpers.ChessGame.Color MateTo { get => (Chess.Common.Helpers.ChessGame.Color)Board.MateTo; private set => Board.MateTo = (Color)value; }
+        public Chess.Common.Helpers.ChessGame.Color CheckTo { get => (Chess.Common.Helpers.ChessGame.Color)Board.CheckTo; private set => Board.CheckTo = (Color)value; }
+        public bool IsStaleMate { get => Board.IsStaleMate; private set => Board.IsStaleMate = value; }
+        public bool IsInsufficientMaterial { get => Board.IsInsufficientMaterial; private set => Board.IsInsufficientMaterial = value; }
+        internal Board Board { get; private set; }
+        // Defined by the amount of pieces remaining on the board in the evaluation function.If the chess board is in an end game
+        // state certain behaviors will be modified to increase king safety and mate opportunities.
+        internal bool IsEndOfGamePhase { get => Board.IsEndOfGamePhase; private set => Board.IsEndOfGamePhase = value; }
         /// <summary>
         /// Forsyth–Edwards Notation (FEN) is a standard notation for describing a particular board position of a chess game. The purpose of FEN is to provide all the necessary information to restart a game from a particular position.
         /// </summary>
         /// <param name="fen">Forsyth–Edwards Notation</param>
         /// <remarks>https://en.wikipedia.org/wiki/Forsyth–Edwards_Notation</remarks>
-        public ChessGame()
+        public ChessGameEngine()
         {
         }
 
-        private ChessGame(Board board)
+        private ChessGameEngine(Board board)
         {
-            this.board = board;
+            Board = board;
             Fen = board.Fen;
-            currentMove = new Move(board);
+            _currentMove = new Move(board);
         }
 
         public IChessGame InitGame(string fen = DefaultFen)
@@ -42,166 +51,122 @@ namespace Chess.BL
             // 3 - правило битого поля, 4 - колич. ходов для правила 50 ходов
             // 5 - номер хода
             Fen = fen;
-            board = new Board(fen);
-            currentMove = new Move(board);
+            Board = new Board(fen);
+            _currentMove = new Move(Board);
             return this;
         }
+
+        public IChessGame InitGame(Chess.Common.Helpers.ChessGame.ChessGameInitSettings initialSettings)
+        {
+            Fen = initialSettings.Fen;
+            Board = new Board(initialSettings);
+            _currentMove = new Move(Board);
+            return this;
+        }
+
         public IChessGame Move(string move) // Pe2e4  Pe7e8Q
         {
-            var movingFigure = new MovingFigure(move);
-            if (board.GetFigureAt(movingFigure.From) == Figure.None)
+            
+            var movingPiece = new MovingPiece(move);
+            Board nextBoard;
+            if (Board.GetPieceAt(movingPiece.From) == Piece.None)
                 return this;
-            if((movingFigure.Figure == Figure.BlackKing || movingFigure.Figure == Figure.WhiteKing)
-                && (movingFigure.AbsDeltaX == 2 && movingFigure.AbsDeltaY == 0)) // its castling
+            if (movingPiece.IsItCastlingMove()) // its castling
             {
-                var targetColor = movingFigure.Figure.GetColor();
-                if (targetColor != board.MoveColor)
+                var targetColor = movingPiece.Piece.GetColor();
+                if (targetColor != Board.MoveColor)
                     return this;
-                var isToKingside = movingFigure.SignX > 0;
-                if (CanKingCastle(isToKingside))
+                var isToKingside = movingPiece.SignX > 0;
+                if (Board.CanKingCastle(isToKingside))
                 {
-                    return Castle(isToKingside);
+                    nextBoard = Board.Castle(isToKingside);
                 }
                 else
                 {
                     return this;
                 }
             }
-            if (!currentMove.CanMove(movingFigure))
-                return this;
-            if (board.IsCheckAfterMove(movingFigure))
+            else if (!_currentMove.CanMove(movingPiece) || Board.IsIGotCheckAfterMove(movingPiece))
             {
                 return this;
-            }
-            var nextBoard = board.Move(movingFigure);
-            var nextChessPosition = new ChessGame(nextBoard);
-
-            if (nextBoard.IsCheckAfterMove(movingFigure))
-            {
-                CheckTo = (Common.Helpers.Color)nextBoard.MoveColor;
-                if (nextChessPosition.ComputeAllMoves().Count < 1)
-                    MateTo = (Common.Helpers.Color)nextBoard.MoveColor;
             } else
             {
-                CheckTo = Common.Helpers.Color.None;
+                nextBoard = Board.Move(movingPiece);
             }
+            
+            var nextChessPosition = new ChessGameEngine(nextBoard);
+
+            if(nextBoard.IsIGotCheckAfterMove(movingPiece))
+            {
+                nextChessPosition.CheckTo = (Chess.Common.Helpers.ChessGame.Color)nextBoard.MoveColor;
+                if(!nextBoard.IsMoveAvailable())
+                {
+                    nextChessPosition.MateTo = (Chess.Common.Helpers.ChessGame.Color)nextBoard.MoveColor;
+                }
+            } else if(!nextBoard.IsMoveAvailable())
+            {
+                nextChessPosition.IsStaleMate = true;
+            }
+
             return nextChessPosition;
         }
-
-        public IChessGame Castle(bool isToKingside)
+        
+        public IChessGame ComputerMove()
         {
-            var isWhiteSide = board.MoveColor == Moves.Helpers.Color.White;
-            var king = (isWhiteSide) ? Figure.WhiteKing : Figure.BlackKing;
-            var rookFigure = (isWhiteSide) ? Figure.WhiteRook : Figure.BlackRook;
-            var y = (isWhiteSide) ? 0 : 7;
-            var stepX = (isToKingside) ? 1 : -1;
-            FigureOnSquare rook;
-
-            if(stepX == -1)
+            int checkedNodesCount, quiescenceNodesCount;
+            checkedNodesCount = quiescenceNodesCount = 0;
+            var bestMove = BoardEvaluation.SearchForBestMove(Board, 3, ref checkedNodesCount, ref quiescenceNodesCount);
+            Board nextBoard;
+            if (bestMove.IsItCastlingMove()) // its castling
             {
-                rook = new FigureOnSquare(rookFigure, new Square(0, y));
+                var isToKingside = bestMove.SignX > 0;
+                nextBoard = Board.Castle(isToKingside);
             } else
             {
-                rook = new FigureOnSquare(rookFigure, new Square(7, y));
+                nextBoard = Board.Move(bestMove);
             }
-            var firstKingDestSquare = new Square(4 + stepX, y);
-            var finalKingDestSquare = new Square(firstKingDestSquare.X + stepX, y);
 
-            var nextBoard = board.Castle(new MovingFigure(new FigureOnSquare(king, new Square(4, y)), finalKingDestSquare), new MovingFigure(rook, firstKingDestSquare));
-            return new ChessGame(nextBoard);
+            nextBoard.CheckBoard();
+            Debug.WriteLine($"Total nodes checked: {checkedNodesCount + quiescenceNodesCount}");
+            Debug.WriteLine($"Quiescence nodes checked: {quiescenceNodesCount}");
+            return new ChessGameEngine(nextBoard);
         }
 
-        private bool CanKingCastle(bool isToKingside)
-        {
-            board.MoveColor = board.MoveColor.FlipColor();
-            if (board.IsCheckTo())
-            {
-                board.MoveColor = board.MoveColor.FlipColor();
-                return false;
-            }
-            board.MoveColor = board.MoveColor.FlipColor();
-            var isWhiteSide = board.MoveColor == Moves.Helpers.Color.White;
-            var king = (isWhiteSide) ? Figure.WhiteKing : Figure.BlackKing;
-            var rookFigure = (isWhiteSide) ? Figure.WhiteRook : Figure.BlackRook;
-            var y = (isWhiteSide) ? 0 : 7;
-            var stepX = (isToKingside) ? 1 : -1;
-            if (!IsCastlingPossible(stepX > 0, king.GetColor()))
-            {
-                return false;
-            }
-            MovingFigure mf;
-
-            if (stepX == -1)
-            {
-                if (board.GetFigureAt(1, y) != Figure.None ||
-                    board.GetFigureAt(2, y) != Figure.None ||
-                    board.GetFigureAt(3, y) != Figure.None)
-                {
-                    return false;
-                }
-            }
-            else
-            {
-                if(board.GetFigureAt(6, y) != Figure.None ||
-                    board.GetFigureAt(5, y) != Figure.None)
-                {
-                    return false;
-                }
-            }
-            var firstKingDestSquare = new Square(4 + stepX, y);
-            mf = new MovingFigure(new FigureOnSquare(king, new Square(4, y)), firstKingDestSquare);
-            if (!currentMove.CanMove(mf))
-                return false;
-            if (board.IsCheckAfterMove(mf))
-                return false;
-
-            var boardAfterFirstMove = board.GetBoardAfterFirstKingCastlingMove(mf);
-            var moveAfterFirstKingMove = new Move(boardAfterFirstMove);
-            var finalKingDestSquare = new Square(firstKingDestSquare.X + stepX, y);
-            mf = new MovingFigure(new FigureOnSquare(king, firstKingDestSquare), finalKingDestSquare);
-            if (!moveAfterFirstKingMove.CanMove(mf))
-                return false;
-            if (boardAfterFirstMove.IsCheckAfterMove(mf))
-                return false;
-
-            return true;
-        }
-
-        public char GetFigureAt(int x, int y)
+        public char GetPieceAt(int x, int y)
         {
             var targetSquare = new Square(x, y);
-            var figure = board.GetFigureAt(targetSquare);
-            return figure == Figure.None ? '.' : (char)figure;
+            var piece = Board.GetPieceAt(targetSquare);
+            return (char)piece;
         }
 
-        public List<string> GetAllValidMovesForFigureAt(int x, int y)
+        public List<string> GetAllValidMovesForPieceAt(int x, int y)
         {
             var validMoves = new List<string>();
             var targetSquare = new Square(x, y);
             if (!targetSquare.IsOnBoard())
                 return validMoves;
 
-            var targetFigure = board.GetFigureAt(targetSquare);
-            if (targetFigure == Figure.None || targetFigure.GetColor() != board.MoveColor)
+            var targetPiece = Board.GetPieceAt(targetSquare);
+            if (targetPiece == Piece.None || targetPiece.GetColor() != Board.MoveColor)
                 return validMoves;
 
-            var figureOnSquare = new FigureOnSquare(targetFigure, targetSquare);
-            MovingFigure movingFigure;
+            var pieceOnSquare = new PieceOnSquare(targetPiece, targetSquare);
+            MovingPiece movingPiece;
             foreach (var squareTo in Square.YieldSquares())
             {
-                movingFigure = new MovingFigure(figureOnSquare, squareTo);
-                if (currentMove.CanMove(movingFigure) &&
-                    !board.IsCheckAfterMove(movingFigure))
+                movingPiece = new MovingPiece(pieceOnSquare, squareTo);
+                if (_currentMove.CanMove(movingPiece) &&
+                    !Board.IsIGotCheckAfterMove(movingPiece))
                     validMoves.Add(((char)('a' + squareTo.X)).ToString() + (squareTo.Y + 1));
             }
 
-            if(targetFigure == Figure.BlackKing || targetFigure == Figure.WhiteKing)
+            if(targetPiece == Piece.BlackKing || targetPiece == Piece.WhiteKing)
             {
-                if (CanKingCastle(true))
+                if (Board.CanKingCastle(isToKingside: true))
                 {
                     validMoves.Add($"g{y + 1}");
                 }
-                if (CanKingCastle(false))
+                if (Board.CanKingCastle(isToKingside: false))
                 {
                     validMoves.Add($"c{y + 1}");
                 }
@@ -209,38 +174,25 @@ namespace Chess.BL
 
             return validMoves;
         }
-
-#warning перенести в board
-        private List<MovingFigure> ComputeAllMoves()
-        {
-            var allMoves = new List<MovingFigure>();
-            MovingFigure movingFigure;
-            foreach (var figureOnSquare in board.YieldFigures())
-            {
-                foreach (var squareTo in Square.YieldSquares())
-                {
-                    movingFigure = new MovingFigure(figureOnSquare, squareTo);
-                    if (currentMove.CanMove(movingFigure) &&
-                        !board.IsCheckAfterMove(movingFigure))
-                        allMoves.Add(movingFigure);
-                }
-            }
-
-            return allMoves;
-        }
-    
-        private bool IsCastlingPossible(bool isKingside, Moves.Helpers.Color color)
-        {
-            var currentCastrlingFenPart = ((color == Moves.Helpers.Color.White) ? board.WhiteCastlingFenPart : board.BlackCastlingFenPart).ToLower();
-            return (isKingside) ? currentCastrlingFenPart.Contains('k') : currentCastrlingFenPart.Contains('q');
-        }
-
+        
         public bool Equals(IChessGame other)
         {
             if (other == null || !string.Equals(this.Fen, other.Fen))
                 return false;
             else
                 return true;
+        }
+
+        public void RunPerfTest(int depth)
+        {
+            Task.Run(() =>
+            {
+                for (int i = 0; i <= depth; i++)
+                {
+                    PerformanceTest.PerformanceTest.Run(new Board(DefaultFen), i);
+                }
+            });
+           
         }
     }
 }

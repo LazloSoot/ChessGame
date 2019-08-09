@@ -1,17 +1,22 @@
 ﻿using System;
-using Chess.BL;
+using ChessGame.Core;
 using Chess.Common.Interfaces;
+using Chess.Common.Helpers.ChessGame;
 
 namespace Chess.ConsoleDemo
 {
     class Program
     {
         static void Main(string[] args)
-        {
-            var chess = new ChessGame().InitGame("rnb1kbnr/pppppppp/4q3/8/8/N2Q1B2/PPPP1PPP/R3K2R w KQkq - 0 1");
-           // ChessGame.Check += Chess_Check;
-           // ChessGame.Mate += Chess_Mate;
-            while (true)
+        { // 6k1/1b3ppp/pb2p3/1p2P3/1P2BPnP/P1r5/1B1rQ2P/R4R1K
+            
+             //var chess = new ChessGameEngine().InitGame("r4b1r/5ppp/pb2p3/1p6/2Pq4/3P4/PP2QPPP/2k1K2R w KQ - 0 0");
+            var chess = new ChessGameEngine().InitGame(new ChessGameInitSettings("k7/6b1/8/3pP3/1B6/8/6P1/1K6 w - d6 0 1", true, true, true));
+            //chess.RunPerfTest(4);
+            // ChessGame.Check += Chess_Check;
+            // ChessGame.Mate += Chess_Mate;
+            var prevFen = chess.Fen;
+            while (chess.MateTo != Common.Helpers.ChessGame.Color.None || !chess.IsStaleMate)
             {
                 Console.WriteLine(chess.Fen);
                 Console.WriteLine(ChessToAscii(chess));
@@ -21,6 +26,18 @@ namespace Chess.ConsoleDemo
                     break;
                 }
                 chess = chess.Move(move);
+                if (string.Equals(chess.Fen, prevFen))
+                {
+                    continue;
+                }
+                else
+                {
+                    prevFen = chess.Fen;
+                }
+
+                //Console.WriteLine(chess.Fen);
+                //Console.WriteLine(ChessToAscii(chess));
+                //chess = chess.ComputerMove();
             }
         }
 
@@ -48,7 +65,7 @@ namespace Chess.ConsoleDemo
                 text += " | ";
                 for (int x = 0; x < 8; x++)
                 {
-                    currentFigure = chess.GetFigureAt(x, y);
+                    currentFigure = chess.GetPieceAt(x, y);
                     text += ((currentFigure == '1') ? '.' : currentFigure) + " ";
                 }
                 text += "|\n";

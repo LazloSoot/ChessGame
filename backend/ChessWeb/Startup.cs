@@ -8,7 +8,7 @@ using Chess.Common;
 using Chess.DataAccess;
 using ChessWeb.Authentication;
 using Chess.Common.Interfaces;
-using Chess.BL;
+using ChessGame.Core;
 
 namespace ChessWeb
 {
@@ -45,7 +45,7 @@ namespace ChessWeb
 
             services.AddHttpContextAccessor();
             services.AddScoped<ICurrentUserProvider, CurrentUser>();
-            services.AddScoped<IChessGame, ChessGame>();
+            services.AddScoped<IChessGame, ChessGameEngine>();
             services.AddFirebaseAuthentication(Configuration.GetValue<string>("Firebase:ProjectId"));
             BuisinessLogicModule.ConfigureServices(services, Configuration);
             DataAccessModule.ConfigureServices(services, Configuration);
